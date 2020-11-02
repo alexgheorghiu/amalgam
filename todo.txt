@@ -1,0 +1,12 @@
+Things I want to achieve
+------------------------
+Self hosted
+Web interface 
+Console interface
+URL position for a keyword
+	Domain position for a keyword
+		Domain position for a list of keywords
+Internal linking map
+Broken URL
+URL word statistics
+	

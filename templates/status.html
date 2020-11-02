@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Amalgam</h2>
+<br>
+<a href="/home">Home</a> > Status
+<p/>
+<h3>Status</h3>
+<p>
+	<!-- messages -->
+	{% for info in status %}
+		<div>
+		<span class="font-weight-bold" >{{ info.key }}</span> : {{ info.value }}
+		</div>
+	{% endfor %}
+</p>
+{% endblock %}

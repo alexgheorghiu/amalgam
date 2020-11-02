@@ -1,0 +1,15 @@
+{% extends "base_inner.html" %}
+{% block content %}
+<h2>Amalgam</h2>
+<br>
+<a href="/home">Home</a> &gt; Sitemap
+<p/>
+<h2>Sitemap</h2>
+<p>
+<form action="/sitemap_analyze" method="post">
+	<input type="text" placeholder="sitemap address" name="address" value="{{request.form.address}}">	
+	<p/>
+	<input class="btn btn-dark" type="submit" value="Analyze">
+</form>
+
+{% endblock %}

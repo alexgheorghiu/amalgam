@@ -1,0 +1,11 @@
+{% extends "base_inner.html" %}
+{% block content %}
+
+<a href="/home">Home</a> &gt; Sitemap
+<h2>Sitemap Result</h2>
+<p>
+This is the result of the action.
+
+<img src='{{url_for('static', filename='sitemap_graph_3_layer.png')}}'/>
+
+{% endblock %}
