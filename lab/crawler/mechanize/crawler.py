@@ -33,10 +33,10 @@ parser.add_argument('--domain', type=str, default=domain, help='Domain to crawl'
 args = parser.parse_args()
 
 if args.domain:
-    domain = args.domain
+	domain = args.domain
 else:
-    print('No domain passed, using %s.' % domain)
-    print('Read usage details in file header for more information on passing arguments.')
+	print('No domain passed, using %s.' % domain)
+	print('Read usage details in file header for more information on passing arguments.')
 
 # print("Using domain [%s]" % domain)
 

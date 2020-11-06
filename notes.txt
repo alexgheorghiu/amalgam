@@ -3,6 +3,8 @@ Nice JS tree for sitemaps
 	https://observablehq.com/@d3/collapsible-tree
 	https://observablehq.com/@d3/radial-dendrogram
 	https://observablehq.com/@d3/tidy-tree
+	https://observablehq.com/@d3/circle-packing - good for grouping words
+	https://observablehq.com/@d3/force-directed-graph 
 
 	Alternatives To Explore
 		https://alternativeto.net/software/d3-js/
