@@ -14,12 +14,13 @@ from bs4 import BeautifulSoup
 
 # domain = 'localhost:7000'
 domain = 'http://scriptod.com'
-# max_links = 0
+max_links = 0
 
 class Link:
 	def __init__(self, absolute_url, url):
 		self.absolute_url = absolute_url
 		self.url = url
+		
 
 def to_absolute_url(parent_page_link, link):
 	'''Converts a link to absolute'''
@@ -37,9 +38,10 @@ def report(filename, visited):
 			f.write("%s\n" % link.absolute_url)
 
 # Parse arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--domain', type=str, default=domain, help='Domain to crawl', required=True)
-parser.add_argument('--max-links', type=int, default=0, help='Maximum no. of links to index')
+parser = argparse.ArgumentParser(description="A simple website crawler.")
+parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
+parser.add_argument('-m','--max-links', type=int, default=0, help='Maximum no. of links to index')
+parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 args = parser.parse_args()
 
 if args.domain:
@@ -55,15 +57,16 @@ theURL = 'http://' + domain
 domain_regex = re.compile(domain)
 
 class Crawler:
-	def __init__(self, initialLink):
+	def __init__(self, initialLink, max_links = 0):
 		self.initialLink = initialLink
 		self.visited = []
 		self.external_links = []
+		self.max_links = max_links
 
 	def crawl(self):
 		l = Link(theURL,theURL)
 		self.to_visit = [l]
-		while len(self.to_visit) > 0 and (max_links > 0 and max_links > len(self.visited)):
+		while len(self.to_visit) > 0 and (self.max_links == 0 or (self.max_links > 0 and self.max_links > len(self.visited)) ):
 			# Get first link
 			current_link = self.to_visit.pop(0)
 			print("Visiting: %s" % current_link.absolute_url)
@@ -107,9 +110,8 @@ class Crawler:
 
 			print("Visited: %d To visit: %d" % (len(self.visited), len(self.to_visit)))
 
-
-if __name__ == "__main__":
-	crawler = Crawler(theURL)
+def main():
+	crawler = Crawler(initialLink=theURL, max_links=max_links)
 
 	t1 = time.time()
 	crawler.crawl()
@@ -119,3 +121,6 @@ if __name__ == "__main__":
 	print("Total internal links visited: %d in: %ds" % (len(crawler.visited), total_time))
 	print("Total external links: %d" % len(crawler.external_links))
 	report('./crawl-requests-report.log', crawler.visited)
+
+if __name__ == "__main__":
+	main()
