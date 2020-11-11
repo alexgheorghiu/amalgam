@@ -1,0 +1,111 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+
+
+
+
+        {
+            "name": "Sitemap: Extract URLs",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pieces/sitemap-visualization-tool/extract_urls.py",
+            "console": "integratedTerminal",
+            "args": ["--url", "https://abctimetracking.com/sitemap.xml"]
+        },
+
+        {
+            "name": "Sitemap: Categorize URLs",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pieces/sitemap-visualization-tool/categorize_urls.py",
+            "console": "integratedTerminal",
+            "args": []
+        },
+
+        {
+            "name": "Sitemap: Visualize URLs",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pieces/sitemap-visualization-tool/visualize_urls.py",
+            "console": "integratedTerminal",
+            "args": ["--output-format", "png", "--size", "40"]
+        },        
+
+        {
+            "name": "Run Web App",
+            "type": "python",
+            "request": "launch",
+            "program": "app.py",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Scrappy",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/scrapy/quick.py",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "AmalgamSpider",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/scrapy/AmalgamSpider.py",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Linkoid",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/scrapy/links.py",
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "Mechanize Spider",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/mechanize-test2.py",
+            "console": "integratedTerminal",
+            "args": ["--domain", "localhost:7000"]
+        },
+
+        {
+            "name": "Spider Mechanize: scriptoid.com",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/crawler/mechanize/crawler.py",
+            "console": "integratedTerminal",
+            "args": ["--domain", "scriptoid.com"],
+            // "args": ["--domain", "localhost:7000"],
+            "debugStdLib":true
+        },
+
+        {
+            "name": "Spider Requests: scriptoid.com",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/crawler/requests/crawler.py",
+            "console": "integratedTerminal",
+            "args": ["--domain", "scriptoid.com"],
+            // "args": ["--domain", "localhost:7000"],
+            "debugStdLib":true
+        },        
+
+        {
+            "name": "Simple Server",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/lab/server.py",
+            "console": "integratedTerminal"
+        }
+
+    ]
+}
