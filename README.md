@@ -1,196 +1,92 @@
-# amalgam
+# Amalgam
 Amalgam is collection of (mainly) [Python](https://python.org) scripts with a web interface (based on [Flask](https://flask.palletsprojects.com)) you can use in SEO.
 
-Main site: http://amalgam.scriptoid.com
-
-
+More info for developers : [Dev page](./dev.md)
 
 # Project structure #
-* How to run it ( [XUbuntu 20](#how-to-run-it-xubuntu-20) )
 * How to run it ( [Windows 10](#how-to-run-it-windows-10) )
+* How to run it ( [XUbuntu 20](#how-to-run-it-ubuntu-20) )
+* Scripts ( [Scripts](#scripts) )
+	* Run crawler against a site ( [Crawler](#Crawler) ) 
+
+## How to run it (Windows 10)
+
+### Step 1:  Have Python3 installed
+
+Check if you have Python installed. Open a Command Prompt (Start > Command Prompt) and type:
+
+	python --version 
+
+If not then download it and install it from:
+[https://www.python.org/](https://www.python.org/)
+
+### Step 2: Have Pip3 installed. Usually Python3 comes with PIP3 by default but you can check (in Command Prompt) with:
+
+	pip3 --version
 
 
-## Project structure ##
+### Step 3: Install Python libraries		
+First go inside the folder of the project and open a Command Prompt and then type:
 
-* [lab] - only used by developers to test new ideas
-* [pieces] - folder with other folders and sub-projects
-* [static] - static files: css
-* [templates] - Jinja pages
-* [test] - folder with tests
-* app.py - the actual starting point of the application
-* README.md - this file
-* requirements.txt - the Python dependencies for the project (used by pip3)
-
-
-
-
-## How to run it ([X]Ubuntu 20) ##
-
-Fix broken installs
-
-```sh
-sudo apt-get --fix-broken install
-```
-
-Install pip3
-
-```sh
-apt install python3-pip
-```
-
-Install virtualenv
-
-```sh
-pip3 install virtualenv
-```
-
-See that the virtualenv is in the path. 
-
-The executable are usually stored inside (/home/alex/.local/bin).
-
-So you need to check if .profile contains
-
-```sh
-# set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/.local/bin" ] ; then
-    PATH="$HOME/.local/bin:$PATH"
-fi
-```
-
-and if it does either logout / login or run
-
-```sh
-source .profile
-```
-
-Install virtualenvwrapper	
-
-```sh
-	pip3 install virtualenvwrapper
-``` 
-	
-Create folder to keep your virtual enviroments
-```sh
-	mkdir ~/.virtualenvs
-```
-	
-Edit ~/.bashrc and add
-
-```sh
-	# Things for virtualenvwrapper
-	export WORKON_HOME=$HOME/.virtualenvs
-	VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
-	. /"$HOME"/.local/bin/virtualenvwrapper.sh
-```
-
-Load .bashrc
-
-```sh
-	source ~/.bashrc
-```
-
-Setup virtual env	
-
-```sh
-	virtualenv env
-```	
-
-Make a virtual enviroment
-
-```sh
-	mkvirtualenv amalgam
-```
-
-Activate enviroment
-
-```sh
-	workon amalgam
-```
-
-For visualization install GraphViz
-
-```sh
-	sudo apt install graphviz
-```
-
-Install Python libraries
-
-```sh
-	pip3 install -r requirements.txt
-	
-	See https://github.com/realpython/discover-flask/blob/master/requirements.txt
-```
-
-Run Flask	
-
-```sh
-	python app.py
-```
-
-See in browser
-
-Access it at:  http://127.0.0.1:5000/
-
-
-Visual Studion Code
-
-	* Load workspace
-	* Ctrl-Shift-P to select the Python interpreter (and pick amalgam). More: https://code.visualstudio.com/docs/python/environments
-	
-
-
-
-## How to run it (Windows 10) ##
-
-Install Python
-
-    TODO: Add details
-
-Install pip
-
-	TODO: Add details
-	
-Install virtualenv
-
-```sh
-	pip install virtualenv
-```    
-
-Setup virtual env	
-
-```sh
-	virtualenv env
-```
-
-Activate virtualenv
-
-Windows:
-
-```sh
-.\env\Scripts\activate.bat
-```
-		
-Linux
-
-```sh
-source ./env/bin/activate.sh
-```
-		
-
-Install Python libraries
-
-```sh
 	pip install -r requirements.txt
-```
 
 
-Run Flask	
-
-```sh
+### Step 4: Launch app
+From a Command Prompt inside the project folder type:
 	python app.py
-```
 
-See in browser
 
+### Step 5: See in browser
+Access it at:  http://127.0.0.1:5000/ with any browser.
+
+
+## How to run it (Ubuntu 20)
+
+### Step 1:  Have Python3 installed
+
+Check if you have Python installed
+
+	python --version 
+
+If not then run:
+
+    sudo apt-get install python3
+
+### Step 2: Have Pip3 installed. Usually Python3 comes with PIP3 by default but you can check with:
+
+	pip3 --version
+
+
+### Step 3: Install Python libraries		
+	sudo pip install -r requirements.txt
+
+
+### Step 4: Launch app
+	python app.py
+
+
+### Step 5: See in browser
 Access it at:  http://127.0.0.1:5000/
 
+# Scripts 
+
+Scripts are small programs that are part of Amalgam but do not require to run the whole Amalgam application. 
+
+They are isolated enough (from main application) to be able to run them independently.
+
+## Crawler
+The Crawler script is the part of Amalgam that is crawling the pages of a site and collects informations.
+
+To run it go inside [lab]/crawler/requests
+
+	cd ./lab/crawler/requests
+
+and run
+
+	python crawler --domain <name_of_domain>
+
+The collected data wil be available inside:
+
+	crawl-requests-report.log
+
+file.
