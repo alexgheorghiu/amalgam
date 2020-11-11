@@ -1,4 +1,4 @@
-# amalgam
+# Amalgam
 
 These are the instructions for developer
 

@@ -11,14 +11,25 @@ More info for developers : [Dev page](./dev.md)
 
 ## How to run it (Windows 10)
 
+### Step 0: Download the app
+
+Download the [amalgam](https://github.com/alexgheorghiu/amalgam/archive/main.zip) zip file and unzip it into a folder.
+
 ### Step 1:  Have Python3 installed
 
 Check if you have Python installed. Open a Command Prompt (Start > Command Prompt) and type:
 
 	python --version 
 
+You should get something like
+
+	![Windows Console](./windows-install-python.png "Title")
+
 If not then download it and install it from:
 [https://www.python.org/](https://www.python.org/)
+
+**Note**: 
+Remember to check "Add Python 3.x to PATH" during installation so you can access Python from Command Prompt
 
 ### Step 2: Have Pip3 installed. Usually Python3 comes with PIP3 by default but you can check (in Command Prompt) with:
 
@@ -77,13 +88,15 @@ They are isolated enough (from main application) to be able to run them independ
 ## Crawler
 The Crawler script is the part of Amalgam that is crawling the pages of a site and collects informations.
 
+**Note** : In order to run it you should have complete the step _"Install Python libraries"_ - for you operating system -  inside the above tutorial.
+
 To run it go inside [lab]/crawler/requests
 
 	cd ./lab/crawler/requests
 
 and run
 
-	python crawler --domain <name_of_domain>
+	python crawler.py --domain=<name_of_domain> --max-links=<maximum number of links>
 
 The collected data wil be available inside:
 
