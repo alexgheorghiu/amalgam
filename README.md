@@ -23,7 +23,7 @@ Check if you have Python installed. Open a Command Prompt (Start > Command Promp
 
 You should get something like
 
-	![Windows Console](./windows-install-python.png "Title")
+![Windows Console](./windows-install-python.png)
 
 If not then download it and install it from:
 [https://www.python.org/](https://www.python.org/)
