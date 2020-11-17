@@ -20,6 +20,8 @@ class Link:
 	def __init__(self, absolute_url, url):
 		self.absolute_url = absolute_url
 		self.url = url
+		self.content = None
+		self.mime_type = None
 		
 
 def to_absolute_url(parent_page_link, link):
@@ -72,7 +74,17 @@ class Crawler:
 			print("Visiting: %s" % current_link.absolute_url)
 
 			try:
-				r = requests.get(current_link.absolute_url)
+				pre = requests.head(current_link.absolute_url)
+				current_link.mime_type = pre.headers['content-type'];
+
+				if 'text/html' in pre.headers['content-type']:
+					r = requests.get(current_link.absolute_url)
+				# elif 'application/xhtml+xml' in pre.headers['content-type']:
+				# 	r = requests.get(current_link.absolute_url)
+				else:
+					self.visited.append(current_link)
+					continue
+
 			except requests.ConnectionError as con_err:
 				#TODO: mark it as visit (but broken)
 				self.visited.append(current_link)
@@ -95,12 +107,12 @@ class Crawler:
 					#TODO: descent into link.contents (it can be an image) and gather all text
 					if 'href' in link.attrs:
 						href = link.attrs['href']
-						print("[%s] -> %s" % (link.contents, href))
+						print("\tFounded link: %s -> %s" % (href, link.contents))
 						if re.search(domain_regex, href): # internal link
 							if (href in [l.absolute_url for l in self.visited] or href in [l.absolute_url for l in self.to_visit]) :
 								pass
 							else:
-								print("\t[%s]Plan to visit" % link.absolute_url)
+								print("\t\tPlan to visit: [%s]" % href)
 								self.to_visit.append(Link(href, to_absolute_url(current_link.absolute_url, href)))
 						else: #external link
 							if not (href in [l.absolute_url for l in self.external_links] ):
