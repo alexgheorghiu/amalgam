@@ -81,6 +81,12 @@ class Crawler:
 				#TODO: mark it as visit (but broken)
 				self.visited.append(current_link)
 				continue
+			except requests.exceptions.InvalidURL:
+				self.visited.append(current_link)
+				continue
+			except:
+				self.visited.append(current_link)
+				continue
 
 			if r.status_code == 200:
 				soup = BeautifulSoup(r.content, "html.parser")
