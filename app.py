@@ -1,13 +1,21 @@
 # import the Flask class from the flask module
-from flask import Flask, render_template, redirect, url_for, request, session, flash
+from flask import Flask, render_template, redirect, url_for, request, session, flash, jsonify
 from functools import wraps
 import os
+from flask_sqlalchemy import SQLAlchemy
+
 
 # create the application object
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amalgam.db'
+app.database = "sample.db"
 
 # Setup secret key
 app.secret_key = 'my precious'
+
+db = SQLAlchemy(app)
+
+from models import *
 
 # login required decorator
 def login_required(f):
@@ -19,6 +27,31 @@ def login_required(f):
 			flash("You need to login first.")
 			return redirect(url_for('login'))		
 	return wrap
+
+
+PROGRESS_TRACKER = {	
+}
+
+def getProgress(crawlId):
+	global PROGRESS_TRACKER
+
+	if not crawlId in PROGRESS_TRACKER:		
+		PROGRESS_TRACKER[crawlId] = {
+			"visited" : 0,
+			"to_visit" : 0,
+			"max_links" : 0
+		}
+
+	return PROGRESS_TRACKER[crawlId]
+
+
+
+def notify(crawlId, visited, to_visit, max_links):
+	progress = getProgress(crawlId)
+	progress['visited'] = visited
+	progress['to_visit'] = to_visit
+	progress['max_links'] = max_links
+
 
 
 # use decorators to link the function to a url
@@ -64,6 +97,125 @@ def home():
 @login_required
 def sitemap():
 	return render_template('sitemap.html')
+
+
+
+@app.route('/crawl')
+@login_required
+def crawl():
+	crawls = Crawl.query.all()
+	return render_template('crawl.html', crawls = crawls)
+
+
+# @app.route('/crawl.exe', methods=['GET', 'POST'])
+# @login_required
+# def crawl_exe():
+# 	if not request.form['address']:
+# 		flash('No address.')
+# 		return redirect(url_for('crawl'))
+
+# 	from crawler import Crawler
+# 	crawler = Crawler(request.form['address'], 10)
+# 	crawler.crawl(notify=notify)
+# 	links = crawler.visited
+
+# 	# Save to DB
+# 	crawl = Crawl()	
+# 	for link in links:
+# 		crawl.links.append(link)
+# 		# db.session.add(link)
+
+# 	db.session.add(crawl)
+# 	db.session.commit()	
+	
+# 	return render_template('viewCrawl.html', crawl=crawl, links = crawl.links)	
+
+
+@app.route('/crawl.exe', methods=['GET', 'POST'])
+@login_required
+def crawl_exe():
+	# if not request.form['address']:
+	# 	flash('No address.')
+	# 	return redirect(url_for('crawl'))
+
+	# from crawler import Crawler
+	# crawler = Crawler(request.form['address'], 10)
+	# crawler.crawl(notify=notify)
+	# links = crawler.visited
+
+	# Save to DB
+	crawl = Crawl()	
+	db.session.add(crawl)
+	db.session.commit()	
+
+	#Start crawling thread
+	import threading
+	class CrawlThread(threading.Thread):
+		def __init__(self, address, db, crawlId):
+			threading.Thread.__init__(self)
+			self.address = address
+			self.db = db
+			self.crawlId = crawlId
+
+		def run(self):
+			# Perform crawl
+			from crawler import Crawler
+			crawler = Crawler(self.address, 10)
+
+			def special_notify(visited, to_visit, max_link):
+				notify(self.crawlId, visited, to_visit, max_link)
+
+			crawler.crawl(notify=special_notify)
+
+			# Store in DB
+			crawl = Crawl.query.get(self.crawlId)
+			crawl.links.extend(crawler.visited)
+			db.session.commit()	
+	
+	ct = CrawlThread(request.form['address'], db, crawl.id)
+	ct.start()
+
+	
+	
+	return render_template('crawlProgress.html', crawl=crawl)	
+
+
+@app.route('/crawl.report', methods=['GET', 'POST'])
+@login_required
+def crawl_report():
+	id = request.args.get('id', type=int)
+	return jsonify(getProgress(id))
+
+
+@app.route('/crawl.delete', methods=['GET', 'POST'])
+@login_required
+def crawl_delete():
+	try:
+		id = request.args.get('id', type=int)
+		crawl = Crawl.query.get(id)
+
+		db.session.delete(crawl)
+		db.session.commit()
+
+		flash('Crawl deleted')
+		return redirect(url_for('crawl'))
+	except ValueError as ve:
+		flash('No crawl id.')
+		return redirect(url_for('crawl'))	
+
+
+
+@app.route('/viewCrawl', methods=['GET'])
+@login_required
+def viewCrawl():
+	try:
+		id = request.args.get('id', type=int)
+		crawl = Crawl.query.get(id)
+
+		return render_template('viewCrawl.html', crawl=crawl, links = crawl.links)
+	except ValueError as ve:
+		flash('No crawl id.')
+		return redirect(url_for('crawl'))	
 
 
 @app.route('/sitemap_analyze', methods=['GET', 'POST'])

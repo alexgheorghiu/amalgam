@@ -1,0 +1,37 @@
+{% extends "base_inner.html" %}
+{% block content %}
+<h2>Amalgam</h2>
+<br>
+<a href="/home">Home</a> &gt; <a href="/crawl">Crawl</a>
+
+<p/>
+
+<h2>New crawl</h2>
+<p/>
+<form action="/crawl.exe" method="post">
+	<input type="text" placeholder="sitemap address" name="address" value="{{request.form.address}}">	
+	<p/>
+	<input class="btn btn-dark" type="submit" value="Crawl it!">
+</form>
+
+<h2>Crawls</h2>
+<table>
+	<tr>
+		<th>Id</th>
+		<th>Date</th>
+		<th>Actions</th>
+	</tr>
+</tr>
+{% for crawl in crawls %}
+	<tr>
+		<td>{{ crawl.id }}</td>
+		<td>{{ crawl.date }}</td>
+		<td>
+			<a href="/viewCrawl?id={{ crawl.id }}">View</a>			
+			<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>
+		</td>
+	</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

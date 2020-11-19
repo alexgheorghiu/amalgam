@@ -89,12 +89,12 @@
         },
 
         {
-            "name": "Spider Requests: scriptoid.com",
+            "name": "Spider Requests: abctimetracking.com",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/lab/crawler/requests/crawler.py",
+            "program": "${workspaceFolder}/crawler.py",
             "console": "integratedTerminal",
-            "args": ["--domain", "abctimetracking.com", "-m", "1"],
+            "args": ["--domain", "abctimetracking.com", "-m", "10"],
             // "args": ["--domain", "localhost:7000"],
             "debugStdLib":true
         },        
