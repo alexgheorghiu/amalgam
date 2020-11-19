@@ -31,16 +31,6 @@ def report(filename, visited):
 
 
 
-
-
-# class Link:
-# 	def __init__(self, absolute_url, url):
-# 		self.absolute_url = absolute_url
-# 		self.url = url
-# 		self.content = None
-# 		self.mime_type = None
-
-
 class Crawler:
 	
 	def get_domain(self, url):		
@@ -73,6 +63,7 @@ class Crawler:
 					r = requests.get(current_link.absolute_url)
 				# elif 'application/xhtml+xml' in pre.headers['content-type']:
 				# 	r = requests.get(current_link.absolute_url)
+					current_link.content = r.content
 				else:
 					self.visited.append(current_link)
 					continue
@@ -123,7 +114,7 @@ class Crawler:
 		if not notify == None:
 				notify(len(self.visited), len(self.to_visit), self.max_links)
 
-				
+
 def main():
 	# domain = 'localhost:7000'
 	domain = 'http://scriptod.com'
