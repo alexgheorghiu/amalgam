@@ -85,7 +85,7 @@
             "console": "integratedTerminal",
             "args": ["--domain", "scriptoid.com"],
             // "args": ["--domain", "localhost:7000"],
-            "debugStdLib":true
+            "justMyCode": false
         },
 
         {
@@ -96,7 +96,7 @@
             "console": "integratedTerminal",
             "args": ["--domain", "abctimetracking.com", "-m", "10"],
             // "args": ["--domain", "localhost:7000"],
-            "debugStdLib":true
+            "justMyCode": false
         },        
 
         {
@@ -107,7 +107,7 @@
             "console": "integratedTerminal",
             // "args": ["--domain", "scriptoid.com"],
             // "args": ["--domain", "localhost:7000"],
-            "debugStdLib":true
+            "justMyCode": false
         },  
 
         {
