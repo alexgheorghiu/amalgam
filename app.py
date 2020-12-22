@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 # create the application object
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amalgam.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.database = "sample.db"
 
 # Setup secret key
@@ -151,16 +152,17 @@ def crawl_exe():
 	#Start crawling thread
 	import threading
 	class CrawlThread(threading.Thread):
-		def __init__(self, address, db, crawlId):
+		def __init__(self, address, db, crawlId, max):
 			threading.Thread.__init__(self)
 			self.address = address
 			self.db = db
 			self.crawlId = crawlId
+			self.max = max
 
 		def run(self):
 			# Perform crawl
 			from crawler import Crawler
-			crawler = Crawler(self.address, 10)
+			crawler = Crawler(self.address, self.max)
 
 			def special_notify(visited, to_visit, max_link):
 				notify(self.crawlId, visited, to_visit, max_link)
@@ -172,7 +174,8 @@ def crawl_exe():
 			crawl.links.extend(crawler.visited)
 			db.session.commit()	
 	
-	ct = CrawlThread(request.form['address'], db, crawl.id)
+	max_links = request.form.get('max', type=int) or 0
+	ct = CrawlThread(request.form['address'], db, crawl.id, max_links)
 	ct.start()
 
 	
@@ -203,6 +206,23 @@ def crawl_delete():
 		flash('No crawl id.')
 		return redirect(url_for('crawl'))	
 
+
+
+@app.route('/crawl.cancel', methods=['GET', 'POST'])
+@login_required
+def crawl_cancel():
+	try:
+		id = request.args.get('id', type=int)
+		crawl = Crawl.query.get(id)
+
+		db.session.delete(crawl)
+		db.session.commit()
+
+		flash('Crawl deleted')
+		return redirect(url_for('crawl'))
+	except ValueError as ve:
+		flash('No crawl id.')
+		return redirect(url_for('crawl'))	
 
 
 @app.route('/viewCrawl', methods=['GET'])

@@ -9,7 +9,10 @@
 <h2>New crawl</h2>
 <p/>
 <form action="/crawl.exe" method="post">
-	<input type="text" placeholder="sitemap address" name="address" value="{{request.form.address}}">	
+	<input type="text" placeholder="sitemap address" name="address" value="{{request.form.address}}">
+	<br/>
+	Max <input type="text" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
+	<br/>
 	<input class="btn btn-dark" type="submit" value="Crawl it!">
 </form>
 

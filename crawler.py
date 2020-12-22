@@ -12,7 +12,9 @@ import time
 from bs4 import BeautifulSoup
 from models import Link
 from urllib.parse import urlparse
-		
+import logging
+
+logging.basicConfig(filename='crawler.log', level=logging.DEBUG)
 
 def to_absolute_url(parent_page_link, link):
 	'''Converts a link to absolute'''
@@ -53,7 +55,8 @@ class Crawler:
 
 			# Get first link
 			current_link = self.to_visit.pop(0)
-			print("Visiting: %s" % current_link.absolute_url)
+			# print("Visiting: %s" % current_link.absolute_url)
+			logging.info("Visiting: %s" % current_link.absolute_url)
 
 			try:
 				pre = requests.head(current_link.absolute_url)
@@ -68,7 +71,7 @@ class Crawler:
 					self.visited.append(current_link)
 					continue
 
-			except requests.ConnectionError as con_err:
+			except requests.ConnectionError:
 				#TODO: mark it as visit (but broken)
 				self.visited.append(current_link)
 				continue
@@ -90,12 +93,12 @@ class Crawler:
 					#TODO: descent into link.contents (it can be an image) and gather all text
 					if 'href' in link.attrs:
 						href = link.attrs['href']
-						print("\tFounded link: %s -> %s" % (href, link.contents))
+						logging.info("\tFounded link: %s -> %s" % (href, link.contents))
 						if re.search(self.domain_regex, href): # internal link
 							if (href in [l.absolute_url for l in self.visited] or href in [l.absolute_url for l in self.to_visit]) :
 								pass
 							else:
-								print("\t\tPlan to visit: [%s]" % href)
+								logging.info("\t\tPlan to visit: [%s]" % href)
 								self.to_visit.append(Link(href, to_absolute_url(current_link.absolute_url, href)))
 						else: #external link
 							if not (href in [l.absolute_url for l in self.external_links] ):
@@ -109,7 +112,7 @@ class Crawler:
 
 			self.visited.append(current_link)
 
-			print("Visited: %d To visit: %d" % (len(self.visited), len(self.to_visit)))
+			logging.info("Visited: %d To visit: %d" % (len(self.visited), len(self.to_visit)))
 
 		if not notify == None:
 				notify(len(self.visited), len(self.to_visit), self.max_links)
@@ -117,7 +120,7 @@ class Crawler:
 
 def main():
 	# domain = 'localhost:7000'
-	domain = 'http://scriptod.com'
+	domain = 'http://scriptoid.com'
 	max_links = 0
 
 	# Parse arguments
