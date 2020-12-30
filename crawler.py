@@ -14,7 +14,10 @@ from models import Link
 from urllib.parse import urlparse
 import logging
 
-logging.basicConfig(filename='crawler.log', level=logging.DEBUG)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("crawler")
+logger.setLevel(logging.INFO)
 
 def to_absolute_url(parent_page_link, link):
 	'''Converts a link to absolute'''
@@ -47,7 +50,7 @@ class Crawler:
 		self.domain_regex = re.compile(self.get_domain(self.initialLink)) 
 
 	def crawl(self, notify=None):
-		l = Link(self.initialLink, self.initialLink )
+		l = Link(self.initialLink, self.initialLink, Link.TYPE_INTERNAL)
 		self.to_visit = [l]
 		while len(self.to_visit) > 0 and (self.max_links == 0 or (self.max_links > 0 and self.max_links > len(self.visited)) ):
 			if not notify == None:
@@ -56,7 +59,7 @@ class Crawler:
 			# Get first link
 			current_link = self.to_visit.pop(0)
 			# print("Visiting: %s" % current_link.absolute_url)
-			logging.info("Visiting: %s" % current_link.absolute_url)
+			logger.info("Visiting: %s" % current_link.absolute_url)
 
 			try:
 				pre = requests.head(current_link.absolute_url)
@@ -93,16 +96,16 @@ class Crawler:
 					#TODO: descent into link.contents (it can be an image) and gather all text
 					if 'href' in link.attrs:
 						href = link.attrs['href']
-						logging.info("\tFounded link: %s -> %s" % (href, link.contents))
+						logger.info("\tFound link: %s -> %s" % (href, link.contents))
 						if re.search(self.domain_regex, href): # internal link
 							if (href in [l.absolute_url for l in self.visited] or href in [l.absolute_url for l in self.to_visit]) :
 								pass
 							else:
-								logging.info("\t\tPlan to visit: [%s]" % href)
-								self.to_visit.append(Link(href, to_absolute_url(current_link.absolute_url, href)))
+								logger.info("\t\tPlan to visit: [%s]" % href)
+								self.to_visit.append(Link(href, to_absolute_url(current_link.absolute_url, href), Link.TYPE_INTERNAL))
 						else: #external link
 							if not (href in [l.absolute_url for l in self.external_links] ):
-								self.external_links.append(Link(href,to_absolute_url(current_link.absolute_url, href)))
+								self.external_links.append(Link(href,to_absolute_url(current_link.absolute_url, href), Link.TYPE_INTERNAL))
 					elif 'name' in link.attrs:
 						# Just anchor
 						pass
@@ -112,7 +115,7 @@ class Crawler:
 
 			self.visited.append(current_link)
 
-			logging.info("Visited: %d To visit: %d" % (len(self.visited), len(self.to_visit)))
+			logger.info("Visited: %d To visit: %d" % (len(self.visited), len(self.to_visit)))
 
 		if not notify == None:
 				notify(len(self.visited), len(self.to_visit), self.max_links)
@@ -151,6 +154,14 @@ def main():
 	print("Total internal links visited: %d in: %ds" % (len(crawler.visited), total_time))
 	print("Total external links: %d" % len(crawler.external_links))
 	report('./crawl-requests-report.log', crawler.visited)
+
+	logger.info("Total internal links visited: %d in: %ds" % (len(crawler.visited), total_time))
+	for url in [link.absolute_url for link in crawler.visited]:
+		logger.info("\t" + url)
+
+	logger.info("Total external links: %d" % len(crawler.external_links))
+	for url in [link.absolute_url for link in crawler.external_links]:
+		logger.info("\t" + url)
 
 if __name__ == "__main__":
 	main()

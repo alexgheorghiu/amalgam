@@ -13,12 +13,17 @@ from bs4 import BeautifulSoup
 from models import Link
 from urllib.parse import urlparse
 import logging
-from threading import Thread, Condition
+from threading import Thread, Condition, currentThread
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='crawler.log', level=logging.INFO)
 logger = logging.getLogger("crawler")
 logger.setLevel(logging.INFO)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+logger.addHandler(ch)
 
 def to_absolute_url(parent_page_link, link):
 	'''Converts a link to absolute'''
@@ -36,12 +41,42 @@ def report(filename, visited):
 			f.write("%s\n" % link.absolute_url)
 
 
+def get_links(url):
+	"""
+	Get links from a link 
+	"""
+	logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
+	new_links = []			
+
+	try:
+		pre = requests.head(url)
+
+		if 'text/html' in pre.headers['content-type']:
+			r = requests.get(url)			
+			if r.status_code == 200:								
+				soup = BeautifulSoup(r.content, "html.parser")
+				for link in soup.find_all("a"):
+					if 'href' in link.attrs:
+						href = link.attrs['href']
+						content = link.contents
+						absolute = to_absolute_url(url, href)
+						new_links.append({'href':href, 'content':content, 'absolute':absolute})
+					elif 'name' in link.attrs:
+						# Just anchor
+						pass
+	except Exception as ex:
+		logger.info("[%s] Error %s" %(currentThread().getName(), ex))
+
+	
+	return new_links
+
 
 class Crawler:
 	to_visit = []
 	visited = []
 	workers = []
 	condition = Condition()
+	external_links = []
 
 	class Worker(Thread):		
 
@@ -50,15 +85,17 @@ class Crawler:
 			self.running = True
 			self.crawler = crawler
 			self.jobInProgress = True
+			logger.info("[%s] Constructor " %(self.getName()))
 
 		def run(self):			
-			while self.running and self.crawler.max_links > len(self.crawler.visited) :
+			while self.running and (self.crawler.max_links == 0 or (self.crawler.max_links >0 and self.crawler.max_links >= len(self.crawler.visited)) ) :
+				self.jobInProgress = True
+
 				link = None
 
 				# Grab link
 				self.crawler.condition.acquire()
-				if len(self.crawler.to_visit) > 0:
-					self.jobInProgress = True
+				if len(self.crawler.to_visit) > 0:					
 					link = self.crawler.to_visit.pop(0)
 					logger.info("[%s] Picked %s" %(self.getName(), link.absolute_url))
 				else:
@@ -77,18 +114,26 @@ class Crawler:
 					# Do the job
 					logger.info("[%s] Current link : %s" %(self.getName(), link.absolute_url))
 
-					newlinks = self.get_links(link)
-					new_internal_links = [l for l in newlinks if l.type == Link.TYPE_INTERNAL]
-					logger.info("[%s] Found %d new internal links" % (self.getName(), len(new_internal_links)))
+					internal_links, external_links = self._get_links(link.absolute_url)
+					
+					# logger.info("[%s] Found %d new internal links" % (self.getName(), len(new_internal_links)))
 
 					# Bring back any new discovered link, if any
-					if len(new_internal_links) > 0 :						
-						self.crawler.condition.acquire()
-						self.crawler.to_visit.extend(new_internal_links)
-						self.crawler.visited.append(link)
+					self.crawler.condition.acquire()					
+					self.crawler.visited.append(link)
+					if len(internal_links) > 0 or len(external_links) > 0:						
+						for link in internal_links:
+							if not (link.absolute_url in [visited_link.absolute_url for visited_link in self.crawler.visited]):
+								if not (link.absolute_url in [proposed_link.absolute_url for proposed_link in self.crawler.to_visit]):
+									self.crawler.to_visit.append(link)
+
+						for link in external_links:
+							if not (link.absolute_url in [external_link.absolute_url for external_link in self.crawler.external_links]):
+								self.crawler.external_links.append(link)
+												
 						self.jobInProgress = False
-						self.crawler.condition.notify_all()
-						self.crawler.condition.release()
+					self.crawler.condition.notify_all()
+					self.crawler.condition.release()
 
 
 				# Wait?
@@ -97,64 +142,46 @@ class Crawler:
 		def setRunning(self, status):
 			self.running = status
 
-		def get_links(self, current_link):
-			logger.info("[%s] Visiting: %s" % (self.getName(), current_link.absolute_url))
-			new_links = []
+		def filter_links(self, links):
+			#TODO: Add filter
 
-			# TODO: Add code
-			
-			try:
-				pre = requests.head(current_link.absolute_url)
-				current_link.mime_type = pre.headers['content-type']
-
-				if 'text/html' in pre.headers['content-type']:
-					r = requests.get(current_link.absolute_url)
-				# elif 'application/xhtml+xml' in pre.headers['content-type']:
-				# 	r = requests.get(current_link.absolute_url)
-					current_link.content = r.content
-
-					if r.status_code == 200:
-						new_links = self.get_content_links(r.content, current_link)
-						logger.info("[%s] Found: %d links" % (self.getName(), len(new_links)))
-				else:
-					return new_links
-
-			except Exception as ex:
-				# self.visited.append(current_link)
-				logger.warning("[%s] Exception: %s" % ( self.getName(), ex) )
-
-			return new_links
+			return links
 
 
-		def get_content_links(self, content, current_link):
-			content_links = []
-			soup = BeautifulSoup(content, "html.parser")
+		def _get_links(self, link):
+			links = get_links(link)
+			light_internal, light_external =  self._filter_links(links)
+			heavy_internal = self._to_heavy_links(light_internal, Link.TYPE_INTERNAL)
+			heavy_external = self._to_heavy_links(light_external, Link.TYPE_EXTERNAL)
+			return (heavy_internal, heavy_external)
 
-			for link in soup.find_all("a"):
-				#TODO: descent into link.contents (it can be an image) and gather all text
-				if 'href' in link.attrs:
-					href = link.attrs['href']
-					# logger.info("\tFound link: %s -> %s" % (href, link.contents))
-					logger.info("\t[%s]Found link: %s " % (self.getName(), href))
-					if re.search(self.crawler.domain_regex, href): # internal link
-						if (href in [l.absolute_url for l in self.crawler.visited] or href in [l.absolute_url for l in self.crawler.to_visit]) :
-							pass
-						else:
-							logger.info("\t\t[%s]Plan to visit: [%s]" % ( self.getName(),href) )
-							content_links.append(Link(href, to_absolute_url(current_link.absolute_url, href), Link.TYPE_INTERNAL))						
-					else: #external link
-						if not (href in [l.absolute_url for l in self.crawler.external_links] ):
-							content_links.append(Link(href,to_absolute_url(current_link.absolute_url, href), Link.TYPE_EXTERNAL))
-				elif 'name' in link.attrs:
-					# Just anchor
-					pass
-			return content_links
+		
+		def _filter_links(self, links):
+			external = []
+			internal = []
+
+			for l in links:
+				if re.search(self.crawler.domain_regex, l['absolute']): # internal link						
+					internal.append(l)
+				else: # external link
+					external.append(l)
+			return (internal, external)
+
+
+		def _to_heavy_links(self, links, type):
+			heavy_links = []
+			for link in links:
+				heavy_link = Link(link['absolute'], link['href'], type)
+				heavy_links.append(heavy_link)
+			return heavy_links
 
 
 	def _start_all_workers(self):
 		for w in self.workers:
 			w.start()
-			# w.join()
+
+		for w in self.workers:
+			w.join()
 
 	def _stop_all_workers(self):
 		self.condition.acquire()
@@ -174,11 +201,14 @@ class Crawler:
 		return domain
 
 	def __init__(self, initialLink, max_links = 0):
-		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_EXTERNAL) )
-		self.external_links = []
+		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_EXTERNAL) )		
 		self.max_links = max_links
-		self.domain_regex = re.compile(self.get_domain(initialLink)) 
-		self.noOfWorkers = 5
+		try:
+			self.domain_regex = re.compile(self.get_domain(initialLink))
+		except Exception as ex:
+			logging.error("Boom")
+		
+		self.noOfWorkers = 10
 		for i in range(self.noOfWorkers):
 			self.workers.append(self.Worker(self))
 
@@ -226,7 +256,13 @@ def main():
 	total_time = t2 - t1
 
 	logger.info("Total internal links visited: %d in: %ds" % (len(crawler.visited), total_time))
+	for url in [link.absolute_url for link in crawler.visited]:
+		logger.info("\t" + url)
+
 	logger.info("Total external links: %d" % len(crawler.external_links))
+	for url in [link.absolute_url for link in crawler.external_links]:
+		logger.info("\t" + url)
+	
 	report('./crawl-requests-report.log', crawler.visited)
 
 if __name__ == "__main__":
