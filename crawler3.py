@@ -14,7 +14,7 @@ from models import Link
 from urllib.parse import urlparse
 import logging
 from threading import Thread, Condition, currentThread, Lock
-
+import csv
 
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
 logger = logging.getLogger("crawler")
@@ -87,7 +87,7 @@ class Crawler(Thread):
 	workers = []		
 	running = True
 	paused = False
-	condition = Condition(Lock())
+	condition = Lock()
 	to_visit = []
 	visited = []
 	external_links = []	
@@ -97,7 +97,7 @@ class Crawler(Thread):
 
 	def __init__(self, initialLink, max_links = 0):
 		Thread.__init__(self)
-		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_EXTERNAL) )		
+		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_INTERNAL) )		
 		self.max_links = max_links
 		try:
 			self.domain_regex = re.compile(self.get_domain(initialLink))
@@ -108,7 +108,7 @@ class Crawler(Thread):
 	def run(self):
 		
 		# Initialize workers
-		self.noOfWorkers = 3
+		self.noOfWorkers = 10
 		for i in range(self.noOfWorkers):
 			self.workers.append(Thread(target=self.workerJob, kwargs={}, name="Thread-{}".format(i)))
 
@@ -139,20 +139,14 @@ class Crawler(Thread):
 			with self.condition:
 				if len(self.to_visit) > 0:
 					link = self.to_visit.pop(0)
+					self.visited.append(link)
 					self.increaseNoOfJobs()
 
 			if 'link' in locals() and link != None:
 				logger.info("[%s] Current link : %s" %(currentThread().getName(), link.absolute_url))
 				internal_links, external_links = self._get_links(link.absolute_url)				
-				
+
 				with self.condition:
-					dump("internal link", internal_links)
-					dump("external link", external_links)
-
-					dump("[before] to visit", self.to_visit)
-					dump("[before] visited", self.visited)
-
-					self.visited.append(link)
 					for il in internal_links:
 						if not inside(il, self.visited):
 							if not inside(il, self.to_visit):
@@ -161,9 +155,6 @@ class Crawler(Thread):
 					for el in external_links:
 						if not inside(el, self.external_links):
 							self.external_links.append(el)
-					
-					dump("[after] to visit", self.to_visit)
-					dump("[after] visited", self.visited)
 
 				self.decreaseNoOfJobs()
 		else:
@@ -257,6 +248,31 @@ class Crawler(Thread):
 		# if not notify == None:
 		# 		notify(len(self.visited), len(self.to_visit), self.max_links)
 
+	def export(self, file='crawl.csv'):
+		with open(file, 'w', newline='') as csvfile:
+			fieldnames = ['type','absolute url', 'url', 'mime'] 
+			writer = csv.DictWriter(csvfile, fieldnames=fieldnames, dialect='unix')
+
+			writer.writeheader()
+			for il in self.visited:
+				writer.writerow(
+					{
+						'type': Link.TYPE_INTERNAL, 
+						'absolute url': il.absolute_url,
+						'url': il.url,
+						'mime': il.mime_type
+					})
+
+			for el in self.external_links:
+				writer.writerow(
+					{
+						'type': Link.TYPE_EXTERNAL, 
+						'absolute url': el.absolute_url,
+						'url': el.url,
+						'mime': el.mime_type
+					})
+    		
+
 
 def main():
 	# domain = 'localhost:7000'
@@ -290,14 +306,16 @@ def main():
 	total_time = t2 - t1
 
 	logger.info("Total internal links visited: %d in: %ds" % (len(crawler.visited), total_time))
-	for url in [link.absolute_url for link in crawler.visited]:
-		logger.info("\t" + url)
+	# for url in [link.absolute_url for link in crawler.visited]:
+	# 	logger.info("\t" + url)
 
 	logger.info("Total external links: %d" % len(crawler.external_links))
-	for url in [link.absolute_url for link in crawler.external_links]:
-		logger.info("\t" + url)
+	# for url in [link.absolute_url for link in crawler.external_links]:
+	# 	logger.info("\t" + url)
 	
 	report('./crawl-requests-report.log', crawler.visited)
+
+	crawler.export()
 
 if __name__ == "__main__":
 	main()
