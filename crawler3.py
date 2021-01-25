@@ -41,6 +41,12 @@ def report(filename, visited):
 			f.write("%s\n" % link.absolute_url)
 
 
+def dump(tag, links):
+	logger.info("\t{} {}".format(currentThread().getName(), tag))
+	for link in links:		
+		logger.info("\t\t {} {}".format(currentThread().getName(), link.absolute_url))
+
+
 def get_links(url):
 	"""
 	Get links from a link 
@@ -71,16 +77,23 @@ def get_links(url):
 	return new_links
 
 
+def inside(link, links):
+	for l in links:
+		if l.absolute_url == link.absolute_url:
+			return True
+	return False
+
 class Crawler(Thread):
-	to_visit = []
-	visited = []
-	workers = []
-	condition = Condition()
-	external_links = []
+	workers = []		
 	running = True
 	paused = False
-	noOfJobs = 0
+	condition = Condition(Lock())
+	to_visit = []
+	visited = []
+	external_links = []	
 	noOfJobsLock = Lock()
+	noOfJobs = 0
+	
 
 	def __init__(self, initialLink, max_links = 0):
 		Thread.__init__(self)
@@ -95,9 +108,9 @@ class Crawler(Thread):
 	def run(self):
 		
 		# Initialize workers
-		self.noOfWorkers = 10
+		self.noOfWorkers = 3
 		for i in range(self.noOfWorkers):
-			self.workers.append(Thread(target=self.workerJob, kwargs={'jobId':i}))
+			self.workers.append(Thread(target=self.workerJob, kwargs={}, name="Thread-{}".format(i)))
 
 		# Start workers
 		self._start_all_workers()
@@ -107,6 +120,7 @@ class Crawler(Thread):
 				continue
 
 			if self._is_job_done():
+				logger.info("Crawler is shutting down")
 				self.setRunning(False)
 				break
 
@@ -114,6 +128,46 @@ class Crawler(Thread):
 
 		# Join them
 		self._join_all_workers()
+
+
+	def workerJob(self):
+		while self.running:
+			if self.paused:
+				continue
+
+			link = None
+			with self.condition:
+				if len(self.to_visit) > 0:
+					link = self.to_visit.pop(0)
+					self.increaseNoOfJobs()
+
+			if 'link' in locals() and link != None:
+				logger.info("[%s] Current link : %s" %(currentThread().getName(), link.absolute_url))
+				internal_links, external_links = self._get_links(link.absolute_url)				
+				
+				with self.condition:
+					dump("internal link", internal_links)
+					dump("external link", external_links)
+
+					dump("[before] to visit", self.to_visit)
+					dump("[before] visited", self.visited)
+
+					self.visited.append(link)
+					for il in internal_links:
+						if not inside(il, self.visited):
+							if not inside(il, self.to_visit):
+								self.to_visit.append(il)
+
+					for el in external_links:
+						if not inside(el, self.external_links):
+							self.external_links.append(el)
+					
+					dump("[after] to visit", self.to_visit)
+					dump("[after] visited", self.visited)
+
+				self.decreaseNoOfJobs()
+		else:
+			logger.info("[%s] is shutting down." %(currentThread().getName()))
 
 
 	def stop(self):
@@ -187,39 +241,9 @@ class Crawler(Thread):
 		return (heavy_internal, heavy_external)
 
 
-	def workerJob(self, jobId):
-		while self.running:
-			if self.paused:
-				continue
-
-			link = None
-			with self.condition:
-				if len(self.to_visit) > 0:
-					link = self.to_visit.pop(0)
-
-			if 'link' in locals() and link != None:
-				logger.info("[%s] Current link : %s" %(jobId, link.absolute_url))
-
-				self.increaseNoOfJobs()
-				internal_links, external_links = self._get_links(link.absolute_url)
-				with self.condition:
-					self.visited.append(link)
-					if len(internal_links) > 0 or len(external_links) > 0:						
-						for link in internal_links:
-							if not (link.absolute_url in [visited_link.absolute_url for visited_link in self.visited]):
-								if not (link.absolute_url in [proposed_link.absolute_url for proposed_link in self.to_visit]):
-									self.to_visit.append(link)
-
-						for link in external_links:
-							if not (link.absolute_url in [external_link.absolute_url for external_link in self.external_links]):
-								self.external_links.append(link)		
-				self.decreaseNoOfJobs()
-
 	def get_domain(self, url):		
 		domain = urlparse(url).netloc
 		return domain
-
-	
 
 
 	def crawl(self, notify=None):		

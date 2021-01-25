@@ -116,7 +116,31 @@
             "request": "launch",
             "program": "${workspaceFolder}/lab/server.py",
             "console": "integratedTerminal"
-        }
+        },
+
+        {
+            "name": "Crawler2",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/crawler2.py",
+            "console": "integratedTerminal",
+            "args": ["--domain", "abctimetracking.com", "-m", "110"],
+            // "args": ["--domain", "localhost:7000"],
+            // "args": ["--domain", "hotmug.net"],
+            "justMyCode": false
+        },
+
+        {
+            "name": "Crawler3",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/crawler3.py",
+            "console": "integratedTerminal",
+            "args": ["--domain", "hotmug.net"],
+            // "args": ["--domain", "localhost:7000"],
+            // "args": ["--domain", "hotmug.net"],
+            "justMyCode": false
+        },        
 
     ]
 }
