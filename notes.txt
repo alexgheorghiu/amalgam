@@ -10,4 +10,10 @@ Nice JS tree for sitemaps
 		https://alternativeto.net/software/d3-js/
 		https://www.slant.co/options/10577/alternatives/~d3-js-alternatives
 
+Test units
+	https://realpython.com/python-testing/#where-to-write-the-test
+
+Python & Dashboard & Statistics ?!
+	https://github.com/apache/superset
+
 

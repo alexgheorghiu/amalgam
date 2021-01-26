@@ -49,7 +49,7 @@ def dump(tag, links):
 
 def get_links(url):
 	"""
-	Get links from a link 
+	Get links from a link as a list of {'href', 'content', 'absolute'}
 	"""
 	logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
 	new_links = []			
