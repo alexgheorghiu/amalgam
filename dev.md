@@ -13,15 +13,23 @@ These are the instructions for developer
 * [pieces] - folder with other folders and sub-projects
 * [static] - static files: css
 * [templates] - Jinja pages
-* [test] - folder with tests
+* [amalgam] - folder with tests
+	* [crawler] - crawler
+	* [tests] - tests
 * app.py - the actual starting point of the application
-* README.md - this file
+* DEV.md - this file
 * requirements.txt - the Python dependencies for the project (used by pip3)
 
 
+## How to run tests
+```sh
+python -m amalgam.tests.tests_all
+```
+
+## How to run it ##
 
 
-## How to run it ([X]Ubuntu 20) ##
+### How to run it - XUbuntu 20
 
 Fix broken installs
 
@@ -137,4 +145,4 @@ Visual Studion Code
 
 
 
-## How to run it (Windows 10) ##
+### How to run it (Windows 10) ##

@@ -10,7 +10,7 @@ import argparse
 import re
 import time
 from bs4 import BeautifulSoup
-from models import Link
+from models import Link, inside
 from urllib.parse import urlparse
 import logging
 from threading import Thread, Condition, currentThread, Lock
@@ -76,12 +76,6 @@ def get_links(url):
 	
 	return new_links
 
-
-def inside(link, links):
-	for l in links:
-		if l.absolute_url == link.absolute_url:
-			return True
-	return False
 
 class Crawler(Thread):
 	workers = []		

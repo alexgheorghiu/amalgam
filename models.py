@@ -11,6 +11,14 @@ from sqlalchemy.orm import relationship
 #     crawls = relationship("Crawl", backref="site")
 
 
+def inside(link, links):
+    """See if a link is inside a list of links based on the absolute_url of the link(s)"""
+    for l in links:
+        if l.absolute_url == link.absolute_url:
+            return True
+    return False
+
+
 class Crawl(db.Model):
     __tablename__ = "crawls"
     id = db.Column(db.Integer, primary_key=True)
