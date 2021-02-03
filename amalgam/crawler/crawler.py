@@ -82,22 +82,21 @@ def get_links(url):
 
 
 class Crawler(Thread):
-	workers = []		
-	running = True
-	paused = False
-	condition = Lock()
-	to_visit = []
-	visited = []
-	external_links = []	
-	noOfJobsLock = Lock()
-	noOfJobs = 0
-	noOfWorkers = 1
-	listeners = []
 	
-
 	def __init__(self, initialLink, max_links = 0, no_workers = 10, id = uuid.uuid4()):
 		Thread.__init__(self)
 		self.noOfWorkers = no_workers
+		self.workers = []
+		self.running = True
+		self.paused = False
+		self.condition = Lock()
+		self.to_visit = []
+		self.visited = []
+		self.external_links = []	
+		self.noOfJobsLock = Lock()
+		self.noOfJobs = 0		
+		self.listeners = []
+
 		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_INTERNAL) )		
 		self.max_links = max_links
 		self.id = id

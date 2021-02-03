@@ -64,6 +64,7 @@ def notify(msg):
 	progress['to_visit'] = msg["to_visit"]
 	progress['max_links'] = msg["max_links"]
 	progress['status'] = msg["status"]
+	progress['crawlId'] = msg["crawlId"]
 
 
 # use decorators to link the function to a url
@@ -119,41 +120,14 @@ def crawl():
 	return render_template('crawl.html', crawls = crawls)
 
 
-# @app.route('/crawl.exe', methods=['GET', 'POST'])
-# @login_required
-# def crawl_exe():
-# 	if not request.form['address']:
-# 		flash('No address.')
-# 		return redirect(url_for('crawl'))
-
-# 	from crawler import Crawler
-# 	crawler = Crawler(request.form['address'], 10)
-# 	crawler.crawl(notify=notify)
-# 	links = crawler.visited
-
-# 	# Save to DB
-# 	crawl = Crawl()	
-# 	for link in links:
-# 		crawl.links.append(link)
-# 		# db.session.add(link)
-
-# 	db.session.add(crawl)
-# 	db.session.commit()	
-	
-# 	return render_template('viewCrawl.html', crawl=crawl, links = crawl.links)	
 
 
 @app.route('/crawl.exe', methods=['GET', 'POST'])
 @login_required
 def crawl_exe():
-	# if not request.form['address']:
-	# 	flash('No address.')
-	# 	return redirect(url_for('crawl'))
-
-	# from crawler import Crawler
-	# crawler = Crawler(request.form['address'], 10)
-	# crawler.crawl(notify=notify)
-	# links = crawler.visited
+	if not request.form['address']:
+		flash('No address.')
+		return redirect(url_for('crawl'))
 
 	# Save to DB
 	crawl = Crawl()	
