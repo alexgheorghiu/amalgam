@@ -87,10 +87,12 @@ class Crawler(Thread):
 	external_links = []	
 	noOfJobsLock = Lock()
 	noOfJobs = 0
+	noOfWorkers = 1
 	
 
-	def __init__(self, initialLink, max_links = 0):
+	def __init__(self, initialLink, max_links = 0, no_workers = 10):
 		Thread.__init__(self)
+		self.noOfWorkers = no_workers
 		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_INTERNAL) )		
 		self.max_links = max_links
 		try:
@@ -102,7 +104,6 @@ class Crawler(Thread):
 	def run(self):
 		
 		# Initialize workers
-		self.noOfWorkers = 10
 		for i in range(self.noOfWorkers):
 			self.workers.append(Thread(target=self.workerJob, kwargs={}, name="Thread-{}".format(i)))
 
@@ -276,6 +277,7 @@ def main():
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
+	parser.add_argument('-w', '--workers', type=int, default=5, help='Number of workers')
 	parser.add_argument('-m','--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()
@@ -290,8 +292,9 @@ def main():
 		max_links = args.max_links
 
 	theURL = 'http://' + domain	
+	noOfWorkers = args.workers
 
-	crawler = Crawler(initialLink=theURL, max_links=max_links)
+	crawler = Crawler(initialLink=theURL, max_links=max_links, no_workers=noOfWorkers)
 
 	t1 = time.time()
 	crawler.start()

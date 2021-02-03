@@ -6,17 +6,31 @@ Nice JS tree for sitemaps
 	https://observablehq.com/@d3/circle-packing - good for grouping words
 	https://observablehq.com/@d3/force-directed-graph 
 
-	Alternatives To Explore
+Alternatives To Explore
 		https://alternativeto.net/software/d3-js/
 		https://www.slant.co/options/10577/alternatives/~d3-js-alternatives
 
 Test units
 	https://realpython.com/python-testing/#where-to-write-the-test
 
+
 Python & Dashboard & Statistics ?!
 	https://github.com/apache/superset
+
 
 Visualization library
 	https://antv.vision/en
 
 
+Articles
+========
+
+	https://pythonawesome.com/a-versatile-web-crawler-built-using-modern-tools-and-concurrency/
+		https://github.com/cocrawler/cocrawler a versatile web crawler built using modern tools and concurrency.
+
+
+	https://pythonawesome.com/realtime-web-apps-and-dashboards-for-python/
+
+
+	Internal Link Analysis with Python
+		https://www.briggsby.com/internal-link-analysis-with-python
