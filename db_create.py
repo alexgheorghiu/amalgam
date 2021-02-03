@@ -1,8 +1,4 @@
-
-from app import db
-from models import Link
-from models import Crawl
-# from models import Site
+from amalgam.database import db
 
 #create db and tables
 db.create_all()

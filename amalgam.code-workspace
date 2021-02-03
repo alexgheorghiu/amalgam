@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../temp/python-crawler"
+		},
+		{
+			"path": "../../temp"
 		}
 	]
 }

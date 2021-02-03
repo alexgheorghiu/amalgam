@@ -1,30 +1,8 @@
-from app import db
 import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 
-
-# class Site(db.Model):
-#     __tablename__ = "sites"
-#     id = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String, nullable=False)
-#     crawls = relationship("Crawl", backref="site")
-
-
-def inside(link, links):
-    """See if a link is inside a list of links based on the absolute_url of the link(s)"""
-    for l in links:
-        if l.absolute_url == link.absolute_url:
-            return True
-    return False
-
-
-class Crawl(db.Model):
-    __tablename__ = "crawls"
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    links = relationship("Link", backref="crawl")
-
+from amalgam.database import db
 
 class Link(db.Model):
     __tablename__ = "links"

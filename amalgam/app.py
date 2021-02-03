@@ -3,20 +3,30 @@ from flask import Flask, render_template, redirect, url_for, request, session, f
 from functools import wraps
 import os
 from flask_sqlalchemy import SQLAlchemy
+from amalgam.crawler.crawler import Crawler
+
+from amalgam.database import db
+from amalgam.models.link import Link
+from amalgam.models.crawl import Crawl
 
 
+# def create_app():
 # create the application object
 app = Flask(__name__)
+app.config['DEBUG'] = True
+app.secret_key = 'my precious'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amalgam.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.database = "sample.db"
+db.init_app(app)
+	# return app	
 
-# Setup secret key
-app.secret_key = 'my precious'
 
-db = SQLAlchemy(app)
+def setup_database(app):
+	with app.app_context():
+		db.create_all()
+	db.session.commit()
 
-from models import *
 
 # login required decorator
 def login_required(f):
@@ -40,19 +50,20 @@ def getProgress(crawlId):
 		PROGRESS_TRACKER[crawlId] = {
 			"visited" : 0,
 			"to_visit" : 0,
-			"max_links" : 0
+			"max_links" : 0,
+			"status": ""
 		}
 
 	return PROGRESS_TRACKER[crawlId]
 
 
 
-def notify(crawlId, visited, to_visit, max_links):
-	progress = getProgress(crawlId)
-	progress['visited'] = visited
-	progress['to_visit'] = to_visit
-	progress['max_links'] = max_links
-
+def notify(msg):	
+	progress = getProgress(msg["crawlId"])
+	progress['visited'] = msg["visited"]
+	progress['to_visit'] = msg["to_visit"]
+	progress['max_links'] = msg["max_links"]
+	progress['status'] = msg["status"]
 
 
 # use decorators to link the function to a url
@@ -149,36 +160,10 @@ def crawl_exe():
 	db.session.add(crawl)
 	db.session.commit()	
 
-	#Start crawling thread
-	import threading
-	class CrawlThread(threading.Thread):
-		def __init__(self, address, db, crawlId, max):
-			threading.Thread.__init__(self)
-			self.address = address
-			self.db = db
-			self.crawlId = crawlId
-			self.max = max
-
-		def run(self):
-			# Perform crawl
-			from crawler import Crawler
-			crawler = Crawler(self.address, self.max)
-
-			def special_notify(visited, to_visit, max_link):
-				notify(self.crawlId, visited, to_visit, max_link)
-
-			crawler.crawl(notify=special_notify)
-
-			# Store in DB
-			crawl = Crawl.query.get(self.crawlId)
-			crawl.links.extend(crawler.visited)
-			db.session.commit()	
-	
-	max_links = request.form.get('max', type=int) or 0
-	ct = CrawlThread(request.form['address'], db, crawl.id, max_links)
-	ct.start()
-
-	
+	initial_url = request.form['address']
+	crawler = Crawler(initial_url, id=crawl.id)
+	crawler.addListener(notify)
+	crawler.start()
 	
 	return render_template('crawlProgress.html', crawl=crawl)	
 
@@ -238,56 +223,6 @@ def viewCrawl():
 		return redirect(url_for('crawl'))	
 
 
-@app.route('/sitemap_analyze', methods=['GET', 'POST'])
-@login_required
-def sitemap_analyze():
-	import subprocess
-	
-	#sys.path.append('./foo/bar/mock-0.3.1')
-	
-	#check parameter
-	if not request.form['address']:
-		flash('No address.')
-		return redirect(url_for('sitemap'))
-		
-	
-	#Extraction
-	current_folder = os.path.dirname(os.path.abspath(__file__))
-	#print("Current folder %s" % current_folder)
-
-	script_path = os.path.abspath(current_folder + '/pieces/sitemap-visualization-tool/extract_urls.py')
-	#print("Script path %s" % script_path)
-
-
-	address = request.form['address']
-	result = subprocess.run(["python3", script_path, '--url', address, '--not_index'], stdout=subprocess.PIPE, text=True, input="")
-	#print(result.stdout)
-
-
-	#Categorization
-	script_path = os.path.abspath(current_folder + '/pieces/sitemap-visualization-tool/categorize_urls.py')
-	result = subprocess.run(["python3", script_path], stdout=subprocess.PIPE, text=True, input="")
-	#print(result.stdout)
-
-
-	#Visualize
-	script_path = os.path.abspath(current_folder + '/pieces/sitemap-visualization-tool/visualize_urls.py')
-	result = subprocess.run(["python3", script_path, '--output-format', 'png', '--size', '"40"'], stdout=subprocess.PIPE, text=True, input="")
-	#print(result.stdout)
-	
-	#TODO: This is lame
-	#copy image to /static
-	from shutil import copyfile
-	filename = 'sitemap_graph_3_layer.png'
-	srcfile = current_folder + '/' + filename
-	destinationfile = current_folder + '/static/' + filename
-	copyfile(srcfile, destinationfile)
-
-	
-	#render image
-	return redirect(url_for('sitemap_result'))
-	
-
 @app.route('/sitemap_result', methods=['GET', 'POST'])
 @login_required
 def sitemap_result():
@@ -322,5 +257,7 @@ def status():
 
 # start the server with the 'run()' method
 if __name__ == '__main__':
-	app.debug = True
+	# app = create_app()
+	if not os.path.isfile('./amalgam.db'):
+		setup_database(app)
 	app.run()

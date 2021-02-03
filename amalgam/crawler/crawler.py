@@ -10,11 +10,15 @@ import argparse
 import re
 import time
 from bs4 import BeautifulSoup
-from models import Link, inside
 from urllib.parse import urlparse
 import logging
 from threading import Thread, Condition, currentThread, Lock
 import csv
+import uuid
+
+from amalgam.models.link import Link
+from amalgam.models import inside
+
 
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
 logger = logging.getLogger("crawler")
@@ -88,13 +92,15 @@ class Crawler(Thread):
 	noOfJobsLock = Lock()
 	noOfJobs = 0
 	noOfWorkers = 1
+	listeners = []
 	
 
-	def __init__(self, initialLink, max_links = 0, no_workers = 10):
+	def __init__(self, initialLink, max_links = 0, no_workers = 10, id = uuid.uuid4()):
 		Thread.__init__(self)
 		self.noOfWorkers = no_workers
 		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_INTERNAL) )		
 		self.max_links = max_links
+		self.id = id
 		try:
 			self.domain_regex = re.compile(self.get_domain(initialLink))
 		except Exception as ex:
@@ -105,7 +111,7 @@ class Crawler(Thread):
 		
 		# Initialize workers
 		for i in range(self.noOfWorkers):
-			self.workers.append(Thread(target=self.workerJob, kwargs={}, name="Thread-{}".format(i)))
+			self.workers.append(Thread(target=self.workerJob, kwargs={"crawlId": self.id}, name="Thread-{}".format(i)))
 
 		# Start workers
 		self._start_all_workers()
@@ -124,8 +130,18 @@ class Crawler(Thread):
 		# Join them
 		self._join_all_workers()
 
+		msg = {
+			"status": "done", 
+			"visited" : len(self.visited), 
+			"to_visit" : len(self.to_visit),
+			"max_links" : 0,
+			"crawlId" : id
+		}
 
-	def workerJob(self):
+		self.notify(msg)
+
+	
+	def workerJob(self, crawlId):
 		while self.running:
 			if self.paused:
 				continue
@@ -150,6 +166,16 @@ class Crawler(Thread):
 					for el in external_links:
 						if not inside(el, self.external_links):
 							self.external_links.append(el)
+					
+					msg = {
+						"status": "in_progress", 
+						"visited" : len(self.visited), 
+						"to_visit" : len(self.to_visit),
+						"max_links" : 0,
+						"crawlId" : crawlId
+					}
+
+					self.notify(msg)
 
 				self.decreaseNoOfJobs()
 		else:
@@ -266,7 +292,19 @@ class Crawler(Thread):
 						'url': el.url,
 						'mime': el.mime_type
 					})
-    		
+
+
+	def addListener(self, callback):
+		self.listeners.append(callback)
+
+
+	def removeListener(self, callback):
+		self.listeners.remove(callback)
+
+
+	def notify(self, msg):
+		for callback in self.listeners:
+			callback(msg)
 
 
 def main():
