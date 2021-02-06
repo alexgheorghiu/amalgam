@@ -6,6 +6,14 @@ from amalgam.models.models import Link
 
 class TestModels(unittest.TestCase):
 
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    
+
     def test_inside(self):
         links = []
 
