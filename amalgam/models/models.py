@@ -36,7 +36,7 @@ class Crawl(db.Model):
     id = db.Column(Integer, primary_key=True)
     date = db.Column(DateTime, default=datetime.datetime.utcnow)    
     note = db.Column(String, nullable=True)
-    links = relationship("Link", backref="crawl")
+    pages = relationship("Page", backref="crawl")
     site_id = db.Column(Integer, ForeignKey('sites.id'))
 
 

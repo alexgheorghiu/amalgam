@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../temp"
+		},
+		{
+			"path": "../alexdojo/python/flask/discover_flask"
 		}
 	]
 }
