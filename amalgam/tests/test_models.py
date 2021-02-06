@@ -1,6 +1,7 @@
 import unittest
 import sys
-from models import Link, inside
+from amalgam.models import inside
+from amalgam.models.models import Link
 
 
 class TestModels(unittest.TestCase):

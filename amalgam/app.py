@@ -1,13 +1,15 @@
 # import the Flask class from the flask module
-from flask import Flask, render_template, redirect, url_for, request, session, flash, jsonify
+from flask import Flask, render_template, redirect, url_for, request, session, flash, jsonify, copy_current_request_context
 from functools import wraps
 import os
 from flask_sqlalchemy import SQLAlchemy
 from amalgam.crawler.crawler import Crawler
+import jsonpickle
+import threading
 
 from amalgam.database import db
-from amalgam.models.link import Link
-from amalgam.models.crawl import Crawl
+from amalgam.models.models import Link, Crawl
+from amalgam.progress_tracker import ProgressTracker
 
 
 # def create_app():
@@ -18,14 +20,14 @@ app.secret_key = 'my precious'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amalgam.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.database = "sample.db"
-db.init_app(app)
 	# return app	
 
 
 def setup_database(app):
 	with app.app_context():
+		db.init_app(app)
 		db.create_all()
-	db.session.commit()
+		db.session.commit()
 
 
 # login required decorator
@@ -40,31 +42,8 @@ def login_required(f):
 	return wrap
 
 
-PROGRESS_TRACKER = {	
-}
-
-def getProgress(crawlId):
-	global PROGRESS_TRACKER
-
-	if not crawlId in PROGRESS_TRACKER:		
-		PROGRESS_TRACKER[crawlId] = {
-			"visited" : 0,
-			"to_visit" : 0,
-			"max_links" : 0,
-			"status": ""
-		}
-
-	return PROGRESS_TRACKER[crawlId]
 
 
-
-def notify(msg):	
-	progress = getProgress(msg["crawlId"])
-	progress['visited'] = msg["visited"]
-	progress['to_visit'] = msg["to_visit"]
-	progress['max_links'] = msg["max_links"]
-	progress['status'] = msg["status"]
-	progress['crawlId'] = msg["crawlId"]
 
 
 # use decorators to link the function to a url
@@ -82,11 +61,14 @@ def welcome():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	error = None
-	if request.method == 'POST':
+	if request.method == 'POST': 
 		if request.form['username'] != 'admin' or request.form['password'] != 'admin':
 			error = 'Invalid Credentials. Please try again.'
 		else:
-			session['logged_in'] = True
+			session['logged_in'] = True			
+			session['progress_tracker'] = jsonpickle.encode(ProgressTracker())
+			progress_tracker = jsonpickle.decode(session['progress_tracker'])
+
 			flash('You were just logged in!')
 			return redirect(url_for('home'))
 	return render_template('login.html', error=error)
@@ -125,6 +107,20 @@ def crawl():
 @app.route('/crawl.exe', methods=['GET', 'POST'])
 @login_required
 def crawl_exe():
+	@copy_current_request_context
+	def notify(msg):
+		crawlId = str(msg['crawlId'])		
+		progress = ProgressTracker._msg_to_progress(msg)
+		pj = jsonpickle.encode(progress)
+		try:
+			crawl = Crawl.query.get(crawlId)
+			crawl.note = pj
+			db.session.commit()	
+		except ValueError as ve:
+			flash('No crawl id.')
+			return redirect(url_for('crawl'))	
+
+
 	if not request.form['address']:
 		flash('No address.')
 		return redirect(url_for('crawl'))
@@ -135,7 +131,7 @@ def crawl_exe():
 	db.session.commit()	
 
 	initial_url = request.form['address']
-	crawler = Crawler(initial_url, id=crawl.id)
+	crawler = Crawler(initial_url, id=crawl.id, no_workers=1)
 	crawler.addListener(notify)
 	crawler.start()
 	
@@ -145,8 +141,16 @@ def crawl_exe():
 @app.route('/crawl.report', methods=['GET', 'POST'])
 @login_required
 def crawl_report():
-	id = request.args.get('id', type=int)
-	return jsonify(getProgress(id))
+	print("\n{}: Current session tracker: {}".format(threading.current_thread().ident, session['progress_tracker']))
+	crawlId = request.args.get('id', type=int)
+	try:
+		crawl = Crawl.query.get(crawlId)
+		ptj = crawl.note
+		progress = jsonpickle.decode(ptj)
+		return jsonify(progress)
+	except ValueError as ve:
+		flash('No crawl id.')
+		return redirect(url_for('crawl'))	
 
 
 @app.route('/crawl.delete', methods=['GET', 'POST'])
@@ -227,6 +231,31 @@ def status():
 	return render_template('status.html', status=status)
 
 
+@app.route('/one')
+def one():
+	@copy_current_request_context
+	def x():
+		try:
+			# id = request.args.get('id', type=int)
+			id = 1
+			crawl = Crawl.query.get(id)			
+
+			crawl.note = "Hello from X"
+			db.session.commit()	
+		except ValueError as ve:
+			flash('No crawl id.')
+			return redirect(url_for('crawl'))		
+
+	t = threading.Thread(target=x)
+	t.start()
+	return "One"
+
+
+
+@app.route('/two')
+def two():
+	v = session['v']
+	return "Two: {}".format(v)
 
 
 # start the server with the 'run()' method

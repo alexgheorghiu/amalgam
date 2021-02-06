@@ -16,7 +16,7 @@ from threading import Thread, Condition, currentThread, Lock
 import csv
 import uuid
 
-from amalgam.models.link import Link
+from amalgam.models.models import Link
 from amalgam.models import inside
 
 
@@ -83,7 +83,7 @@ def get_links(url):
 
 class Crawler(Thread):
 	
-	def __init__(self, initialLink, max_links = 0, no_workers = 10, id = uuid.uuid4()):
+	def __init__(self, initialLink, max_links = 0, no_workers = 10, id = str(uuid.uuid4())):
 		Thread.__init__(self)
 		self.noOfWorkers = no_workers
 		self.workers = []
@@ -134,7 +134,7 @@ class Crawler(Thread):
 			"visited" : len(self.visited), 
 			"to_visit" : len(self.to_visit),
 			"max_links" : 0,
-			"crawlId" : id
+			"crawlId" : self.id
 		}
 
 		self.notify(msg)
@@ -171,7 +171,8 @@ class Crawler(Thread):
 						"visited" : len(self.visited), 
 						"to_visit" : len(self.to_visit),
 						"max_links" : 0,
-						"crawlId" : crawlId
+						"crawlId" : crawlId,
+						"currentWorker" : currentThread().getName()
 					}
 
 					self.notify(msg)

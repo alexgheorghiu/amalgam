@@ -34,6 +34,7 @@
 			<a href="/viewCrawl?id={{ crawl.id }}">View</a>			
 			<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>
 		</td>
+		<td>{{ crawl.note }}</td>
 	</tr>
 {% endfor %}
 </table>
