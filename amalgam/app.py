@@ -9,7 +9,7 @@ import threading
 
 from amalgam.database import db
 from amalgam.models.models import Link, Crawl
-from amalgam.progress_tracker import ProgressTracker
+# from amalgam.progress_tracker import ProgressTracker
 
 
 # def create_app():
@@ -66,8 +66,8 @@ def login():
 			error = 'Invalid Credentials. Please try again.'
 		else:
 			session['logged_in'] = True			
-			session['progress_tracker'] = jsonpickle.encode(ProgressTracker())
-			progress_tracker = jsonpickle.decode(session['progress_tracker'])
+			# session['progress_tracker'] = jsonpickle.encode(ProgressTracker())
+			# progress_tracker = jsonpickle.decode(session['progress_tracker'])
 
 			flash('You were just logged in!')
 			return redirect(url_for('home'))
@@ -110,11 +110,11 @@ def crawl_exe():
 	@copy_current_request_context
 	def notify(msg):
 		crawlId = str(msg['crawlId'])		
-		progress = ProgressTracker._msg_to_progress(msg)
-		pj = jsonpickle.encode(progress)
+		# progress = ProgressTracker._msg_to_progress(msg)
+		# pj = jsonpickle.encode(progress)
 		try:
 			crawl = Crawl.query.get(crawlId)
-			crawl.note = pj
+			# crawl.note = pj
 			db.session.commit()	
 		except ValueError as ve:
 			flash('No crawl id.')

@@ -6,3 +6,4 @@ pandas
 graphviz
 mechanize
 Flask-SQLAlchemy
+jsonpickle

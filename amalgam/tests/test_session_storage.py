@@ -1,5 +1,6 @@
 '''
 Can I store objects, functions in session? 
+https://stackoverflow.com/questions/66064183/how-to-share-session-values-created-outside-the-context-in-flask 
 '''
 import threading
 from flask import Flask, copy_current_request_context, session
