@@ -9,3 +9,9 @@ db.create_all()
 
 #save changes
 print(db.session.commit())
+
+
+from amalgam.database import Base
+from amalgam.database import engine
+
+Base.metadata.create_all(engine)

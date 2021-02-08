@@ -1,71 +1,73 @@
 import datetime
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime, String
-from amalgam.database import db
 
-class Mime(db.Model):
+from amalgam.database import Base, engine
+
+
+class Mime(Base):
     __tablename__ = "mimes"
-    id = db.Column(Integer, primary_key=True)    
-    mime = db.Column(String, nullable=True)
+    id = Column(Integer, primary_key=True)    
+    mime = Column(String, nullable=True)
 
 
-class Setting(db.Model):
+class Setting(Base):
     __tablename__ = "settings"
-    key = db.Column(String, primary_key=True)    
-    value = db.Column(String, nullable=True)
+    key = Column(String, primary_key=True)    
+    value = Column(String, nullable=True)
 
 
-class User(db.Model):
+class User(Base):
     __tablename__ = "users"
-    id = db.Column(Integer, primary_key=True)    
-    name = db.Column(String, nullable=True)
-    email = db.Column(String, nullable=True)
-    password = db.Column(String, nullable=True)
+    id = Column(Integer, primary_key=True)    
+    name = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    password = Column(String, nullable=True)
 
 
-class Site(db.Model):
+class Site(Base):
     __tablename__ = "sites"
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String, nullable=False)    
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)    
     crawls = relationship("Crawl", backref="site")
 
 
-class Crawl(db.Model):
+class Crawl(Base):
     __tablename__ = "crawls"
-    id = db.Column(Integer, primary_key=True)
-    date = db.Column(DateTime, default=datetime.datetime.utcnow)    
-    note = db.Column(String, nullable=True)
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime, default=datetime.datetime.utcnow)    
+    note = Column(String, nullable=True)
     pages = relationship("Page", backref="crawl")
-    site_id = db.Column(Integer, ForeignKey('sites.id'))
+    site_id = Column(Integer, ForeignKey('sites.id'))
 
 
-class Page(db.Model):
+class Page(Base):
     __tablename__ = "pages"
-    id = db.Column(Integer, primary_key=True)
-    absolute_url = db.Column(String, nullable=False)
-    created_on = db.Column(DateTime, default=datetime.datetime.utcnow)
-    content = db.Column(String, nullable=True)    
-    crawl_id = db.Column(Integer, ForeignKey('crawls.id'))    
-    mime_id = db.Column(Integer, ForeignKey('mimes.id'))
+    id = Column(Integer, primary_key=True)
+    absolute_url = Column(String, nullable=False)
+    created_on = Column(DateTime, default=datetime.datetime.utcnow)
+    content = Column(String, nullable=True)    
+    crawl_id = Column(Integer, ForeignKey('crawls.id'))    
+    mime_id = Column(Integer, ForeignKey('mimes.id'))
 
 
-class Link(db.Model):
+class Link(Base):
     __tablename__ = "links"
 
     TYPE_EXTERNAL = "external"
     TYPE_INTERNAL = "internal"
 
-    id = db.Column(Integer, primary_key=True)
-    url = db.Column(String, nullable=True)  # The link as it appears on the page
-    absolute_url = db.Column(String, nullable=False) # The fabsolute URL it resolves    
-    created_on = db.Column(DateTime, default=datetime.datetime.utcnow)
-    #content = db.Column(String, nullable=True)
-    redirects = db.Column(String, nullable=True) # TODO: Convert to large text / blob
-    type = db.Column(String, nullable=True) # external or internal
-    # mime_type = db.Column(String, nullable=True)    
-    parent_page_id = db.Column(Integer, ForeignKey('pages.id'))
-    destination_page_id = db.Column(Integer, ForeignKey('pages.id'))
+    id = Column(Integer, primary_key=True)
+    url = Column(String, nullable=True)  # The link as it appears on the page
+    absolute_url = Column(String, nullable=False) # The fabsolute URL it resolves    
+    created_on = Column(DateTime, default=datetime.datetime.utcnow)
+    #content = Column(String, nullable=True)
+    redirects = Column(String, nullable=True) # TODO: Convert to large text / blob
+    type = Column(String, nullable=True) # external or internal
+    # mime_type = Column(String, nullable=True)    
+    parent_page_id = Column(Integer, ForeignKey('pages.id'))
+    destination_page_id = Column(Integer, ForeignKey('pages.id'))
 
     def __init__(self, absolute_url, url, type):
         self.absolute_url = absolute_url
@@ -76,3 +78,5 @@ class Link(db.Model):
         return '<{}={}'.format(self.id, self.absolute_url)
 
 
+# Create all tables if needed
+Base.metadata.create_all(engine)

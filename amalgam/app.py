@@ -7,7 +7,7 @@ from amalgam.crawler.crawler import Crawler
 import jsonpickle
 import threading
 
-from amalgam.database import db
+from amalgam.delegate import delegate
 from amalgam.models.models import Link, Crawl
 # from amalgam.progress_tracker import ProgressTracker
 
@@ -17,17 +17,18 @@ from amalgam.models.models import Link, Crawl
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.secret_key = 'my precious'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amalgam.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.database = "sample.db"
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///amalgam.db'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.database = "sample.db"
 	# return app	
 
 
 def setup_database(app):
 	with app.app_context():
-		db.init_app(app)
-		db.create_all()
-		db.session.commit()
+		# db.init_app(app)
+		# db.create_all()
+		# db.session.commit()
+		pass
 
 
 # login required decorator
@@ -40,9 +41,6 @@ def login_required(f):
 			flash("You need to login first.")
 			return redirect(url_for('login'))		
 	return wrap
-
-
-
 
 
 
@@ -94,14 +92,12 @@ def sitemap():
 	return render_template('sitemap.html')
 
 
-
 @app.route('/crawl')
 @login_required
 def crawl():
-	crawls = Crawl.query.all()
+	session = delegate.get_session()
+	crawls = session.query(Crawl).all()	
 	return render_template('crawl.html', crawls = crawls)
-
-
 
 
 @app.route('/crawl.exe', methods=['GET', 'POST'])
@@ -113,9 +109,7 @@ def crawl_exe():
 		# progress = ProgressTracker._msg_to_progress(msg)
 		# pj = jsonpickle.encode(progress)
 		try:
-			crawl = Crawl.query.get(crawlId)
-			# crawl.note = pj
-			db.session.commit()	
+			crawl = delegate.crawl_get_by_id(crawlId)
 		except ValueError as ve:
 			flash('No crawl id.')
 			return redirect(url_for('crawl'))	
@@ -127,8 +121,8 @@ def crawl_exe():
 
 	# Save to DB
 	crawl = Crawl()	
-	db.session.add(crawl)
-	db.session.commit()	
+	delegate.crawl_create(crawl)
+	
 
 	initial_url = request.form['address']
 	crawler = Crawler(initial_url, id=crawl.id, no_workers=1)
@@ -144,7 +138,7 @@ def crawl_report():
 	print("\n{}: Current session tracker: {}".format(threading.current_thread().ident, session['progress_tracker']))
 	crawlId = request.args.get('id', type=int)
 	try:
-		crawl = Crawl.query.get(crawlId)
+		crawl = delegate.crawl_get_by_id(crawlId)
 		ptj = crawl.note
 		progress = jsonpickle.decode(ptj)
 		return jsonify(progress)
@@ -158,10 +152,9 @@ def crawl_report():
 def crawl_delete():
 	try:
 		id = request.args.get('id', type=int)
-		crawl = Crawl.query.get(id)
+		crawl = delegate.crawl_get_by_id(id)
 
-		db.session.delete(crawl)
-		db.session.commit()
+		delegate.crawl_delete(crawl)
 
 		flash('Crawl deleted')
 		return redirect(url_for('crawl'))
@@ -241,7 +234,8 @@ def one():
 			crawl = Crawl.query.get(id)			
 
 			crawl.note = "Hello from X"
-			db.session.commit()	
+			session = delegate.get_session()
+			session.commit()	
 		except ValueError as ve:
 			flash('No crawl id.')
 			return redirect(url_for('crawl'))		
