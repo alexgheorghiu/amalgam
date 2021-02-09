@@ -1,7 +1,7 @@
 from sqlalchemy.orm import scoped_session
 
 from amalgam.database import session_factory
-from amalgam.models.models import User, Crawl
+from amalgam.models.models import User, Crawl, Link
 
 class Delegate:
     """ 
@@ -39,6 +39,10 @@ class Delegate:
         session.add(object)
         session.commit()
 
+    def update(self, object):
+        session = delegate.get_session()
+        session.commit()
+
 
     def crawl_create(self, crawl):
         self.create(crawl)
@@ -54,6 +58,21 @@ class Delegate:
         session.delete(crawl)
         session.commit()
 
+
+    def links_get_for_crawl(self, crawl):
+        # session = delegate.get_session()
+        # links = session.query(Link).filter
+        pass
+
+
+    def link_create(self, link):
+        self.create(link)
+
+
+    def link_update(self, link):
+        self.update(link)
+
+    
 
 # Create and "export" Delegate
 delegate = Delegate(session_factory)

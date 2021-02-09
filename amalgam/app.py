@@ -9,6 +9,7 @@ import threading
 
 from amalgam.delegate import delegate
 from amalgam.models.models import Link, Crawl
+from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
 
 
@@ -21,6 +22,8 @@ app.secret_key = 'my precious'
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # app.database = "sample.db"
 	# return app	
+
+PROGRESS_TRACKER = ProgressTracker()
 
 
 def setup_database(app):
@@ -103,11 +106,14 @@ def crawl():
 @app.route('/crawl.exe', methods=['GET', 'POST'])
 @login_required
 def crawl_exe():
+	global PROGRESS_TRACKER
+
 	@copy_current_request_context
 	def notify(msg):
 		crawlId = str(msg['crawlId'])		
 		# progress = ProgressTracker._msg_to_progress(msg)
 		# pj = jsonpickle.encode(progress)
+		PROGRESS_TRACKER.set_progress(crawlId, msg)
 		try:
 			crawl = delegate.crawl_get_by_id(crawlId)
 		except ValueError as ve:
@@ -135,12 +141,15 @@ def crawl_exe():
 @app.route('/crawl.report', methods=['GET', 'POST'])
 @login_required
 def crawl_report():
-	print("\n{}: Current session tracker: {}".format(threading.current_thread().ident, session['progress_tracker']))
-	crawlId = request.args.get('id', type=int)
+	global PROGRESS_TRACKER
+
+	# print("\n{}: Current session tracker: {}".format(threading.current_thread().ident, session['progress_tracker']))
+	crawlId = request.args.get('id')
 	try:
 		crawl = delegate.crawl_get_by_id(crawlId)
-		ptj = crawl.note
-		progress = jsonpickle.decode(ptj)
+		# ptj = crawl.note
+		# progress = jsonpickle.decode(ptj)
+		progress = PROGRESS_TRACKER.get_progress(crawlId)
 		return jsonify(progress)
 	except ValueError as ve:
 		flash('No crawl id.')
@@ -186,7 +195,7 @@ def crawl_cancel():
 def viewCrawl():
 	try:
 		id = request.args.get('id', type=int)
-		crawl = Crawl.query.get(id)
+		crawl = delegate.crawl_get_by_id(id)
 
 		return render_template('viewCrawl.html', crawl=crawl, links = crawl.links)
 	except ValueError as ve:

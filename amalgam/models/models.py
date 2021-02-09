@@ -39,17 +39,8 @@ class Crawl(Base):
     date = Column(DateTime, default=datetime.datetime.utcnow)    
     note = Column(String, nullable=True)
     pages = relationship("Page", backref="crawl")
+    links = relationship("Link", backref="crawl")
     site_id = Column(Integer, ForeignKey('sites.id'))
-
-
-class Page(Base):
-    __tablename__ = "pages"
-    id = Column(Integer, primary_key=True)
-    absolute_url = Column(String, nullable=False)
-    created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    content = Column(String, nullable=True)    
-    crawl_id = Column(Integer, ForeignKey('crawls.id'))    
-    mime_id = Column(Integer, ForeignKey('mimes.id'))
 
 
 class Link(Base):
@@ -66,16 +57,27 @@ class Link(Base):
     redirects = Column(String, nullable=True) # TODO: Convert to large text / blob
     type = Column(String, nullable=True) # external or internal
     # mime_type = Column(String, nullable=True)    
-    parent_page_id = Column(Integer, ForeignKey('pages.id'))
-    destination_page_id = Column(Integer, ForeignKey('pages.id'))
+    parent_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
+    destination_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
+    crawl_id = Column(Integer, ForeignKey('crawls.id'))
 
-    def __init__(self, absolute_url, url, type):
-        self.absolute_url = absolute_url
-        self.url = url
-        self.type = type
+    # def __init__(self, absolute_url, url, type):
+    #     self.absolute_url = absolute_url
+    #     self.url = url
+    #     self.type = type
 
     def __repr__(self):
         return '<{}={}'.format(self.id, self.absolute_url)
+
+
+class Page(Base):
+    __tablename__ = "pages"
+    id = Column(Integer, primary_key=True)
+    absolute_url = Column(String, nullable=False)
+    created_on = Column(DateTime, default=datetime.datetime.utcnow)
+    content = Column(String, nullable=True)    
+    crawl_id = Column(Integer, ForeignKey('crawls.id'))    
+    mime_id = Column(Integer, ForeignKey('mimes.id'))
 
 
 # Create all tables if needed

@@ -61,9 +61,31 @@ class TestDelegate(unittest.TestCase):
         delegate.crawl_create(crawl)
         assert crawl.id > 0
 
-
         cc = delegate.crawl_get_by_id(crawl.id)
         assert cc.id == crawl.id
+
+
+        # Links
+        l = Link()
+        l.type = Link.TYPE_INTERNAL
+        l.url = './index.html'
+        l.absolute_url = 'http://hotmug.net/index.html'        
+        l.crawl_id = crawl.id
+        delegate.link_create(l)
+        assert l.id > 0 
+
+
+        l.type = Link.TYPE_EXTERNAL
+        delegate.link_update(l)
+
+        l2 = Link()
+        l2.type = Link.TYPE_INTERNAL
+        l2.url = './contact.html'
+        l2.absolute_url = 'http://hotmug.net/contact.html'
+        l2.crawl_id = crawl.id
+        delegate.link_create(l2)
+        assert l2.id > 0
+
 
         delegate.crawl_delete(cc)
         
