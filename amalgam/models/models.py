@@ -30,7 +30,7 @@ class Site(Base):
     __tablename__ = "sites"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)    
-    crawls = relationship("Crawl", backref="site")
+    crawls = relationship("Crawl", backref="site", cascade="all, delete")
 
 
 class Crawl(Base):
@@ -40,7 +40,7 @@ class Crawl(Base):
     note = Column(String, nullable=True)
     pages = relationship("Page", backref="crawl")
     links = relationship("Link", backref="crawl")
-    site_id = Column(Integer, ForeignKey('sites.id'))
+    site_id = Column(Integer, ForeignKey('sites.id', ondelete="CASCADE"))
 
 
 class Link(Base):
@@ -59,7 +59,7 @@ class Link(Base):
     # mime_type = Column(String, nullable=True)    
     parent_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
     destination_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
-    crawl_id = Column(Integer, ForeignKey('crawls.id'))
+    crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
 
     # def __init__(self, absolute_url, url, type):
     #     self.absolute_url = absolute_url

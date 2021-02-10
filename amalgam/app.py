@@ -257,7 +257,7 @@ def one():
 
 @app.route('/two')
 def two():
-	v = session['v']
+	v = session['v'] 
 	return "Two: {}".format(v)
 
 
