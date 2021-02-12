@@ -1,7 +1,7 @@
 from sqlalchemy.orm import scoped_session
 
 from amalgam.database import session_factory
-from amalgam.models.models import Site, User, Crawl, Link
+from amalgam.models.models import Site, User, Crawl, Link, Page
 
 class Delegate:
     """ 
@@ -73,7 +73,7 @@ class Delegate:
         self.delete(crawl)
 
     
-    def craw_delete_all(self):
+    def crawl_delete_all(self):
         session = self.get_session()
         session.query(Crawl).delete()
 
@@ -88,12 +88,34 @@ class Delegate:
         self.create(page)
 
 
+    def page_delete_all(self):
+        session = self.get_session()
+        session.query(Page).delete()
+
+
+    def page_get_all(self):
+        session = self.get_session()
+        return session.query(Page).all()
+
+
     def link_create(self, link):
         self.create(link)
 
 
     def link_update(self, link):
         self.update(link)
+
+    
+    def link_delete_all(self):
+        session = self.get_session()
+        session.query(Link).delete()
+        session.commit()
+
+
+    def link_get_all(self):
+        session = delegate.get_session()
+        crawls = session.query(Link).all()
+        return crawls
 
 
     def site_create(self, site):

@@ -53,11 +53,9 @@ class Link(Base):
     url = Column(String, nullable=True)  # The link as it appears on the page
     absolute_url = Column(String, nullable=False) # The fabsolute URL it resolves    
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    #content = Column(String, nullable=True)
     redirects = Column(String, nullable=True) # TODO: Convert to large text / blob
     type = Column(String, nullable=True) # external or internal
-    # mime_type = Column(String, nullable=True)    
-    parent_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
+    parent_page_id = Column(Integer, ForeignKey('pages.id', ondelete="CASCADE"), nullable=True)
     destination_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
 
@@ -75,9 +73,9 @@ class Page(Base):
     id = Column(Integer, primary_key=True)
     absolute_url = Column(String, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    content = Column(String, nullable=True)    
-    crawl_id = Column(Integer, ForeignKey('crawls.id'))    
+    content = Column(String, nullable=True)
     mime_id = Column(Integer, ForeignKey('mimes.id'))
+    crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
 
 
 # Create all tables if needed

@@ -64,6 +64,7 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_crawl(self):
+        print("test_crawl started")
         # session = delegate.get_session()
 
         # Site 1
@@ -91,8 +92,89 @@ class TestDelegate(unittest.TestCase):
         assert len(crawls) == 0
 
         
-        delegate.craw_delete_all()        
-        delegate.site_delete_all()        
+        delegate.crawl_delete_all()        
+        delegate.site_delete_all()
+        print("test_crawl done")
+
+
+    def test_page(self):
+        print("test_page started")
+        # Site 1
+        site1 = Site()	
+        site1.name = "Site1"        
+        delegate.site_create(site1)
+
+        # Crawl
+        crawl = Crawl(site_id = site1.id)
+        delegate.crawl_create(crawl)
+        assert crawl.id > 0
+        
+        # Page
+        page = Page()
+        page.crawl_id = crawl.id
+        page.content = "Ala bala portocala"
+        page.absolute_url = "https://scriptoid.com/index.php"
+        delegate.page_create(page)
+        assert page.id > 0
+
+        pages = delegate.page_get_all()
+        assert len(pages) > 0 
+
+        # # Test cascade delete
+        delegate.crawl_delete_all()        
+        pages = delegate.page_get_all()
+        assert len(pages) == 0, "It should be {} but we found {}".format(0, len(pages))
+
+        # # Clean up
+        delegate.page_delete_all()
+        delegate.crawl_delete_all()
+        delegate.site_delete_all()
+
+        print("test_page done")
+
+
+
+    def test_link(self):
+        print("test_page started")
+        # Site 1
+        site1 = Site()	
+        site1.name = "Site1"        
+        delegate.site_create(site1)
+
+        # Crawl
+        crawl = Crawl(site_id = site1.id)
+        delegate.crawl_create(crawl)
+        assert crawl.id > 0
+        
+        # Page
+        page = Page()
+        page.crawl_id = crawl.id
+        page.content = "Ala bala portocala"
+        page.absolute_url = "https://scriptoid.com/index.php"
+        delegate.page_create(page)
+        
+
+        # Link
+        link = Link()
+        link.parent_page_id = page.id
+        link.url = '/contact'
+        link.absolute_url = 'https://scriptoid.com/index.php'
+        link.type = Link.TYPE_INTERNAL
+        delegate.link_create(link)
+        assert link.id > 0
+
+        # Test a cascade delete from parent Page to Link
+        delegate.page_delete_all()
+        links = delegate.link_get_all()
+        assert len(links) == 0
+
+        # Clean up
+        # delegate.link_delete_all()
+        delegate.page_delete_all()
+        delegate.crawl_delete_all()
+        delegate.site_delete_all()
+
+        print("test_page done")        
 
 
     # def test_db(self):        

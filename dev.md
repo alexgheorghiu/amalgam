@@ -23,7 +23,7 @@ These are the instructions for developer
 
 ## How to run tests
 ```sh
-python -m amalgam.tests.tests_all
+python -m amalgam.tests.test_all
 ```
 
 ## How to run it ##
