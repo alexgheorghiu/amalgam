@@ -143,6 +143,37 @@ class Delegate:
     def site_delete(self, site):
         self.delete(site)
 
+
+    def user_create(self, user):
+        self.create(user)
+
+
+    def user_get_by_id(self, id):
+        session = delegate.get_session()
+        user = session.query(User).get(id)
+        session.commit()
+        return user
+
+
+    def user_get_by_email_and_password(self, email, password):
+        session = delegate.get_session()
+        # see https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query.filter
+        user = session.query(User).filter(User.email == email, User.password == password).first()
+        session.commit()
+        return user
+    
+
+    def user_get_all(self, id):
+        session = self.get_session()
+        users = session.query(User).all()
+        return users
+
+
+    def user_delete_all(self):
+        session = self.get_session()
+        session.query(User).delete()
+        session.commit()
+
     
 
 # Create and "export" Delegate

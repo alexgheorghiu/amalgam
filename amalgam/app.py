@@ -7,8 +7,9 @@ from amalgam.crawler.crawler import Crawler
 import jsonpickle
 import threading
 
+from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import Link, Crawl
+from amalgam.models.models import Link, Crawl, User
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
 
@@ -32,6 +33,12 @@ def setup_database(app):
 		# db.create_all()
 		# db.session.commit()
 		pass
+
+	# Create all tables if needed
+	database.Base.metadata.create_all(database.engine)
+
+	user = User(email='one@foo.com', password='one', name='one')
+	delegate.user_create(user)
 
 
 # login required decorator
@@ -63,10 +70,15 @@ def welcome():
 def login():
 	error = None
 	if request.method == 'POST': 
-		if request.form['username'] != 'admin' or request.form['password'] != 'admin':
+		email = request.form['email']
+		password = request.form['password']
+		user = delegate.user_get_by_email_and_password(email, password)
+
+		if user == None or False:
 			error = 'Invalid Credentials. Please try again.'
 		else:
 			session['logged_in'] = True			
+			session['user_id'] = user.id
 			# session['progress_tracker'] = jsonpickle.encode(ProgressTracker())
 			# progress_tracker = jsonpickle.decode(session['progress_tracker'])
 
@@ -77,8 +89,9 @@ def login():
 
 @app.route('/logout')
 @login_required
-def logout():
+def logout():	
 	session.pop('logged_in', None)
+	session.pop('user_id', None)
 	flash('You were just logged out!')
 	return redirect(url_for('index'))
 	

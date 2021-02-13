@@ -16,8 +16,9 @@ from threading import Thread, Condition, currentThread, Lock
 import csv
 import uuid
 
-from amalgam.models.models import Link
+from amalgam.models.models import Crawl, Link, Page
 from amalgam.models import inside
+from amalgam.delegate import Delegate
 
 
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
@@ -90,13 +91,14 @@ class Crawler(Thread):
 		self.running = True
 		self.paused = False
 		self.condition = Lock()
-		self.to_visit = []
+		self.to_visit = [] # Links to visit
 		self.visited = []
 		self.external_links = []	
 		self.noOfJobsLock = Lock()
 		self.noOfJobs = 0		
 		self.listeners = []
 
+		
 		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_INTERNAL) )		
 		self.max_links = max_links
 		self.id = id

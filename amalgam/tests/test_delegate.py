@@ -4,7 +4,7 @@ import sys
 from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
-from amalgam.models.models import Link, Site, Crawl, Page
+from amalgam.models.models import *
 from amalgam.delegate import delegate
 
 from amalgam.database import Base
@@ -174,7 +174,25 @@ class TestDelegate(unittest.TestCase):
         delegate.crawl_delete_all()
         delegate.site_delete_all()
 
-        print("test_page done")        
+        print("test_page done")   
+
+
+    def test_user(self):
+        u1 = User()
+        u1.email = "one@foo.com"
+        u1.password = "one"
+        u1.name = "One"
+        delegate.user_create(u1)
+        assert u1.id > 0 
+
+        u2 = delegate.user_get_by_email_and_password(u1.email, u1.password)
+        assert u1.email == u2.email 
+        assert u1.password == u2.password 
+        assert u1.id == u2.id, "U1's id:{}  U2's id:{} ".format(u1.id, u2.id)
+
+
+        delegate.user_delete_all()
+
 
 
     # def test_db(self):        

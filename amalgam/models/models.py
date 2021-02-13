@@ -22,7 +22,7 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)    
     name = Column(String, nullable=True)
-    email = Column(String, nullable=True)
+    email = Column(String, nullable=True, unique=True)
     password = Column(String, nullable=True)
 
 
@@ -76,7 +76,3 @@ class Page(Base):
     content = Column(String, nullable=True)
     mime_id = Column(Integer, ForeignKey('mimes.id'))
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
-
-
-# Create all tables if needed
-Base.metadata.create_all(engine)

@@ -9,8 +9,8 @@ from sqlalchemy import event
 Base = declarative_base()
 
 #TODO: load configuration dynamically 
-engine = create_engine('sqlite:///amalgam.db')
-# engine = create_engine('sqlite:///amalgam.db', echo=True)
+# engine = create_engine('sqlite:///amalgam.db')
+engine = create_engine('sqlite:///amalgam.db', echo=True)
 session_factory = sessionmaker(bind=engine)
 Base = declarative_base()
 
