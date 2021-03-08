@@ -3,7 +3,7 @@ from sqlalchemy import ForeignKey, Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime, String
 
-from amalgam.database import Base, engine
+from amalgam.database import Base
 
 
 class Mime(Base):
