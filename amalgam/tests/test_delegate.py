@@ -163,8 +163,14 @@ class TestDelegate(unittest.TestCase):
         delegate.url_create(link)
         assert link.id > 0
 
+        # Test first unvisited link
         l1 = delegate.url_get_first_unvisited()
         assert l1.id == link.id, 'L1 is {}'.format(l1)
+
+        link.visited = True
+        delegate.url_update(link)
+        l1 = delegate.url_get_first_unvisited()
+        assert l1 is None, 'L1 is {}'.format(l1)
 
         # Test a cascade delete from parent Page to Link
         delegate.resource_delete_all()
