@@ -114,19 +114,19 @@ class TestDelegate(unittest.TestCase):
         page.crawl_id = crawl.id
         page.content = "Ala bala portocala"
         page.absolute_url = "https://scriptoid.com/index.php"
-        delegate.page_create(page)
+        delegate.resource_create(page)
         assert page.id > 0
 
-        pages = delegate.page_get_all()
+        pages = delegate.resource_get_all()
         assert len(pages) > 0 
 
         # # Test cascade delete
         delegate.crawl_delete_all()        
-        pages = delegate.page_get_all()
+        pages = delegate.resource_get_all()
         assert len(pages) == 0, "It should be {} but we found {}".format(0, len(pages))
 
         # # Clean up
-        delegate.page_delete_all()
+        delegate.resource_delete_all()
         delegate.crawl_delete_all()
         delegate.site_delete_all()
 
@@ -151,7 +151,7 @@ class TestDelegate(unittest.TestCase):
         page.crawl_id = crawl.id
         page.content = "Ala bala portocala"
         page.absolute_url = "https://scriptoid.com/index.php"
-        delegate.page_create(page)
+        delegate.resource_create(page)
         
 
         # Link
@@ -160,17 +160,20 @@ class TestDelegate(unittest.TestCase):
         link.url = '/contact'
         link.absolute_url = 'https://scriptoid.com/index.php'
         link.type = Url.TYPE_INTERNAL
-        delegate.link_create(link)
+        delegate.url_create(link)
         assert link.id > 0
 
+        l1 = delegate.url_get_first_unvisited()
+        assert l1.id == link.id, 'L1 is {}'.format(l1)
+
         # Test a cascade delete from parent Page to Link
-        delegate.page_delete_all()
-        links = delegate.link_get_all()
+        delegate.resource_delete_all()
+        links = delegate.url_get_all()
         assert len(links) == 0
 
         # Clean up
         # delegate.link_delete_all()
-        delegate.page_delete_all()
+        delegate.resource_delete_all()
         delegate.crawl_delete_all()
         delegate.site_delete_all()
 
