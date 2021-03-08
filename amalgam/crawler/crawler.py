@@ -574,7 +574,7 @@ def main():
 	logger.info("Total external links: %d" % len(crawler.external_links))
 	# for url in [link.absolute_url for link in crawler.external_links]:
 	# 	logger.info("\t" + url)
-	
+
 	report('./crawl-requests-report.log', crawler.visited)
 
 	crawler.export()

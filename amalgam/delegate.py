@@ -54,12 +54,12 @@ class Delegate:
         self.create(crawl)
 
     def crawl_get_by_id(self, id):
-        session = delegate.get_session()
+        session = self.get_session()
         crawl = session.query(Crawl).get(id) 
         return crawl
 
     def crawl_get_all(self):
-        session = delegate.get_session()
+        session = self.get_session()
         crawls = session.query(Crawl).all()
         return crawls
 
@@ -103,22 +103,22 @@ class Delegate:
         session.commit()
 
     def url_get_all(self):
-        session = delegate.get_session()
+        session = self.get_session()
         urls = session.query(Url).all()
         return urls
 
     def url_get_first_unvisited(self):
-        session = delegate.get_session()
+        session = self.get_session()
         url = session.query(Url).filter_by(visited=False).first()
         return url
 
     def url_count_unvisited(self):
-        session = delegate.get_session()
+        session = self.get_session()
         n = session.query(func.count(Url.id)).filter(Url.visited==False).scalar()
         return n
 
     def url_count_visited(self):
-        session = delegate.get_session()
+        session = self.get_session()
         n = session.query(func.count(Url.id)).filter(Url.visited==True).scalar()
         return n
 
@@ -135,7 +135,7 @@ class Delegate:
         return session.query(Site).all()
 
     def site_get_by_id(self, id):
-        session = delegate.get_session()
+        session = self.get_session()
         site = session.query(Site).get(id)
         session.commit()
         return site
@@ -147,13 +147,13 @@ class Delegate:
         self.create(user)
 
     def user_get_by_id(self, id):
-        session = delegate.get_session()
+        session = self.get_session()
         user = session.query(User).get(id)
         session.commit()
         return user
 
     def user_get_by_email_and_password(self, email, password):
-        session = delegate.get_session()
+        session = self.get_session()
         # see https://docs.sqlalchemy.org/en/14/orm/query.html#sqlalchemy.orm.Query.filter
         user = session.query(User).filter(User.email == email, User.password == password).first()
         session.commit()
