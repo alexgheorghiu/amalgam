@@ -22,13 +22,13 @@ class TestDelegate(unittest.TestCase):
     def test_inside(self):
         links = []
 
-        needle = Link(absolute_url = "https://amalgam.scriptoid.com", url = "/home", type=Link.TYPE_INTERNAL)
+        needle = Url(absolute_url = "https://amalgam.scriptoid.com", url = "/home", type=Url.TYPE_INTERNAL)
         assert not inside(needle, links)
 
-        l = Link(absolute_url = "https://amalgam.scriptoid.com", url = "/home", type=Link.TYPE_INTERNAL)
+        l = Url(absolute_url = "https://amalgam.scriptoid.com", url = "/home", type=Url.TYPE_INTERNAL)
         links.append(l)
 
-        l = Link(absolute_url = "https://amalgam.scriptoid.com/contact", url = "/contact", type=Link.TYPE_INTERNAL)
+        l = Url(absolute_url = "https://amalgam.scriptoid.com/contact", url = "/contact", type=Url.TYPE_INTERNAL)
         links.append(l)
 
         assert inside(needle, links)
@@ -110,7 +110,7 @@ class TestDelegate(unittest.TestCase):
         assert crawl.id > 0
         
         # Page
-        page = Page()
+        page = Resource()
         page.crawl_id = crawl.id
         page.content = "Ala bala portocala"
         page.absolute_url = "https://scriptoid.com/index.php"
@@ -147,7 +147,7 @@ class TestDelegate(unittest.TestCase):
         assert crawl.id > 0
         
         # Page
-        page = Page()
+        page = Resource()
         page.crawl_id = crawl.id
         page.content = "Ala bala portocala"
         page.absolute_url = "https://scriptoid.com/index.php"
@@ -155,11 +155,11 @@ class TestDelegate(unittest.TestCase):
         
 
         # Link
-        link = Link()
+        link = Url()
         link.parent_page_id = page.id
         link.url = '/contact'
         link.absolute_url = 'https://scriptoid.com/index.php'
-        link.type = Link.TYPE_INTERNAL
+        link.type = Url.TYPE_INTERNAL
         delegate.link_create(link)
         assert link.id > 0
 

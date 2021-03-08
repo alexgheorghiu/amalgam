@@ -16,7 +16,7 @@ from threading import Thread, Condition, currentThread, Lock
 import csv
 import uuid
 
-from amalgam.models.models import Crawl, Link, Page
+from amalgam.models.models import Crawl, Url, Resource
 from amalgam.models import inside
 from amalgam.delegate import Delegate
 
@@ -99,7 +99,7 @@ class Crawler(Thread):
 		self.listeners = []
 
 		
-		self.to_visit.append( Link(initialLink,initialLink, Link.TYPE_INTERNAL) )		
+		self.to_visit.append( Url(initialLink,initialLink, Url.TYPE_INTERNAL) )
 		self.max_links = max_links
 		self.id = id
 		try:
@@ -242,7 +242,7 @@ class Crawler(Thread):
 	def _to_heavy_links(self, links, type):
 		heavy_links = []
 		for link in links:
-			heavy_link = Link(link['absolute'], link['href'], type)
+			heavy_link = Url(link['absolute'], link['href'], type)
 			heavy_links.append(heavy_link)
 		return heavy_links
 
@@ -250,8 +250,8 @@ class Crawler(Thread):
 	def _get_links(self, link):
 		links = get_links(link)
 		light_internal, light_external =  self._filter_links(links)
-		heavy_internal = self._to_heavy_links(light_internal, Link.TYPE_INTERNAL)
-		heavy_external = self._to_heavy_links(light_external, Link.TYPE_EXTERNAL)
+		heavy_internal = self._to_heavy_links(light_internal, Url.TYPE_INTERNAL)
+		heavy_external = self._to_heavy_links(light_external, Url.TYPE_EXTERNAL)
 		return (heavy_internal, heavy_external)
 
 
@@ -280,7 +280,7 @@ class Crawler(Thread):
 			for il in self.visited:
 				writer.writerow(
 					{
-						'type': Link.TYPE_INTERNAL, 
+						'type': Url.TYPE_INTERNAL,
 						'absolute url': il.absolute_url,
 						'url': il.url,
 						'mime': il.mime_type
@@ -289,7 +289,7 @@ class Crawler(Thread):
 			for el in self.external_links:
 				writer.writerow(
 					{
-						'type': Link.TYPE_EXTERNAL, 
+						'type': Url.TYPE_EXTERNAL,
 						'absolute url': el.absolute_url,
 						'url': el.url,
 						'mime': el.mime_type

@@ -3,7 +3,7 @@ import os
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import Link, Crawl, User
+from amalgam.models.models import User
 
 if __name__ == '__main__':
 

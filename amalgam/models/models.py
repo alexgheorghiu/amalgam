@@ -38,13 +38,13 @@ class Crawl(Base):
     id = Column(Integer, primary_key=True)
     date = Column(DateTime, default=datetime.datetime.utcnow)    
     note = Column(String, nullable=True)
-    pages = relationship("Page", backref="crawl")
-    links = relationship("Link", backref="crawl")
+    resources = relationship("Resource", backref="crawl")
+    urls = relationship("Url", backref="crawl")
     site_id = Column(Integer, ForeignKey('sites.id', ondelete="CASCADE"))
 
 
-class Link(Base):
-    __tablename__ = "links"
+class Url(Base):
+    __tablename__ = "urls"
 
     TYPE_EXTERNAL = "external"
     TYPE_INTERNAL = "internal"
@@ -55,8 +55,8 @@ class Link(Base):
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
     redirects = Column(String, nullable=True) # TODO: Convert to large text / blob
     type = Column(String, nullable=True) # external or internal
-    parent_page_id = Column(Integer, ForeignKey('pages.id', ondelete="CASCADE"), nullable=True)
-    destination_page_id = Column(Integer, ForeignKey('pages.id'), nullable=True)
+    parent_page_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)
+    destination_page_id = Column(Integer, ForeignKey('resources.id'), nullable=True)
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
 
     # def __init__(self, absolute_url, url, type):
@@ -68,8 +68,8 @@ class Link(Base):
         return '<{}={}'.format(self.id, self.absolute_url)
 
 
-class Page(Base):
-    __tablename__ = "pages"
+class Resource(Base):
+    __tablename__ = "resources"
     id = Column(Integer, primary_key=True)
     absolute_url = Column(String, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)

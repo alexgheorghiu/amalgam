@@ -9,7 +9,7 @@ import threading
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import Link, Crawl, User
+from amalgam.models.models import Url, Crawl, User
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
 
