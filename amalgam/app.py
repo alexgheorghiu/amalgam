@@ -27,6 +27,11 @@ app.secret_key = 'my precious'
 PROGRESS_TRACKER = ProgressTracker()
 
 
+def check_db(app):
+	if not os.path.isfile('./amalgam.db'):
+		setup_database(app)
+
+
 def setup_database(app):
 	with app.app_context():
 		# db.init_app(app)
@@ -40,6 +45,7 @@ def setup_database(app):
 	user = User(email='one@foo.com', password='one', name='one')
 	delegate.user_create(user)
 
+check_db(app)
 
 # login required decorator
 def login_required(f):

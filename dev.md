@@ -1,22 +1,29 @@
 # Amalgam
 
-These are the instructions for developer
+Note: These are the instructions for developer
 
-# Project structure #
-* How to run it ( [XUbuntu 20](#how-to-run-it-xubuntu-20) )
-* How to run it ( [Windows 10](#how-to-run-it-windows-10) )
+Amalgam is collection of (mainly) [Python](https://python.org) scripts with a web interface (based on [Flask](https://flask.palletsprojects.com)) you can use in SEO.
+
+# Table of content #
+* [Project structure](#project-structure)
+* [How to run tests](#how-to-run-tests)
+* [How to run it](#how-to-run-it)  
+	* How to run it ( [XUbuntu 20](#how-to-run-it-xubuntu-20) )
+	* How to run it ( [Windows 10](#how-to-run-it-windows-10) )
 
 
 ## Project structure ##
 
 * [lab] - only used by developers to test new ideas
 * [pieces] - folder with other folders and sub-projects
-* [static] - static files: css
-* [templates] - Jinja pages
-* [amalgam] - folder with tests
+* [amalgam] - folder with sources
 	* [crawler] - crawler
+	* [models] - DB model  
+	* [static] - static files: css, js, images  
+	* [templates] - Jinja pages  
 	* [tests] - tests
 * app.py - the actual starting point of the application
+* db_create.py - reset current (SQLite) database  
 * DEV.md - this file
 * requirements.txt - the Python dependencies for the project (used by pip3)
 

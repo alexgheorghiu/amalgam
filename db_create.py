@@ -1,17 +1,23 @@
-from amalgam.database import db
+import os
+# from amalgam import database
 
-#create db and tables
-db.create_all()
+from amalgam import database
+from amalgam.delegate import delegate
+from amalgam.models.models import Link, Crawl, User
 
-#inserts
-# db.session.add(BlogPost("Good","I feel good."))
-# db.session.add(BlogPost("Well","I feel well."))
+if __name__ == '__main__':
 
-#save changes
-print(db.session.commit())
+    db_full_path = os.path.abspath('./amalgam.db')
+    if os.path.isfile(db_full_path):
+        print("Removing old database: {}".format(db_full_path))
+        os.remove(db_full_path)
+    else:
+        print("No database present at : {}".format(db_full_path))
 
-
-from amalgam.database import Base
-from amalgam.database import engine
-
-Base.metadata.create_all(engine)
+    #
+    # Create all tables if needed
+    database.Base.metadata.create_all(database.engine)
+    #
+    user = User(email='one@foo.com', password='one', name='one')
+    delegate.user_create(user)
+    print("User is [{}]".format(user.name))
