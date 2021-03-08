@@ -6,6 +6,7 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 
 # Table of content #
 * [Project structure](#project-structure)
+* [How to run only crawler](#how-to-run-only-crawler)  
 * [How to run tests](#how-to-run-tests)
 * [How to run it](#how-to-run-it)  
 	* How to run it ( [XUbuntu 20](#how-to-run-it-xubuntu-20) )
@@ -32,6 +33,15 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 ```sh
 python -m amalgam.tests.test_all
 ```
+
+
+## How to run only crawler
+While being inside the [amalgam] folder run:
+```sh
+python -m amalgam.crawler.crawler
+```
+
+
 
 ## How to run it ##
 

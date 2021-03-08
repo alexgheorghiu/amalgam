@@ -71,7 +71,7 @@ def get_links(url):
 						href = link.attrs['href']
 						content = link.contents
 						absolute = to_absolute_url(url, href)
-						new_links.append({'href':href, 'content':content, 'absolute':absolute})
+						new_links.append({'href': href, 'content': content, 'absolute': absolute})
 					elif 'name' in link.attrs:
 						# Just anchor
 						pass
@@ -91,15 +91,14 @@ class Crawler(Thread):
 		self.running = True
 		self.paused = False
 		self.condition = Lock()
-		self.to_visit = [] # Links to visit
+		self.to_visit = []  # Links to visit
 		self.visited = []
 		self.external_links = []	
 		self.noOfJobsLock = Lock()
 		self.noOfJobs = 0		
 		self.listeners = []
 
-		
-		self.to_visit.append( Url(initialLink,initialLink, Url.TYPE_INTERNAL) )
+		self.to_visit.append(Url(url=initialLink, absolute_url=initialLink, type=Url.TYPE_INTERNAL))
 		self.max_links = max_links
 		self.id = id
 		try:
@@ -107,6 +106,18 @@ class Crawler(Thread):
 		except Exception as ex:
 			logging.error("Exception {}".format(ex))
 
+	def no_to_visit(self):
+		return len(self.to_visit)
+
+	def no_visited(self):
+		return len(self.visited)
+
+	def get_unvisited(self):
+		link = None
+		with self.condition:
+			if len(self.to_visit) > 0:
+				link = self.to_visit.pop(0)
+		return link
 
 	def run(self):
 		
@@ -170,11 +181,11 @@ class Crawler(Thread):
 					
 					msg = {
 						"status": "in_progress", 
-						"visited" : len(self.visited), 
-						"to_visit" : len(self.to_visit),
-						"max_links" : 0,
-						"crawlId" : crawlId,
-						"currentWorker" : currentThread().getName()
+						"visited": len(self.visited),
+						"to_visit": len(self.to_visit),
+						"max_links": 0,
+						"crawlId": crawlId,
+						"currentWorker": currentThread().getName()
 					}
 
 					self.notify(msg)
@@ -213,7 +224,7 @@ class Crawler(Thread):
 		# Test if noOfJobs == 0 and to_visit == 0
 		with self.condition:
 			with self.noOfJobsLock:
-				if self.noOfJobs == 0 and len(self.to_visit) == 0:
+				if self.noOfJobs == 0 and self.no_to_visit() == 0:
 					return True
 		return False
 
@@ -242,7 +253,7 @@ class Crawler(Thread):
 	def _to_heavy_links(self, links, type):
 		heavy_links = []
 		for link in links:
-			heavy_link = Url(link['absolute'], link['href'], type)
+			heavy_link = Url(absolute_url=link['absolute'], url=link['href'], type=type)
 			heavy_links.append(heavy_link)
 		return heavy_links
 
@@ -273,7 +284,7 @@ class Crawler(Thread):
 
 	def export(self, file='crawl.csv'):
 		with open(file, 'w', newline='') as csvfile:
-			fieldnames = ['type','absolute url', 'url', 'mime'] 
+			fieldnames = ['type', 'absolute url', 'url']
 			writer = csv.DictWriter(csvfile, fieldnames=fieldnames, dialect='unix')
 
 			writer.writeheader()
@@ -282,8 +293,7 @@ class Crawler(Thread):
 					{
 						'type': Url.TYPE_INTERNAL,
 						'absolute url': il.absolute_url,
-						'url': il.url,
-						'mime': il.mime_type
+						'url': il.url
 					})
 
 			for el in self.external_links:
@@ -291,8 +301,7 @@ class Crawler(Thread):
 					{
 						'type': Url.TYPE_EXTERNAL,
 						'absolute url': el.absolute_url,
-						'url': el.url,
-						'mime': el.mime_type
+						'url': el.url
 					})
 
 
