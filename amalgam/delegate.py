@@ -109,7 +109,7 @@ class Delegate:
 
     def url_get_first_unvisited(self):
         session = self.get_session()
-        url = session.query(Url).filter_by(visited=False).first()
+        url = session.query(Url).filter(Url.visited==False).first()
         return url
 
     def url_count_unvisited(self):
