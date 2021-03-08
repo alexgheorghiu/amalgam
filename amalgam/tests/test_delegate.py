@@ -155,22 +155,34 @@ class TestDelegate(unittest.TestCase):
         
 
         # Link
-        link = Url()
-        link.parent_page_id = page.id
-        link.url = '/contact'
-        link.absolute_url = 'https://scriptoid.com/index.php'
-        link.type = Url.TYPE_INTERNAL
-        delegate.url_create(link)
-        assert link.id > 0
+        url = Url()
+        url.parent_page_id = page.id
+        url.url = '/contact'
+        url.absolute_url = 'https://scriptoid.com/index.php'
+        url.type = Url.TYPE_INTERNAL
+        delegate.url_create(url)
+        assert url.id > 0
 
         # Test first unvisited link
         l1 = delegate.url_get_first_unvisited()
-        assert l1.id == link.id, 'L1 is {}'.format(l1)
+        assert l1.id == url.id, 'L1 is {}'.format(l1)
 
-        link.visited = True
-        delegate.url_update(link)
+        n1 = delegate.url_count_unvisited()
+        assert n1 == 1, 'n1 is {}'.format(n1)
+
+        n2 = delegate.url_count_visited()
+        assert n2 == 0, 'n2 is {}'.format(n2)
+
+        url.visited = True
+        delegate.url_update(url)
         l1 = delegate.url_get_first_unvisited()
         assert l1 is None, 'L1 is {}'.format(l1)
+
+        n1 = delegate.url_count_unvisited()
+        assert n1 == 0, 'n1 is {}'.format(n1)
+
+        n2 = delegate.url_count_visited()
+        assert n2 == 1, 'n2 is {}'.format(n2)
 
         # Test a cascade delete from parent Page to Link
         delegate.resource_delete_all()

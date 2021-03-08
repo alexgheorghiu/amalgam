@@ -1,4 +1,5 @@
 from sqlalchemy.orm import scoped_session
+from sqlalchemy import func
 
 from amalgam.database import session_factory
 from amalgam.models.models import Site, User, Crawl, Url, Resource
@@ -34,16 +35,16 @@ class Delegate:
         session.commit()
 
     def create(self, object):
-        session = delegate.get_session()
+        session = self.get_session()
         session.add(object)
         session.commit()
 
     def update(self, object):
-        session = delegate.get_session()
+        session = self.get_session()
         session.commit()
 
     def delete(self, object):
-        session = delegate.get_session()
+        session = self.get_session()
         session.delete(object)
         session.commit()
 
@@ -91,6 +92,11 @@ class Delegate:
     def url_update(self, url):
         self.update(url)
 
+    def url_get_by_id(self, id):
+        session = self.get_session()
+        crawl = session.query(Url).get(id)
+        return crawl
+
     def url_delete_all(self):
         session = self.get_session()
         session.query(Url).delete()
@@ -100,6 +106,21 @@ class Delegate:
         session = delegate.get_session()
         urls = session.query(Url).all()
         return urls
+
+    def url_get_first_unvisited(self):
+        session = delegate.get_session()
+        url = session.query(Url).filter_by(visited=False).first()
+        return url
+
+    def url_count_unvisited(self):
+        session = delegate.get_session()
+        n = session.query(func.count(Url.id)).filter(Url.visited==False).scalar()
+        return n
+
+    def url_count_visited(self):
+        session = delegate.get_session()
+        n = session.query(func.count(Url.id)).filter(Url.visited==True).scalar()
+        return n
 
     def site_create(self, site):
         self.create(site)

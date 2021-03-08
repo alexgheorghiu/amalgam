@@ -6,8 +6,6 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
-Base = declarative_base()
-
 #TODO: load configuration dynamically 
 # engine = create_engine('sqlite:///amalgam.db')
 engine = create_engine('sqlite:///amalgam.db', echo=True)

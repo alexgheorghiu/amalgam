@@ -18,6 +18,6 @@ if __name__ == '__main__':
     # Create all tables if needed
     database.Base.metadata.create_all(database.engine)
     #
-    user = User(email='one@foo.com', password='one', name='one')
-    delegate.user_create(user)
-    print("User is [{}]".format(user.name))
+    # user = User(email='one@foo.com', password='one', name='one')
+    # delegate.user_create(user)
+    # print("User is [{}]".format(user.name))
