@@ -12,7 +12,7 @@ import time
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import logging
-from threading import Thread, Condition, currentThread, Lock
+from threading import Thread, Condition, currentThread, Lock, RLock
 import csv
 import uuid
 
@@ -328,7 +328,7 @@ class CrawlerDB(Thread):
 		self.workers = []
 		self.running = True
 		self.paused = False
-		self.condition = Lock()
+		self.condition = RLock()
 		self.delegate = delegate
 		self.noOfJobsLock = Lock()
 		self.noOfJobs = 0
@@ -340,6 +340,10 @@ class CrawlerDB(Thread):
 			self.domain_regex = re.compile(self.get_domain(initialLink))
 		except Exception as ex:
 			logging.error("Exception {}".format(ex))
+
+	def get_domain(self, url):
+		domain = urlparse(url).netloc
+		return domain
 
 	def add_initial_url(self, address):
 		with self.condition:
@@ -418,6 +422,10 @@ class CrawlerDB(Thread):
 			self._type_links(links)
 			return links
 
+	def link2url(self, link):
+		url = Url(url=link['href'], absolute_url=link['absolute'], type=link['type'])
+		return url
+
 	def add_links(self, links):
 		for link in links:
 			url = self.link2url(link)
@@ -472,8 +480,8 @@ class CrawlerDB(Thread):
 
 					msg = {
 						"status": "in_progress",
-						"visited": len(self.no_visited_urls()),
-						"to_visit": len(self.no_unvisited_urls()),
+						"visited": self.no_visited_urls(),
+						"to_visit": self.no_unvisited_urls(),
 						"max_links": 0,
 						"crawlId": crawlId,
 						"currentWorker": currentThread().getName()
@@ -527,6 +535,17 @@ class CrawlerDB(Thread):
 	def setRunning(self, status):
 		self.running = status
 
+	def addListener(self, callback):
+		self.listeners.append(callback)
+
+
+	def removeListener(self, callback):
+		self.listeners.remove(callback)
+
+
+	def notify(self, msg):
+		for callback in self.listeners:
+			callback(msg)
 
 def main():
 	# domain = 'localhost:7000'
