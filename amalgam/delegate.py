@@ -89,6 +89,12 @@ class Delegate:
     def url_create(self, url):
         self.create(url)
 
+    def url_is_present(self, absolute_address):
+        """Checks to see if a certain absolute address is present inside a DB"""
+        session = self.get_session()
+        n = session.query(func.count(Url.id)).filter(Url.absolute_url == absolute_address).scalar()
+        return n > 0
+
     def url_update(self, url):
         self.update(url)
 
@@ -109,17 +115,25 @@ class Delegate:
 
     def url_get_first_unvisited(self):
         session = self.get_session()
-        url = session.query(Url).filter(Url.visited==False).first()
+        url = session.query(Url).filter(Url.visited==False).filter(Url.type==Url.TYPE_INTERNAL).first()
         return url
 
     def url_count_unvisited(self):
+        """Count unvisited and internal links"""
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Url.visited==False).scalar()
+        n = session.query(func.count(Url.id))\
+            .filter(Url.visited==False)\
+            .filter(Url.type==Url.TYPE_INTERNAL).scalar()
         return n
 
     def url_count_visited(self):
         session = self.get_session()
         n = session.query(func.count(Url.id)).filter(Url.visited==True).scalar()
+        return n
+
+    def url_count_external(self):
+        session = self.get_session()
+        n = session.query(func.count(Url.id)).filter(Url.type==Url.TYPE_EXTERNAL).scalar()
         return n
 
     def site_create(self, site):

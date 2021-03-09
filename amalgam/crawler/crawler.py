@@ -358,19 +358,25 @@ class CrawlerDB(Thread):
 		with self.condition:
 			return self.delegate.url_count_visited()
 
+	def no_external_urls(self):
+		with self.condition:
+			return self.delegate.url_count_external()
+
 	def next_unvisited_link_id(self):
 		link_id = -1
 		with self.condition:
 			if self.no_unvisited_urls() > 0:
 				link_id = self._get_next_unvisited_url_id()
-				self.mark_url_as_visited(link_id)
-				self.increaseNoOfJobs()
+				if link_id != -1:
+					self.mark_url_as_visited(link_id)
+					self.increaseNoOfJobs()
 		return link_id
 
 	def _get_next_unvisited_url_id(self):
 		with self.condition:
 			url = self.delegate.url_get_first_unvisited()
-			return url.id
+			if url is not None:
+				return url.id
 		return -1
 
 	def mark_url_as_visited(self, url_id):
@@ -428,8 +434,9 @@ class CrawlerDB(Thread):
 
 	def add_links(self, links):
 		for link in links:
-			url = self.link2url(link)
-			self.delegate.url_create(url)
+			if not self.delegate.url_is_present(link['absolute']):
+				url = self.link2url(link)
+				self.delegate.url_create(url)
 
 	def run(self):
 
@@ -456,8 +463,8 @@ class CrawlerDB(Thread):
 
 		msg = {
 			"status": "done",
-			"visited": len(self.visited),
-			"to_visit": len(self.to_visit),
+			"visited": self.no_visited_urls(),
+			"to_visit": self.no_unvisited_urls(),
 			"max_links": 0,
 			"crawlId": self.id
 		}
@@ -555,7 +562,7 @@ def main():
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
-	parser.add_argument('-w', '--workers', type=int, default=1, help='Number of workers')
+	parser.add_argument('-w', '--workers', type=int, default=2, help='Number of workers')
 	parser.add_argument('-m','--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()
@@ -586,17 +593,17 @@ def main():
 	t2 = time.time()
 	total_time = t2 - t1
 
-	logger.info("Total internal links visited: %d in: %ds" % (len(crawler.visited), total_time))
+	logger.info("Total internal links visited: %d in: %ds" % (crawler.no_visited_urls(), total_time))
 	# for url in [link.absolute_url for link in crawler.visited]:
 	# 	logger.info("\t" + url)
 
-	logger.info("Total external links: %d" % len(crawler.external_links))
+	logger.info("Total external links: %d" % crawler.no_external_urls())
 	# for url in [link.absolute_url for link in crawler.external_links]:
 	# 	logger.info("\t" + url)
 
-	report('./crawl-requests-report.log', crawler.visited)
+	# report('./crawl-requests-report.log', crawler.visited)
 
-	crawler.export()
+	# crawler.export()
 
 if __name__ == "__main__":
 	main()
