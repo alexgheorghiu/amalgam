@@ -81,244 +81,7 @@ def get_links(url):
 	except Exception as ex:
 		logger.info("[%s] Error %s" %(currentThread().getName(), ex))
 
-	
 	return new_links
-
-
-class Crawler(Thread):
-	
-	def __init__(self, initialLink, max_links = 0, no_workers = 10, id = str(uuid.uuid4())):
-		Thread.__init__(self)
-		self.noOfWorkers = no_workers
-		self.workers = []
-		self.running = True
-		self.paused = False
-		self.condition = Lock()
-		self.to_visit = []  # Links to visit
-		self.visited = []
-		self.external_links = []	
-		self.noOfJobsLock = Lock()
-		self.noOfJobs = 0		
-		self.listeners = []
-
-		self.to_visit.append(Url(url=initialLink, absolute_url=initialLink, type=Url.TYPE_INTERNAL))
-		self.max_links = max_links
-		self.id = id
-		try:
-			self.domain_regex = re.compile(self.get_domain(initialLink))
-		except Exception as ex:
-			logging.error("Exception {}".format(ex))
-
-	def no_to_visit(self):
-		return len(self.to_visit)
-
-	def no_visited(self):
-		return len(self.visited)
-
-	def get_unvisited(self):
-		link = None
-		with self.condition:
-			if len(self.to_visit) > 0:
-				link = self.to_visit.pop(0)
-		return link
-
-	def run(self):
-		
-		# Initialize workers
-		for i in range(self.noOfWorkers):
-			self.workers.append(Thread(target=self.workerJob, kwargs={"crawlId": self.id}, name="Thread-{}".format(i)))
-
-		# Start workers
-		self._start_all_workers()
-
-		while self.running:
-			if self.paused:
-				continue
-
-			if self._is_job_done():
-				logger.info("Crawler is shutting down")
-				self.setRunning(False)
-				break
-
-			time.sleep(0.1)
-
-		# Join them
-		self._join_all_workers()
-
-		msg = {
-			"status": "done", 
-			"visited" : len(self.visited), 
-			"to_visit" : len(self.to_visit),
-			"max_links" : 0,
-			"crawlId" : self.id
-		}
-
-		self.notify(msg)
-
-	
-	def workerJob(self, crawlId):
-		while self.running:
-			if self.paused:
-				continue
-
-			link = None
-			with self.condition:
-				if len(self.to_visit) > 0:
-					link = self.to_visit.pop(0)
-					self.visited.append(link)
-					self.increaseNoOfJobs()
-
-			if 'link' in locals() and link != None:
-				logger.info("[%s] Current link : %s" %(currentThread().getName(), link.absolute_url))
-				internal_links, external_links = self._get_links(link.absolute_url)				
-
-				with self.condition:
-					for il in internal_links:
-						if not inside(il, self.visited):
-							if not inside(il, self.to_visit):
-								self.to_visit.append(il)
-
-					for el in external_links:
-						if not inside(el, self.external_links):
-							self.external_links.append(el)
-					
-					msg = {
-						"status": "in_progress", 
-						"visited": len(self.visited),
-						"to_visit": len(self.to_visit),
-						"max_links": 0,
-						"crawlId": crawlId,
-						"currentWorker": currentThread().getName()
-					}
-
-					self.notify(msg)
-
-				self.decreaseNoOfJobs()
-		else:
-			logger.info("[%s] is shutting down." %(currentThread().getName()))
-
-
-	def stop(self):
-		self.setRunning(False)
-
-
-	def pause(self):
-		self.paused = True
-
-	def resume(self):
-		if self.paused:
-			self.paused = False
-
-
-	def _start_all_workers(self):
-		for w in self.workers:
-			w.start()
-
-	def increaseNoOfJobs(self):
-		with self.noOfJobsLock:
-			self.noOfJobs = self.noOfJobs + 1
-
-	def decreaseNoOfJobs(self):
-		with self.noOfJobsLock:
-			self.noOfJobs = self.noOfJobs - 1	
-
-
-	def _is_job_done(self):
-		# Test if noOfJobs == 0 and to_visit == 0
-		with self.condition:
-			with self.noOfJobsLock:
-				if self.noOfJobs == 0 and self.no_to_visit() == 0:
-					return True
-		return False
-
-
-	def _join_all_workers(self):
-		for w in self.workers:
-			w.join()
-
-
-	def setRunning(self, status):
-		self.running = status
-
-		
-	def _filter_links(self, links):
-		external = []
-		internal = []
-
-		for l in links:
-			if re.search(self.domain_regex, l['absolute']): # internal link						
-				internal.append(l)
-			else: # external link
-				external.append(l)
-		return (internal, external)
-
-
-	def _to_heavy_links(self, links, type):
-		heavy_links = []
-		for link in links:
-			heavy_link = Url(absolute_url=link['absolute'], url=link['href'], type=type)
-			heavy_links.append(heavy_link)
-		return heavy_links
-
-
-	def _get_links(self, link):
-		links = get_links(link)
-		light_internal, light_external =  self._filter_links(links)
-		heavy_internal = self._to_heavy_links(light_internal, Url.TYPE_INTERNAL)
-		heavy_external = self._to_heavy_links(light_external, Url.TYPE_EXTERNAL)
-		return (heavy_internal, heavy_external)
-
-
-	def get_domain(self, url):		
-		domain = urlparse(url).netloc
-		return domain
-
-
-	def crawl(self, notify=None):		
-		# l = Link(self.initialLink, self.initialLink, Link.TYPE_INTERNAL )
-		# self.to_visit = [l]
-
-		self._start_all_workers()
-
-		# 	logger.info("Visited: %d To visit: %d" % (len(self.visited), len(self.to_visit)))
-
-		# if not notify == None:
-		# 		notify(len(self.visited), len(self.to_visit), self.max_links)
-
-	def export(self, file='crawl.csv'):
-		with open(file, 'w', newline='') as csvfile:
-			fieldnames = ['type', 'absolute url', 'url']
-			writer = csv.DictWriter(csvfile, fieldnames=fieldnames, dialect='unix')
-
-			writer.writeheader()
-			for il in self.visited:
-				writer.writerow(
-					{
-						'type': Url.TYPE_INTERNAL,
-						'absolute url': il.absolute_url,
-						'url': il.url
-					})
-
-			for el in self.external_links:
-				writer.writerow(
-					{
-						'type': Url.TYPE_EXTERNAL,
-						'absolute url': el.absolute_url,
-						'url': el.url
-					})
-
-
-	def addListener(self, callback):
-		self.listeners.append(callback)
-
-
-	def removeListener(self, callback):
-		self.listeners.remove(callback)
-
-
-	def notify(self, msg):
-		for callback in self.listeners:
-			callback(msg)
 
 
 class CrawlerDB(Thread):
@@ -429,7 +192,7 @@ class CrawlerDB(Thread):
 			return links
 
 	def link2url(self, link):
-		url = Url(url=link['href'], absolute_url=link['absolute'], type=link['type'])
+		url = Url(url=link['href'], absolute_url=link['absolute'], type=link['type'], crawl_id=self.id)
 		return url
 
 	def add_links(self, links):
@@ -585,7 +348,7 @@ def main():
 	crawl = Crawl(site_id=site.id)
 	delegate.crawl_create(crawl)
 
-	crawler = CrawlerDB(initialLink=theURL, max_links=max_links, no_workers=noOfWorkers, delegate=delegate)
+	crawler = CrawlerDB(initialLink=theURL, max_links=max_links, no_workers=noOfWorkers, delegate=delegate, id=crawl.id)
 
 	t1 = time.time()
 	crawler.start()
@@ -604,6 +367,7 @@ def main():
 	# report('./crawl-requests-report.log', crawler.visited)
 
 	# crawler.export()
+
 
 if __name__ == "__main__":
 	main()

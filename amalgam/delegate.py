@@ -113,6 +113,11 @@ class Delegate:
         urls = session.query(Url).all()
         return urls
 
+    def url_get_all_by_crawl_id(self, crawl_id):
+        session = self.get_session()
+        urls = session.query(Url).filter(Url.crawl_id==crawl_id).all()
+        return urls
+
     def url_get_first_unvisited(self):
         session = self.get_session()
         url = session.query(Url).filter(Url.visited==False).filter(Url.type==Url.TYPE_INTERNAL).first()

@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request, session, f
 from functools import wraps
 import os
 from flask_sqlalchemy import SQLAlchemy
-from amalgam.crawler.crawler import Crawler
+from amalgam.crawler.crawler import CrawlerDB
 import jsonpickle
 import threading
 
@@ -150,7 +150,7 @@ def crawl_exe():
 	
 
 	initial_url = request.form['address']
-	crawler = Crawler(initial_url, id=crawl.id, no_workers=1)
+	crawler = CrawlerDB(initial_url, id=crawl.id, no_workers=10, delegate=delegate)
 	crawler.addListener(notify)
 	crawler.start()
 	
@@ -215,8 +215,8 @@ def viewCrawl():
 	try:
 		id = request.args.get('id', type=int)
 		crawl = delegate.crawl_get_by_id(id)
-
-		return render_template('viewCrawl.html', crawl=crawl, links = crawl.links)
+		links = delegate.url_get_all_by_crawl_id(id)
+		return render_template('viewCrawl.html', crawl=crawl, links = links)
 	except ValueError as ve:
 		flash('No crawl id.')
 		return redirect(url_for('crawl'))	
