@@ -41,9 +41,9 @@ class TestCrawler(unittest.TestCase):
 
     def test_get_links(self):
         url = 'http://scriptoid.com'
-        links = get_links(url)
+        page, links = get_links(url)
 
-        assert len(links) == 12
+        assert len(links) == 12, "Found {} links at {}".format(len(links), url)
 
 if __name__ == '__main__':
     unittest.main()

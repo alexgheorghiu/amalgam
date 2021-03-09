@@ -86,6 +86,18 @@ class Delegate:
         session = self.get_session()
         return session.query(Resource).all()
 
+    def resource_get_by_absolute_url_and_crawl_id(self, absolute_url, crawlId):
+        session = self.get_session()
+        resource = session.query(Resource).filter(Resource.absolute_url == absolute_url, Resource.crawl_id == crawlId).first()
+        return resource
+
+
+    def resource_is_present(self, absolute_address):
+        """Checks to see if a certain Resource is present inside a DB"""
+        session = self.get_session()
+        n = session.query(func.count(Url.id)).filter(Resource.absolute_url == absolute_address).scalar()
+        return n > 0
+
     def url_create(self, url):
         self.create(url)
 

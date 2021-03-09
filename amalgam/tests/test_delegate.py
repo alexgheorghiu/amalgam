@@ -156,7 +156,7 @@ class TestDelegate(unittest.TestCase):
 
         # Link
         url = Url()
-        url.parent_page_id = page.id
+        url.src_resource_id = page.id
         url.url = '/contact'
         url.absolute_url = 'https://scriptoid.com/index.php'
         url.type = Url.TYPE_INTERNAL
@@ -171,7 +171,7 @@ class TestDelegate(unittest.TestCase):
         assert n1 == 1, 'n1 is {}'.format(n1)
 
         n2 = delegate.url_count_visited()
-        assert n2 == 0, 'n2 is {}'.format(n2)
+        assert n2 == 0, 'Actually n2 is {}'.format(n2)
 
         url.visited = True
         delegate.url_update(url)
@@ -187,7 +187,7 @@ class TestDelegate(unittest.TestCase):
         # Test a cascade delete from parent Page to Link
         delegate.resource_delete_all()
         links = delegate.url_get_all()
-        assert len(links) == 0
+        assert len(links) == 0, "When actually there are {}".format(len(links))
 
         # Clean up
         # delegate.link_delete_all()
@@ -274,7 +274,7 @@ class TestDelegate(unittest.TestCase):
     #     p.crawl_id = crawl.id
     #     delegate.page_create(p)
         
-    #     l.destination_page_id = p.id
+    #     l.destination_resource_id = p.id
     #     delegate.link_update(l)
 
 

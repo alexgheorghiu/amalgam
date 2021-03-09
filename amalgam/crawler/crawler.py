@@ -60,10 +60,14 @@ def get_links(url):
 	Get links from a link as a list of {'href', 'content', 'absolute'}
 	"""
 	logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
-	new_links = []			
+	links = []
+	page = {'url': url}
 
 	try:
 		pre = requests.head(url)
+
+		if 'content-type' in pre.headers:
+			page['content-type'] = pre.headers['content-type']
 
 		if 'text/html' in pre.headers['content-type']:
 			r = requests.get(url)			
@@ -74,14 +78,18 @@ def get_links(url):
 						href = link.attrs['href']
 						content = link.contents
 						absolute = to_absolute_url(url, href)
-						new_links.append({'href': href, 'content': content, 'absolute': absolute})
+						links.append({'href': href, 'content': content, 'absolute': absolute})
 					elif 'name' in link.attrs:
 						# Just anchor
 						pass
+
+				page['content'] = r.content
+			page['status'] = r.status_code
+
 	except Exception as ex:
 		logger.info("[%s] Error %s" %(currentThread().getName(), ex))
 
-	return new_links
+	return page, links
 
 
 class CrawlerDB(Thread):
@@ -187,19 +195,40 @@ class CrawlerDB(Thread):
 	def _get_links(self, link_id):
 		with self.condition:
 			link = self.delegate.url_get_by_id(link_id)
-			links = get_links(link.absolute_url)
+			(page, links) = get_links(link.absolute_url)
 			self._type_links(links)
-			return links
+			return page, links
 
 	def link2url(self, link):
 		url = Url(url=link['href'], absolute_url=link['absolute'], type=link['type'], crawl_id=self.id)
 		return url
 
-	def add_links(self, links):
+	def page2resource(self, page):
+		resource = Resource(crawl_id=self.id)
+		if 'url' in page:
+			resource.absolute_url = page['url']
+		if 'content' in page:
+			resource.content = page['content']
+		return resource
+
+	def add_links(self, links, resource_id = None):
+		"""Add a bunch of URLs using the resource id as source (page where found it)"""
 		for link in links:
 			if not self.delegate.url_is_present(link['absolute']):
 				url = self.link2url(link)
+				if resource_id is not None:
+					url.src_resource_id = resource_id
 				self.delegate.url_create(url)
+
+	def add_resource(self, page):
+		if not self.delegate.resource_is_present():
+			resource = self.page2resource(page)
+			self.delegate.resource_create(resource)
+
+	def connect_url_to_destination(self, url_id, resource_id):
+		url = self.delegate.url_get_by_id(url_id)
+		url.dst_resource_id = resource_id
+		self.delegate.url_update(url)
 
 	def run(self):
 
@@ -243,10 +272,23 @@ class CrawlerDB(Thread):
 
 			if 'link_id' in locals() and link_id != -1:
 				logger.info("[%s] Current link : %d" % (currentThread().getName(), link_id))
-				links = self._get_links(link_id)
+				page, links = self._get_links(link_id)
 
 				with self.condition:
-					self.add_links(links)
+
+					try:
+						# 1.Add Resource 2.Link URLs to (new | existing) Resources
+						resource = self.delegate.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
+						if resource is None:
+							resource = self.page2resource(page)
+							self.delegate.resource_create(resource)
+
+						self.connect_url_to_destination(link_id, resource.id)
+
+						self.add_links(links, resource.id)
+
+					except Exception as e:
+						print("Error {}".format(e))
 
 					msg = {
 						"status": "in_progress",
@@ -325,7 +367,7 @@ def main():
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
-	parser.add_argument('-w', '--workers', type=int, default=2, help='Number of workers')
+	parser.add_argument('-w', '--workers', type=int, default=4, help='Number of workers')
 	parser.add_argument('-m','--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()

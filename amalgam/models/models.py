@@ -56,8 +56,8 @@ class Url(Base):
     redirects = Column(String, nullable=True) # TODO: Convert to large text / blob
     type = Column(String, nullable=True) # external or internal
     visited = Column(Boolean, default=False)  # external or internal
-    parent_page_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)
-    destination_page_id = Column(Integer, ForeignKey('resources.id'), nullable=True)
+    src_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)  # Source Resource
+    dst_resource_id = Column(Integer, ForeignKey('resources.id'), nullable=True)  # Destination Resource
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
 
     # def __init__(self, absolute_url, url, type):
