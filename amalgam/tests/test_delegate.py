@@ -160,28 +160,29 @@ class TestDelegate(unittest.TestCase):
         url.url = '/contact'
         url.absolute_url = 'https://scriptoid.com/index.php'
         url.type = Url.TYPE_INTERNAL
+        url.crawl_id = crawl.id
         delegate.url_create(url)
         assert url.id > 0
 
         # Test first unvisited link
-        l1 = delegate.url_get_first_unvisited()
+        l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
         assert l1.id == url.id, 'L1 is {}'.format(l1)
 
-        n1 = delegate.url_count_unvisited()
+        n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
         assert n1 == 1, 'n1 is {}'.format(n1)
 
-        n2 = delegate.url_count_visited()
+        n2 = delegate.url_count_visited(crawl_id=crawl.id)
         assert n2 == 0, 'Actually n2 is {}'.format(n2)
 
         url.visited = True
         delegate.url_update(url)
-        l1 = delegate.url_get_first_unvisited()
+        l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
         assert l1 is None, 'L1 is {}'.format(l1)
 
-        n1 = delegate.url_count_unvisited()
+        n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
         assert n1 == 0, 'n1 is {}'.format(n1)
 
-        n2 = delegate.url_count_visited()
+        n2 = delegate.url_count_visited(crawl_id=crawl.id)
         assert n2 == 1, 'n2 is {}'.format(n2)
 
         # Test a cascade delete from parent Page to Link

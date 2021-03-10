@@ -124,15 +124,15 @@ class CrawlerDB(Thread):
 
 	def no_unvisited_urls(self):
 		with self.condition:
-			return self.delegate.url_count_unvisited()
+			return self.delegate.url_count_unvisited(self.id)
 
 	def no_visited_urls(self):
 		with self.condition:
-			return self.delegate.url_count_visited()
+			return self.delegate.url_count_visited(self.id)
 
 	def no_external_urls(self):
 		with self.condition:
-			return self.delegate.url_count_external()
+			return self.delegate.url_count_external(self.id)
 
 	def next_unvisited_link_id(self):
 		link_id = -1
@@ -144,7 +144,7 @@ class CrawlerDB(Thread):
 
 	def _get_next_unvisited_url_id(self):
 		with self.condition:
-			url = self.delegate.url_get_first_unvisited()
+			url = self.delegate.url_get_first_unvisited(self.id)
 			if url is not None:
 				return url.id
 		return -1
@@ -213,7 +213,7 @@ class CrawlerDB(Thread):
 		"""Add a bunch of URLs using the resource id as source (page where found it)"""
 		with self.condition:
 			for link in links:
-				if not self.delegate.url_is_present(link['absolute']):
+				if not self.delegate.url_is_present(link['absolute'], crawlId=self.id):
 					url = self.link2url(link)
 					if resource_id is not None:
 						url.src_resource_id = resource_id
@@ -221,7 +221,7 @@ class CrawlerDB(Thread):
 
 	def add_resource(self, page):
 		with self.condition:
-			if not self.delegate.resource_is_present():
+			if not self.delegate.resource_is_present(crawlId=self.id):
 				resource = self.page2resource(page)
 				self.delegate.resource_create(resource)
 

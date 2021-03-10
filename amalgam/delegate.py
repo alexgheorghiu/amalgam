@@ -91,20 +91,23 @@ class Delegate:
         resource = session.query(Resource).filter(Resource.absolute_url == absolute_url, Resource.crawl_id == crawlId).first()
         return resource
 
-
-    def resource_is_present(self, absolute_address):
+    def resource_is_present(self, absolute_address, crawlId):
         """Checks to see if a certain Resource is present inside a DB"""
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Resource.absolute_url == absolute_address).scalar()
+        n = session.query(func.count(Url.id))\
+            .filter(Resource.absolute_url == absolute_address)\
+            .filter(Resource.crawl_id == crawlId).scalar()
         return n > 0
 
     def url_create(self, url):
         self.create(url)
 
-    def url_is_present(self, absolute_address):
+    def url_is_present(self, absolute_address, crawlId):
         """Checks to see if a certain absolute address is present inside a DB"""
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Url.absolute_url == absolute_address).scalar()
+        n = session.query(func.count(Url.id)).filter(Url.absolute_url == absolute_address) \
+            .filter(Url.crawl_id == crawlId)\
+            .scalar()
         return n > 0
 
     def url_update(self, url):
@@ -130,27 +133,36 @@ class Delegate:
         urls = session.query(Url).filter(Url.crawl_id==crawl_id).all()
         return urls
 
-    def url_get_first_unvisited(self):
+    def url_get_first_unvisited(self, crawl_id):
         session = self.get_session()
-        url = session.query(Url).filter(Url.visited==False).filter(Url.type==Url.TYPE_INTERNAL).first()
+        url = session.query(Url).filter(Url.visited==False)\
+            .filter(Url.type==Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id) \
+            .first()
         return url
 
-    def url_count_unvisited(self):
+    def url_count_unvisited(self, crawl_id):
         """Count unvisited and internal links"""
         session = self.get_session()
         n = session.query(func.count(Url.id))\
             .filter(Url.visited==False)\
-            .filter(Url.type==Url.TYPE_INTERNAL).scalar()
+            .filter(Url.type==Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id) \
+            .scalar()
         return n
 
-    def url_count_visited(self):
+    def url_count_visited(self, crawl_id):
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Url.visited==True, Url.type==Url.TYPE_INTERNAL).scalar()
+        n = session.query(func.count(Url.id)).filter(Url.visited==True, Url.type==Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id) \
+            .scalar()
         return n
 
-    def url_count_external(self):
+    def url_count_external(self, crawl_id):
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Url.type==Url.TYPE_EXTERNAL).scalar()
+        n = session.query(func.count(Url.id)).filter(Url.type==Url.TYPE_EXTERNAL) \
+            .filter(Url.crawl_id == crawl_id) \
+            .scalar()
         return n
 
     def site_create(self, site):
