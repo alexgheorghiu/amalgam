@@ -145,7 +145,7 @@ class Delegate:
 
     def url_count_visited(self):
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Url.visited==True).scalar()
+        n = session.query(func.count(Url.id)).filter(Url.visited==True, Url.type==Url.TYPE_INTERNAL).scalar()
         return n
 
     def url_count_external(self):

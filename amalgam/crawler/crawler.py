@@ -99,14 +99,14 @@ class CrawlerDB(Thread):
 		self.workers = []
 		self.running = True
 		self.paused = False
-		self.condition = RLock()
+		self.condition = Lock()
 		self.delegate = delegate
 		self.noOfJobsLock = Lock()
 		self.noOfJobs = 0
 		self.listeners = []
+		self.id = id
 		self.add_initial_url(initialLink)
 		self.max_links = max_links
-		self.id = id
 		try:
 			self.domain_regex = re.compile(self.get_domain(initialLink))
 		except Exception as ex:
@@ -117,8 +117,9 @@ class CrawlerDB(Thread):
 		return domain
 
 	def add_initial_url(self, address):
+		logger.info("Add intial URL")
 		with self.condition:
-			url = Url(url=address, absolute_url=address, type=Url.TYPE_INTERNAL)
+			url = Url(url=address, absolute_url=address, type=Url.TYPE_INTERNAL, crawl_id=self.id)
 			self.delegate.url_create(url)
 
 	def no_unvisited_urls(self):
@@ -135,12 +136,10 @@ class CrawlerDB(Thread):
 
 	def next_unvisited_link_id(self):
 		link_id = -1
-		with self.condition:
-			if self.no_unvisited_urls() > 0:
-				link_id = self._get_next_unvisited_url_id()
-				if link_id != -1:
-					self.mark_url_as_visited(link_id)
-					self.increaseNoOfJobs()
+		if self.no_unvisited_urls() > 0:
+			link_id = self._get_next_unvisited_url_id()
+			if link_id != -1:
+				self.increaseNoOfJobs()
 		return link_id
 
 	def _get_next_unvisited_url_id(self):
@@ -184,7 +183,6 @@ class CrawlerDB(Thread):
 
 		return new_links
 
-
 	def _type_links(self, links):
 		for link in links:
 			if re.search(self.domain_regex, link['absolute']): # internal link
@@ -213,22 +211,25 @@ class CrawlerDB(Thread):
 
 	def add_links(self, links, resource_id = None):
 		"""Add a bunch of URLs using the resource id as source (page where found it)"""
-		for link in links:
-			if not self.delegate.url_is_present(link['absolute']):
-				url = self.link2url(link)
-				if resource_id is not None:
-					url.src_resource_id = resource_id
-				self.delegate.url_create(url)
+		with self.condition:
+			for link in links:
+				if not self.delegate.url_is_present(link['absolute']):
+					url = self.link2url(link)
+					if resource_id is not None:
+						url.src_resource_id = resource_id
+					self.delegate.url_create(url)
 
 	def add_resource(self, page):
-		if not self.delegate.resource_is_present():
-			resource = self.page2resource(page)
-			self.delegate.resource_create(resource)
+		with self.condition:
+			if not self.delegate.resource_is_present():
+				resource = self.page2resource(page)
+				self.delegate.resource_create(resource)
 
 	def connect_url_to_destination(self, url_id, resource_id):
-		url = self.delegate.url_get_by_id(url_id)
-		url.dst_resource_id = resource_id
-		self.delegate.url_update(url)
+		with self.condition:
+			url = self.delegate.url_get_by_id(url_id)
+			url.dst_resource_id = resource_id
+			self.delegate.url_update(url)
 
 	def run(self):
 
@@ -240,15 +241,21 @@ class CrawlerDB(Thread):
 		self._start_all_workers()
 
 		while self.running:
+			logger.debug("[%s] Crawler thread cycle started." % (currentThread().getName()))
 			if self.paused:
+				logger.debug("[%s] Crawler paused." % (currentThread().getName()))
 				continue
 
+			logger.debug("[%s] Crawler check if jobs are done." % (currentThread().getName()))
 			if self._is_job_done():
-				logger.info("Crawler is shutting down")
+				logger.debug("Crawler is shutting down")
 				self.setRunning(False)
 				break
+			else:
+				logger.debug("[%s] Crawler's jos are NOT done." % (currentThread().getName()))
 
-			time.sleep(0.1)
+			logger.debug("[%s] Crawler sleep." % (currentThread().getName()))
+			time.sleep(1)
 
 		# Join them
 		self._join_all_workers()
@@ -263,32 +270,47 @@ class CrawlerDB(Thread):
 
 		self.notify(msg)
 
+	def resource_get_by_absolute_url_and_crawl_id(self, address, crawler_id):
+		with self.condition:
+			resource = self.delegate.resource_get_by_absolute_url_and_crawl_id(address, crawler_id)
+			return resource
+
+	def resource_create(self, page):
+		with self.condition:
+			try:
+				resource = self.page2resource(page)
+				self.delegate.resource_create(resource)
+			except Exception as e:
+				logger.warn("{} Exception {}}.".format (currentThread().getName(), e))
+			return resource
+
 	def workerJob(self, crawlId):
 		while self.running:
+			logger.debug("[%s] Worker thread cycle started." % (currentThread().getName()))
+
 			if self.paused:
 				continue
 
 			link_id = self.next_unvisited_link_id()
+			logger.debug("[%s] Next link [%d]." % (currentThread().getName(), link_id))
 
 			if 'link_id' in locals() and link_id != -1:
-				logger.info("[%s] Current link : %d" % (currentThread().getName(), link_id))
+				logger.debug("[%s] Current link : %d" % (currentThread().getName(), link_id))
 				page, links = self._get_links(link_id)
+				logger.debug("[%s] Discovered [%d] links." % (currentThread().getName(), len(links)))
 
-				with self.condition:
+				try:
+					# 1.Add Resource 2.Link URLs to (new | existing) Resources
+					resource = self.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
+					if resource is None:
+						resource = self.resource_create(page)
 
-					try:
-						# 1.Add Resource 2.Link URLs to (new | existing) Resources
-						resource = self.delegate.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
-						if resource is None:
-							resource = self.page2resource(page)
-							self.delegate.resource_create(resource)
+					self.connect_url_to_destination(link_id, resource.id)
 
-						self.connect_url_to_destination(link_id, resource.id)
+					logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
+					self.add_links(links, resource.id)
 
-						self.add_links(links, resource.id)
-
-					except Exception as e:
-						print("Error {}".format(e))
+					self.mark_url_as_visited(link_id)
 
 					msg = {
 						"status": "in_progress",
@@ -300,10 +322,14 @@ class CrawlerDB(Thread):
 					}
 
 					self.notify(msg)
+				except Exception as e:
+					print("Error {}".format(e))
 
 				self.decreaseNoOfJobs()
+
+			logger.debug("[%s] cycle ended." % (currentThread().getName()))
 		else:
-			logger.info("[%s] is shutting down." % (currentThread().getName()))
+			logger.debug("[%s] is shutting down." % (currentThread().getName()))
 
 
 	def stop(self):
@@ -330,12 +356,14 @@ class CrawlerDB(Thread):
 		with self.noOfJobsLock:
 			self.noOfJobs = self.noOfJobs - 1
 
+	def getNoOfJobs(self):
+		with self.noOfJobsLock:
+			return self.noOfJobs
+
 	def _is_job_done(self):
 		# Test if noOfJobs == 0 and to_visit == 0
-		with self.condition:
-			with self.noOfJobsLock:
-				if self.noOfJobs == 0 and self.no_unvisited_urls() == 0:
-					return True
+		if self.getNoOfJobs() == 0 and self.no_unvisited_urls() == 0:
+			return True
 		return False
 
 
