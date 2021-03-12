@@ -15,7 +15,7 @@ from sqlalchemy import event
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam'
-SQLALCHEMY_ECHO = True
+SQLALCHEMY_ECHO = False
 
 # Create engine
 engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO) # connect to server

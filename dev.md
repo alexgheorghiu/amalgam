@@ -7,6 +7,7 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 # Table of content #
 * [Project structure](#project-structure)
 * [How to run only crawler](#how-to-run-only-crawler)  
+* [How to play with database](#how-to-play-with-database)
 * [How to run tests](#how-to-run-tests)
 * [How to run it](#how-to-run-it)  
 	* How to run it ( [XUbuntu 20](#how-to-run-it-xubuntu-20) )
@@ -28,7 +29,7 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 	* *.sql - SQLite SQL files 
 	* amalgam_mysql.sql - SQL script to create an Amalgam DB
 * app.py - the actual starting point of the application
-* db_create.py - reset current (SQLite) database  
+* manage_db.py - manage current database (SQLite | MySQL )  
 * DEV.md - this file
 * requirements.txt - the Python dependencies for the project (used by pip3)
 
@@ -45,6 +46,16 @@ While being inside the [amalgam] folder run:
 python -m amalgam.crawler.crawler
 ```
 
+
+## How to play with database
+While being inside the [amalgam] folder run:
+```sh
+# Create tables inside DB 
+python manage_db.py -a empty
+
+# Create tables inside DB  and add some data
+python manage_db.py -a mock
+```
 
 
 ## How to run it ##
