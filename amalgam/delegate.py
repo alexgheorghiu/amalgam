@@ -135,7 +135,7 @@ class Delegate:
 
     def url_get_first_unvisited(self, crawl_id):
         session = self.get_session()
-        url = session.query(Url).filter(Url.visited==False)\
+        url = session.query(Url).filter(Url.job_status==Url.JOB_STATUS_NOT_VISITED)\
             .filter(Url.type==Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .first()
@@ -145,7 +145,7 @@ class Delegate:
         """Count unvisited and internal links"""
         session = self.get_session()
         n = session.query(func.count(Url.id))\
-            .filter(Url.visited==False)\
+            .filter(Url.job_status==Url.JOB_STATUS_NOT_VISITED)\
             .filter(Url.type==Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .scalar()
@@ -153,7 +153,7 @@ class Delegate:
 
     def url_count_visited(self, crawl_id):
         session = self.get_session()
-        n = session.query(func.count(Url.id)).filter(Url.visited==True, Url.type==Url.TYPE_INTERNAL) \
+        n = session.query(func.count(Url.id)).filter(Url.job_status == Url.JOB_STATUS_VISITED, Url.type==Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .scalar()
         return n

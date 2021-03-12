@@ -49,13 +49,17 @@ class Url(Base):
     TYPE_EXTERNAL = "external"
     TYPE_INTERNAL = "internal"
 
+    JOB_STATUS_NOT_VISITED = 0
+    JOB_STATUS_IN_PROGRESS = 1
+    JOB_STATUS_VISITED = 2
+
     id = Column(Integer, primary_key=True)
     url = Column(String(2048), nullable=True)  # The link as it appears on the page
     absolute_url = Column(String(2048), nullable=False) # The fabsolute URL it resolves
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
     redirects = Column(Text, nullable=True) # TODO: Convert to large text / blob
     type = Column(String(20), nullable=True) # external or internal
-    visited = Column(Boolean, default=False)  # external or internal
+    job_status = Column(Integer, default=JOB_STATUS_NOT_VISITED)  # If crawler visited the link or not
     src_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)  # Source Resource
     dst_resource_id = Column(Integer, ForeignKey('resources.id'), nullable=True)  # Destination Resource
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))

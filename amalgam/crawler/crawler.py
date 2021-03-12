@@ -152,7 +152,7 @@ class CrawlerDB(Thread):
 	def mark_url_as_visited(self, url_id):
 		with self.condition:
 			url = self.delegate.url_get_by_id(url_id)
-			url.visited = True
+			url.visited = Url.JOB_STATUS_VISITED
 			self.delegate.url_update(url)
 
 	def get_links(url):

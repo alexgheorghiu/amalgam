@@ -174,7 +174,7 @@ class TestDelegate(unittest.TestCase):
         n2 = delegate.url_count_visited(crawl_id=crawl.id)
         assert n2 == 0, 'Actually n2 is {}'.format(n2)
 
-        url.visited = True
+        url.job_status = Url.JOB_STATUS_VISITED
         delegate.url_update(url)
         l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
         assert l1 is None, 'L1 is {}'.format(l1)
