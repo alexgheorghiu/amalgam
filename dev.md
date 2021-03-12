@@ -23,6 +23,10 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 	* [static] - static files: css, js, images  
 	* [templates] - Jinja pages  
 	* [tests] - tests
+* [documentation] - folder with different documentation
+	* [design] - things related to design
+	* *.sql - SQLite SQL files 
+	* amalgam_mysql.sql - SQL script to create an Amalgam DB
 * app.py - the actual starting point of the application
 * db_create.py - reset current (SQLite) database  
 * DEV.md - this file

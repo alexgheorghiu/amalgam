@@ -8,3 +8,4 @@ mechanize
 Flask-SQLAlchemy
 jsonpickle
 SQLAlchemy==1.3.20
+PyMySQL==1.0.2
