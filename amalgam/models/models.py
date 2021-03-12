@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import ForeignKey, Column, Integer, String, DateTime
+from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime, String, Boolean, Text
 
@@ -45,24 +45,26 @@ class Crawl(Base):
 
 class Url(Base):
     __tablename__ = "urls"
+    # __table_args__ = (UniqueConstraint('crawl_id', 'absolute_url', name='url_unique_in_crawl'),)
 
     TYPE_EXTERNAL = "external"
     TYPE_INTERNAL = "internal"
 
-    JOB_STATUS_NOT_VISITED = 0
-    JOB_STATUS_IN_PROGRESS = 1
-    JOB_STATUS_VISITED = 2
+    JOB_STATUS_NOT_VISITED = "not visited"
+    JOB_STATUS_IN_PROGRESS = "in progress"
+    JOB_STATUS_VISITED = "visited"
 
     id = Column(Integer, primary_key=True)
     url = Column(String(2048), nullable=True)  # The link as it appears on the page
-    absolute_url = Column(String(2048), nullable=False) # The fabsolute URL it resolves
+    absolute_url = Column('absolute_url', String(2048), nullable=False) # The fabsolute URL it resolves
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
     redirects = Column(Text, nullable=True) # TODO: Convert to large text / blob
     type = Column(String(20), nullable=True) # external or internal
-    job_status = Column(Integer, default=JOB_STATUS_NOT_VISITED)  # If crawler visited the link or not
+    job_status = Column(String(20), default=JOB_STATUS_NOT_VISITED)  # If crawler visited the link or not
     src_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)  # Source Resource
     dst_resource_id = Column(Integer, ForeignKey('resources.id'), nullable=True)  # Destination Resource
-    crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
+    crawl_id = Column('crawl_id',Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
+
 
     # def __init__(self, absolute_url, url, type):
     #     self.absolute_url = absolute_url

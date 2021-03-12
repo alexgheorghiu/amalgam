@@ -157,6 +157,15 @@ class TestDelegate(unittest.TestCase):
         # Link
         url = Url()
         url.src_resource_id = page.id
+        url.url = '/team'
+        url.absolute_url = 'https://scriptoid.com/team'
+        url.type = Url.TYPE_INTERNAL
+        url.crawl_id = crawl.id
+        url.job_status = Url.JOB_STATUS_IN_PROGRESS
+        delegate.url_create(url)
+
+        url = Url()
+        url.src_resource_id = page.id
         url.url = '/contact'
         url.absolute_url = 'https://scriptoid.com/index.php'
         url.type = Url.TYPE_INTERNAL

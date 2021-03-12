@@ -1,7 +1,7 @@
 from sqlalchemy.orm import scoped_session
 from sqlalchemy import func
 
-from amalgam.database import session_factory
+from amalgam.database import session_factory, engine
 from amalgam.models.models import Site, User, Crawl, Url, Resource
 
 
@@ -135,20 +135,34 @@ class Delegate:
 
     def url_get_first_unvisited(self, crawl_id):
         session = self.get_session()
-        url = session.query(Url).filter(Url.job_status==Url.JOB_STATUS_NOT_VISITED)\
+        url = session.query(Url)\
+            .filter(Url.job_status==Url.JOB_STATUS_NOT_VISITED)\
             .filter(Url.type==Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .first()
         return url
 
+    def url_get_all_unvisited(self, crawl_id):
+        session = self.get_session()
+        urls = session.query(Url) \
+            .filter(Url.job_status == Url.JOB_STATUS_NOT_VISITED) \
+            .filter(Url.type == Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id) \
+            .all()
+        return urls
+
     def url_count_unvisited(self, crawl_id):
         """Count unvisited and internal links"""
+
         session = self.get_session()
-        n = session.query(func.count(Url.id))\
-            .filter(Url.job_status==Url.JOB_STATUS_NOT_VISITED)\
-            .filter(Url.type==Url.TYPE_INTERNAL) \
-            .filter(Url.crawl_id == crawl_id) \
-            .scalar()
+        query = session.query(func.count(Url.id))\
+            .filter(Url.job_status == Url.JOB_STATUS_NOT_VISITED)\
+            .filter(Url.type == Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id)
+        # raw = query.compile(engine)
+        from amalgam.dbutils import literalquery
+        raw = literalquery(query)
+        n = query.scalar()
         return n
 
     def url_count_visited(self, crawl_id):

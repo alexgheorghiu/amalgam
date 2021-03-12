@@ -26,7 +26,7 @@ from amalgam.delegate import delegate
 
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
 logger = logging.getLogger("crawler")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 # create console handler and set level to debug
 ch = logging.StreamHandler()
@@ -93,7 +93,7 @@ def get_links(url):
 
 
 class CrawlerDB(Thread):
-	def __init__(self, initialLink, delegate, max_links = 0, no_workers = 10, id = str(uuid.uuid4())):
+	def __init__(self, delegate, initialLink=None,  max_links = 0, no_workers = 10, id = str(uuid.uuid4())):
 		Thread.__init__(self)
 		self.noOfWorkers = no_workers
 		self.workers = []
@@ -105,7 +105,8 @@ class CrawlerDB(Thread):
 		self.noOfJobs = 0
 		self.listeners = []
 		self.id = id
-		self.add_initial_url(initialLink)
+		if initialLink is not None:
+			self.add_initial_url(initialLink)
 		self.max_links = max_links
 		try:
 			self.domain_regex = re.compile(self.get_domain(initialLink))
@@ -119,12 +120,16 @@ class CrawlerDB(Thread):
 	def add_initial_url(self, address):
 		logger.info("Add intial URL")
 		with self.condition:
-			url = Url(url=address, absolute_url=address, type=Url.TYPE_INTERNAL, crawl_id=self.id)
+			url = Url(url=address, absolute_url=address, type=Url.TYPE_INTERNAL, crawl_id=self.id, job_status=Url.JOB_STATUS_NOT_VISITED)
 			self.delegate.url_create(url)
 
 	def no_unvisited_urls(self):
 		with self.condition:
 			return self.delegate.url_count_unvisited(self.id)
+
+	def all_unvisited_urls(self):
+		with self.condition:
+			return self.delegate.url_get_all_unvisited(self.id)
 
 	def no_visited_urls(self):
 		with self.condition:
@@ -146,13 +151,17 @@ class CrawlerDB(Thread):
 		with self.condition:
 			url = self.delegate.url_get_first_unvisited(self.id)
 			if url is not None:
+				# Set url as in progress
+				url.job_status == Url.JOB_STATUS_IN_PROGRESS
+				self.delegate.url_update(url)
+
 				return url.id
 		return -1
 
 	def mark_url_as_visited(self, url_id):
 		with self.condition:
 			url = self.delegate.url_get_by_id(url_id)
-			url.visited = Url.JOB_STATUS_VISITED
+			url.job_status = Url.JOB_STATUS_VISITED
 			self.delegate.url_update(url)
 
 	def get_links(url):
@@ -231,6 +240,20 @@ class CrawlerDB(Thread):
 			url.dst_resource_id = resource_id
 			self.delegate.url_update(url)
 
+	def resource_get_by_absolute_url_and_crawl_id(self, address, crawler_id):
+		with self.condition:
+			resource = self.delegate.resource_get_by_absolute_url_and_crawl_id(address, crawler_id)
+			return resource
+
+	def resource_create(self, page):
+		with self.condition:
+			try:
+				resource = self.page2resource(page)
+				self.delegate.resource_create(resource)
+			except Exception as e:
+				logger.warn("{} Exception {}}.".format (currentThread().getName(), e))
+			return resource
+
 	def run(self):
 
 		# Initialize workers
@@ -247,7 +270,7 @@ class CrawlerDB(Thread):
 				continue
 
 			logger.debug("[%s] Crawler check if jobs are done." % (currentThread().getName()))
-			if self._is_job_done():
+			if self._are_jobs_done():
 				logger.debug("Crawler is shutting down")
 				self.setRunning(False)
 				break
@@ -255,7 +278,7 @@ class CrawlerDB(Thread):
 				logger.debug("[%s] Crawler's jos are NOT done." % (currentThread().getName()))
 
 			logger.debug("[%s] Crawler sleep." % (currentThread().getName()))
-			time.sleep(1)
+			time.sleep(0.1)
 
 		# Join them
 		self._join_all_workers()
@@ -270,19 +293,6 @@ class CrawlerDB(Thread):
 
 		self.notify(msg)
 
-	def resource_get_by_absolute_url_and_crawl_id(self, address, crawler_id):
-		with self.condition:
-			resource = self.delegate.resource_get_by_absolute_url_and_crawl_id(address, crawler_id)
-			return resource
-
-	def resource_create(self, page):
-		with self.condition:
-			try:
-				resource = self.page2resource(page)
-				self.delegate.resource_create(resource)
-			except Exception as e:
-				logger.warn("{} Exception {}}.".format (currentThread().getName(), e))
-			return resource
 
 	def workerJob(self, crawlId):
 		while self.running:
@@ -360,9 +370,19 @@ class CrawlerDB(Thread):
 		with self.noOfJobsLock:
 			return self.noOfJobs
 
-	def _is_job_done(self):
+	def _are_jobs_done(self):
 		# Test if noOfJobs == 0 and to_visit == 0
-		if self.getNoOfJobs() == 0 and self.no_unvisited_urls() == 0:
+		no_of_jobs = self.getNoOfJobs()
+		no_unvisited_urls = self.no_unvisited_urls()
+		logger.debug("Crawler: _are_jobs_done(...) : no_of_jobs = %d no_unvisited_urls = %d" % (no_of_jobs, no_unvisited_urls))
+
+		# WARNING: Here is something very fishy!
+		if no_unvisited_urls > 0:
+			urls = self.all_unvisited_urls()
+			for url in urls:
+				logger.debug("Crawler: _are_jobs_done(...) : Link --> id: %d url:%s status:%s type:%s" % (url.id, url.absolute_url, url.job_status, url.type))
+
+		if no_of_jobs == 0 and no_unvisited_urls == 0:
 			return True
 		return False
 
@@ -396,7 +416,7 @@ def main():
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
 	parser.add_argument('-w', '--workers', type=int, default=4, help='Number of workers')
-	parser.add_argument('-m','--max-links', type=int, default=0, help='Maximum no. of links to index')
+	parser.add_argument('-m', '--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()
 
@@ -419,6 +439,7 @@ def main():
 	delegate.crawl_create(crawl)
 
 	crawler = CrawlerDB(initialLink=theURL, max_links=max_links, no_workers=noOfWorkers, delegate=delegate, id=crawl.id)
+	# crawler = CrawlerDB(max_links=max_links, no_workers=noOfWorkers, delegate=delegate, id=1)
 
 	t1 = time.time()
 	crawler.start()

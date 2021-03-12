@@ -10,15 +10,23 @@ from sqlalchemy import event
 # # SQlite
 # SQLALCHEMY_DATABASE = 'sqlite'
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///amalgam.db'
-# SQLALCHEMY_ECHO = True
+# SQLALCHEMY_ECHO = False
 
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam'
 SQLALCHEMY_ECHO = False
 
+SQLALCHEMY_ISOLATION_LEVEL = "READ UNCOMMITTED"
+""" 
+Without this option set the data updated from a thread is not detected by another thread
+ @see https://stackoverflow.com/questions/55840220/why-one-thread-cant-not-detect-the-changed-value-updated-by-the-other-thread
+"""
+
 # Create engine
-engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO) # connect to server
+engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, pool_recycle=3600,
+                       isolation_level= SQLALCHEMY_ISOLATION_LEVEL
+                       ) #  Connect to server
 session_factory = sessionmaker(bind=engine)
 Base = declarative_base()
 
