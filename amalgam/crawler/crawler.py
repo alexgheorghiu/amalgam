@@ -164,7 +164,7 @@ class CrawlerDB(Thread):
 			url.job_status = Url.JOB_STATUS_VISITED
 			self.delegate.url_update(url)
 
-	def get_links(url):
+	def get_links(self, url):
 		"""
 		Get links from a link as a list of {'href', 'content', 'absolute'}
 		"""

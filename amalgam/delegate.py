@@ -14,8 +14,8 @@ class Delegate:
         https://docs.sqlalchemy.org/en/14/orm/contextual.html 
     """
 
-    def __init__(self, session_factory):
-        self._scoped_session = scoped_session(session_factory)
+    def __init__(self, a_session_factory):
+        self._scoped_session = scoped_session(a_session_factory)
 
     def get_session(self):
         return self._scoped_session()        
