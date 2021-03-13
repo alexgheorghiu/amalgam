@@ -21,7 +21,34 @@
             "request": "launch",
             "program": "${workspaceFolder}/lab/server.py",
             "console": "integratedTerminal"
-        }              
+        }
+        ,
+        {
+            "name": "manage_db: Empty",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage_db.py",
+            "console": "integratedTerminal",
+            "args": ["-a","empty"]
+        }
+        ,
+        {
+            "name": "Crawler",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.crawler.crawler",
+            "console": "integratedTerminal",
+            "args": ["-d","hotmug.net","-m","20"]
+        } 
+
+        ,
+        {
+            "name": "Test All",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.tests.test_all",
+            "console": "integratedTerminal",            
+        },
 
     ]
 }
