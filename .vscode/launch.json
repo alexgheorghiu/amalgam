@@ -24,12 +24,21 @@
         }
         ,
         {
-            "name": "manage_db: Empty",
+            "name": "DB: Empty",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/manage_db.py",
             "console": "integratedTerminal",
             "args": ["-a","empty"]
+        }
+        ,
+        {
+            "name": "DB: Mock",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage_db.py",
+            "console": "integratedTerminal",
+            "args": ["-a","mock"]
         }
         ,
         {
