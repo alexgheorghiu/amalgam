@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer, DateTime, String, Boolean, Text
+from sqlalchemy.types import Integer, DateTime, String, Boolean, Text, Float
 
 from amalgam.database import Base
 
@@ -82,5 +82,6 @@ class Resource(Base):
     absolute_url = Column(String(2048), nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
     content = Column(Text, nullable=True)
+    elapsed = Column(Float)
     mime_id = Column(Integer, ForeignKey('mimes.id'))
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))

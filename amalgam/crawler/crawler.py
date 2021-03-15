@@ -54,20 +54,22 @@ def dump(tag, links):
 
 def get_links(url):
 	"""
-	Get links from a link as a list of {'href', 'content', 'absolute'}
+	Get links from an URL as a list of {'href', 'content', 'absolute', 'time'}
 	"""
 	logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
 	links = []
 	page = {'url': url}
 
 	try:
+		t0 = time.time()
 		pre = requests.head(url)
 
 		if 'content-type' in pre.headers:
 			page['content-type'] = pre.headers['content-type']
 
 		if 'text/html' in pre.headers['content-type']:
-			r = requests.get(url)			
+			r = requests.get(url)
+			t1 = time.time()
 			if r.status_code == 200:								
 				soup = BeautifulSoup(r.content, "html.parser")
 				for link in soup.find_all("a"):
@@ -81,6 +83,7 @@ def get_links(url):
 						pass
 
 				page['content'] = r.content
+			page['elapsed'] = t1-t0
 			page['status'] = r.status_code
 
 	except Exception as ex:
@@ -168,33 +171,34 @@ class CrawlerDB(Thread):
 			url.job_status = Url.JOB_STATUS_VISITED
 			self.delegate.url_update(url)
 
-	def get_links(self, url):
-		"""
-		Get links from a link as a list of {'href', 'content', 'absolute'}
-		"""
-		logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
-		new_links = []
-
-		try:
-			pre = requests.head(url)
-
-			if 'text/html' in pre.headers['content-type']:
-				r = requests.get(url)
-				if r.status_code == 200:
-					soup = BeautifulSoup(r.content, "html.parser")
-					for link in soup.find_all("a"):
-						if 'href' in link.attrs:
-							href = link.attrs['href']
-							content = link.contents
-							absolute = to_absolute_url(url, href)
-							new_links.append({'href': href, 'content': content, 'absolute': absolute})
-						elif 'name' in link.attrs:
-							# Just anchor
-							pass
-		except Exception as ex:
-			logger.info("[%s] Error %s" % (currentThread().getName(), ex))
-
-		return new_links
+	# def get_links(self, url):
+	# 	"""
+	# 	Get links from a link as a list of {'href', 'content', 'absolute'}
+	# 	"""
+	# 	logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
+	# 	new_links = []
+	#
+	# 	try:
+	# 		pre = requests.head(url)
+	#
+	# 		if 'text/html' in pre.headers['content-type']:
+	# 			r = requests.get(url)
+	#
+	# 			if r.status_code == 200:
+	# 				soup = BeautifulSoup(r.content, "html.parser")
+	# 				for link in soup.find_all("a"):
+	# 					if 'href' in link.attrs:
+	# 						href = link.attrs['href']
+	# 						content = link.contents
+	# 						absolute = to_absolute_url(url, href)
+	# 						new_links.append({'href': href, 'content': content, 'absolute': absolute})
+	# 					elif 'name' in link.attrs:
+	# 						# Just anchor
+	# 						pass
+	# 	except Exception as ex:
+	# 		logger.info("[%s] Error %s" % (currentThread().getName(), ex))
+	#
+	# 	return new_links
 
 	def _type_links(self, links):
 		for link in links:
@@ -220,6 +224,8 @@ class CrawlerDB(Thread):
 			resource.absolute_url = page['url']
 		if 'content' in page:
 			resource.content = page['content']
+		if 'elapsed' in page:
+			resource.elapsed = page['elapsed']
 		return resource
 
 	def add_links(self, links, resource_id = None):
