@@ -56,9 +56,11 @@ class Url(Base):
 
     id = Column(Integer, primary_key=True)
     url = Column(String(2048), nullable=True)  # The link as it appears on the page
-    absolute_url = Column('absolute_url', String(2048), nullable=False) # The fabsolute URL it resolves
+    absolute_url = Column('absolute_url', String(2048), nullable=False) # The absolute URL it resolves
+    text = Column(Text)  # Contains the text of the link, if any
+    raw_content = Column(Text)  # Contains the raw HTML content of the link, if any
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    redirects = Column(Text, nullable=True) # TODO: Convert to large text / blob
+    redirects = Column(Text, nullable=True)  # Contains all the redirects
     type = Column(String(20), nullable=True) # external or internal
     job_status = Column(String(20), default=JOB_STATUS_NOT_VISITED)  # If crawler visited the link or not
     src_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)  # Source Resource

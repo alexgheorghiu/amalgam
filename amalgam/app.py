@@ -25,7 +25,7 @@ app.secret_key = 'my precious'
 	# return app	
 
 PROGRESS_TRACKER = ProgressTracker()
-
+CRAWLS = {}
 
 def check_db(app):
 	if not os.path.isfile('./amalgam.db'):
@@ -126,6 +126,7 @@ def crawl():
 @login_required
 def crawl_exe():
 	global PROGRESS_TRACKER
+	global CRAWLS
 
 	@copy_current_request_context
 	def notify(msg):
@@ -150,7 +151,9 @@ def crawl_exe():
 	
 
 	initial_url = request.form['address']
+
 	crawler = CrawlerDB(delegate, initial_url, id=crawl.id, no_workers=10)
+	CRAWLS[crawl.id] = crawler
 	crawler.addListener(notify)
 	crawler.start()
 	
@@ -195,18 +198,15 @@ def crawl_delete():
 @app.route('/crawl.cancel', methods=['GET', 'POST'])
 @login_required
 def crawl_cancel():
+	global CRAWLS
+
 	try:
 		id = request.args.get('id', type=int)
-		crawl = Crawl.query.get(id)
-
-		db.session.delete(crawl)
-		db.session.commit()
-
-		flash('Crawl deleted')
-		return redirect(url_for('crawl'))
+		crawler = CRAWLS[id]
+		crawler.setRunning(False)
+		return "success"
 	except ValueError as ve:
-		flash('No crawl id.')
-		return redirect(url_for('crawl'))	
+		return "failed"
 
 
 @app.route('/viewCrawl', methods=['GET'])

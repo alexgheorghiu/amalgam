@@ -101,9 +101,7 @@ class CrawlerDB(Thread):
 		self.paused = False
 		self.condition = Lock()
 		self.delegate = delegate
-		# self.noOfJobsLock = Lock()
-		# self.noOfJobs = 0
-		self.listeners = []
+		self.listeners = []  # A list of listeners that want to listen to messages (ex: progress) from Crawler
 		self.id = id
 		if initialLink is not None:
 			self.add_initial_url(initialLink)
@@ -154,16 +152,6 @@ class CrawlerDB(Thread):
 				link_id = url.id
 		return link_id
 
-	# def _get_next_unvisited_url_id(self):
-	# 	with self.condition:
-	# 		url = self.delegate.url_get_first_unvisited(self.id)
-	# 		if url is not None:
-	# 			# Set url as in progress
-	# 			url.job_status == Url.JOB_STATUS_IN_PROGRESS
-	# 			self.delegate.url_update(url)
-	#
-	# 			return url.id
-	# 	return -1
 
 	def mark_url_as_visited(self, url_id):
 		with self.condition:
@@ -171,34 +159,6 @@ class CrawlerDB(Thread):
 			url.job_status = Url.JOB_STATUS_VISITED
 			self.delegate.url_update(url)
 
-	# def get_links(self, url):
-	# 	"""
-	# 	Get links from a link as a list of {'href', 'content', 'absolute'}
-	# 	"""
-	# 	logger.info("[%s] Extracting links from : %s" % (currentThread().getName(), url))
-	# 	new_links = []
-	#
-	# 	try:
-	# 		pre = requests.head(url)
-	#
-	# 		if 'text/html' in pre.headers['content-type']:
-	# 			r = requests.get(url)
-	#
-	# 			if r.status_code == 200:
-	# 				soup = BeautifulSoup(r.content, "html.parser")
-	# 				for link in soup.find_all("a"):
-	# 					if 'href' in link.attrs:
-	# 						href = link.attrs['href']
-	# 						content = link.contents
-	# 						absolute = to_absolute_url(url, href)
-	# 						new_links.append({'href': href, 'content': content, 'absolute': absolute})
-	# 					elif 'name' in link.attrs:
-	# 						# Just anchor
-	# 						pass
-	# 	except Exception as ex:
-	# 		logger.info("[%s] Error %s" % (currentThread().getName(), ex))
-	#
-	# 	return new_links
 
 	def _type_links(self, links):
 		for link in links:
@@ -215,7 +175,17 @@ class CrawlerDB(Thread):
 			return page, links
 
 	def link2url(self, link):
-		url = Url(url=link['href'], absolute_url=link['absolute'], type=link['type'], crawl_id=self.id)
+		url = Url(crawl_id=self.id)
+		# url=link['href'], absolute_url=link['absolute'], type=link['type'],
+		if 'href' in link:
+			url.url = link['href']
+		if 'absolute' in link:
+			url.absolute_url=link['absolute']
+		if 	'type' in link:
+			url.type=link['type']
+		if 'content' in link:
+			url.raw_content = repr(link['content'])
+			url.text = repr(link['content'])  # TODO: Parse the raw_content and used only the text without HTML tags or other stuff
 		return url
 
 	def page2resource(self, page):
@@ -228,7 +198,7 @@ class CrawlerDB(Thread):
 			resource.elapsed = page['elapsed']
 		return resource
 
-	def add_links(self, links, resource_id = None):
+	def add_links(self, links, resource_id=None):
 		"""Add a bunch of URLs using the resource id as source (page where found it)"""
 		with self.condition:
 			for link in links:
