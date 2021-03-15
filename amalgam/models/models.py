@@ -77,6 +77,7 @@ class Url(Base):
 
 class Resource(Base):
     __tablename__ = "resources"
+    __table_args__ = {'mysql_charset': 'utf8mb4'}
     id = Column(Integer, primary_key=True)
     absolute_url = Column(String(2048), nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)

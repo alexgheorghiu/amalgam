@@ -1,5 +1,11 @@
 import unittest
 import sys
+import threading
+import time
+import time
+
+now = lambda : time.time()
+# ms = time.time()*1000.0
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -152,7 +158,6 @@ class TestDelegate(unittest.TestCase):
         page.content = "Ala bala portocala"
         page.absolute_url = "https://scriptoid.com/index.php"
         delegate.resource_create(page)
-        
 
         # Link
         url = Url()
@@ -225,6 +230,50 @@ class TestDelegate(unittest.TestCase):
         delegate.user_delete_all()
 
 
+    def test_threading(self):
+        lock = threading.Lock()
+        print("\n")
+
+        def create(tid):
+            print("[%s] [%f] Create started." % (threading.currentThread().getName(), now()))
+            with lock:
+                print("[%s] [%f] Lock acquired" % (threading.currentThread().getName(), now()))
+                user = User(name="john", email='john@foo.com', password='1234')
+                delegate.user_create(user)
+
+        def update(tid):
+            print("[%s] [%f] Update started." % (threading.currentThread().getName(), now()))
+            with lock:
+                print("[%s] [%f] Lock acquired" % (threading.currentThread().getName(), now()))
+                user = delegate.user_get_by_email_and_password(email="john@foo.com", password='1234')
+                user.name = 'mary'
+                delegate.user_update(user)
+                print("[%s] [%f] Update job done." % (threading.currentThread().getName(), now()))
+            # time.sleep(5)
+            print("[%s] [%f] Update finished." % (threading.currentThread().getName(), now()))
+
+        def retrive(tid):
+            time.sleep(1)
+            print("[%s] [%f] Retrieve started." % (threading.currentThread().getName(), now()))
+            with lock:
+                print("[%s] [%f] Lock acquired" % (threading.currentThread().getName(), now()))
+                user = delegate.user_get_by_email_and_password(email="john@foo.com", password='1234')
+                assert user.name == 'mary', "Actually the name is: {}".format(user.name)
+            # time.sleep(10)
+
+        t1 = threading.Thread(target=create, args=(1,))
+        t1.start()
+        t1.join()
+
+        t2 = threading.Thread(target=update, args=(2,))
+        t2.start()
+
+        t3 = threading.Thread(target=retrive, args=(3,))
+        t3.start()
+
+
+        t2.join()
+        t3.join()
 
     # def test_db(self):        
     #     site = Site()	

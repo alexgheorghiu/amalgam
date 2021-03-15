@@ -1,5 +1,5 @@
 from sqlalchemy.orm import scoped_session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from amalgam.database import session_factory, engine
 from amalgam.models.models import Site, User, Crawl, Url, Resource
@@ -41,6 +41,7 @@ class Delegate:
 
     def update(self, object):
         session = self.get_session()
+        session.add(object)
         session.commit()
 
     def delete(self, object):
@@ -165,6 +166,21 @@ class Delegate:
         n = query.scalar()
         return n
 
+
+    def url_count_pending(self, crawl_id):
+        """Count unvisited and in_progress and internal links"""
+
+        session = self.get_session()
+        query = session.query(func.count(Url.id))\
+            .filter(or_(Url.job_status == Url.JOB_STATUS_NOT_VISITED, Url.job_status == Url.JOB_STATUS_IN_PROGRESS))\
+            .filter(Url.type == Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id)
+        # raw = query.compile(engine)
+        from amalgam.dbutils import literalquery
+        raw = literalquery(query)
+        n = query.scalar()
+        return n
+
     def url_count_visited(self, crawl_id):
         session = self.get_session()
         n = session.query(func.count(Url.id)).filter(Url.job_status == Url.JOB_STATUS_VISITED, Url.type==Url.TYPE_INTERNAL) \
@@ -215,6 +231,9 @@ class Delegate:
         user = session.query(User).filter(User.email == email, User.password == password).first()
         session.commit()
         return user
+
+    def user_update(self, user):
+        self.update(user)
 
     def user_get_all(self, id):
         session = self.get_session()

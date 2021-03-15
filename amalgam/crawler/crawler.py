@@ -21,9 +21,6 @@ from amalgam.models import inside
 from amalgam.delegate import delegate
 
 
-
-
-
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
 logger = logging.getLogger("crawler")
 logger.setLevel(logging.DEBUG)
@@ -34,7 +31,7 @@ ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 def to_absolute_url(parent_page_link, link):
-	'''Converts a link to absolute'''
+	"""Converts a link to absolute"""
 	abs_regex = re.compile("^(http)|(https)://.*")
 	if re.search(abs_regex, link): # already absolute
 		return link
@@ -101,8 +98,8 @@ class CrawlerDB(Thread):
 		self.paused = False
 		self.condition = Lock()
 		self.delegate = delegate
-		self.noOfJobsLock = Lock()
-		self.noOfJobs = 0
+		# self.noOfJobsLock = Lock()
+		# self.noOfJobs = 0
 		self.listeners = []
 		self.id = id
 		if initialLink is not None:
@@ -127,6 +124,10 @@ class CrawlerDB(Thread):
 		with self.condition:
 			return self.delegate.url_count_unvisited(self.id)
 
+	def no_pending_urls(self):
+		with self.condition:
+			return self.delegate.url_count_pending(self.id)
+
 	def all_unvisited_urls(self):
 		with self.condition:
 			return self.delegate.url_get_all_unvisited(self.id)
@@ -141,22 +142,25 @@ class CrawlerDB(Thread):
 
 	def next_unvisited_link_id(self):
 		link_id = -1
-		if self.no_unvisited_urls() > 0:
-			link_id = self._get_next_unvisited_url_id()
-			if link_id != -1:
-				self.increaseNoOfJobs()
-		return link_id
-
-	def _get_next_unvisited_url_id(self):
 		with self.condition:
 			url = self.delegate.url_get_first_unvisited(self.id)
 			if url is not None:
-				# Set url as in progress
-				url.job_status == Url.JOB_STATUS_IN_PROGRESS
+				url.job_status = Url.JOB_STATUS_IN_PROGRESS  # Set Url as in progress
 				self.delegate.url_update(url)
+				# self.increaseNoOfJobs()
+				link_id = url.id
+		return link_id
 
-				return url.id
-		return -1
+	# def _get_next_unvisited_url_id(self):
+	# 	with self.condition:
+	# 		url = self.delegate.url_get_first_unvisited(self.id)
+	# 		if url is not None:
+	# 			# Set url as in progress
+	# 			url.job_status == Url.JOB_STATUS_IN_PROGRESS
+	# 			self.delegate.url_update(url)
+	#
+	# 			return url.id
+	# 	return -1
 
 	def mark_url_as_visited(self, url_id):
 		with self.condition:
@@ -278,7 +282,7 @@ class CrawlerDB(Thread):
 				logger.debug("[%s] Crawler's jos are NOT done." % (currentThread().getName()))
 
 			logger.debug("[%s] Crawler sleep." % (currentThread().getName()))
-			time.sleep(0.1)
+			time.sleep(1)
 
 		# Join them
 		self._join_all_workers()
@@ -335,7 +339,7 @@ class CrawlerDB(Thread):
 				except Exception as e:
 					print("Error {}".format(e))
 
-				self.decreaseNoOfJobs()
+				# self.decreaseNoOfJobs()
 
 			logger.debug("[%s] cycle ended." % (currentThread().getName()))
 		else:
@@ -358,13 +362,13 @@ class CrawlerDB(Thread):
 		for w in self.workers:
 			w.start()
 
-	def increaseNoOfJobs(self):
-		with self.noOfJobsLock:
-			self.noOfJobs = self.noOfJobs + 1
-
-	def decreaseNoOfJobs(self):
-		with self.noOfJobsLock:
-			self.noOfJobs = self.noOfJobs - 1
+	# def increaseNoOfJobs(self):
+	# 	with self.noOfJobsLock:
+	# 		self.noOfJobs = self.noOfJobs + 1
+	#
+	# def decreaseNoOfJobs(self):
+	# 	with self.noOfJobsLock:
+	# 		self.noOfJobs = self.noOfJobs - 1
 
 	def getNoOfJobs(self):
 		with self.noOfJobsLock:
@@ -372,17 +376,16 @@ class CrawlerDB(Thread):
 
 	def _are_jobs_done(self):
 		# Test if noOfJobs == 0 and to_visit == 0
-		no_of_jobs = self.getNoOfJobs()
-		no_unvisited_urls = self.no_unvisited_urls()
-		logger.debug("Crawler: _are_jobs_done(...) : no_of_jobs = %d no_unvisited_urls = %d" % (no_of_jobs, no_unvisited_urls))
+		# no_of_jobs = self.getNoOfJobs()
 
-		# WARNING: Here is something very fishy!
-		if no_unvisited_urls > 0:
-			urls = self.all_unvisited_urls()
-			for url in urls:
-				logger.debug("Crawler: _are_jobs_done(...) : Link --> id: %d url:%s status:%s type:%s" % (url.id, url.absolute_url, url.job_status, url.type))
+		# FIXME: If a thread grabs the initial link, while here, no_unvisited_urls() will
+		# return zero (on next line) , also the no_of_jobs are zero so the Crawler 
+		# will initiate shutdown
 
-		if no_of_jobs == 0 and no_unvisited_urls == 0:
+		no_pending_urls = self.no_pending_urls()
+		logger.debug("Crawler: _are_jobs_done(...) : no_pendind_urls = %d " % (no_pending_urls,))
+
+		if no_pending_urls == 0:
 			return True
 		return False
 
@@ -415,7 +418,7 @@ def main():
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
-	parser.add_argument('-w', '--workers', type=int, default=4, help='Number of workers')
+	parser.add_argument('-w', '--workers', type=int, default=10, help='Number of workers')
 	parser.add_argument('-m', '--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()

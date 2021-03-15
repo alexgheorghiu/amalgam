@@ -14,7 +14,7 @@ from sqlalchemy import event
 
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam?charset=utf8mb4' # https://stackoverflow.com/questions/47419943/pymysql-warning-1366-incorrect-string-value-xf0-x9f-x98-x8d-t
 SQLALCHEMY_ECHO = False
 
 SQLALCHEMY_ISOLATION_LEVEL = "READ UNCOMMITTED"
