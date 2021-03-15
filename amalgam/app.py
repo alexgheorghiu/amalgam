@@ -150,7 +150,7 @@ def crawl_exe():
 	
 
 	initial_url = request.form['address']
-	crawler = CrawlerDB(initial_url, id=crawl.id, no_workers=10, delegate=delegate)
+	crawler = CrawlerDB(delegate, initial_url, id=crawl.id, no_workers=10)
 	crawler.addListener(notify)
 	crawler.start()
 	
