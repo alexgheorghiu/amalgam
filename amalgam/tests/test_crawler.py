@@ -1,10 +1,35 @@
 import unittest
 import sys
-from amalgam.crawler.crawler import to_absolute_url, get_links
+from amalgam.crawler.crawler import to_absolute_url, get_links, get_domain, is_internal
 
 
 
 class TestCrawler(unittest.TestCase):
+
+    def test_get_domain(self):
+        domains = {
+            'http://abctimetracking.com': 'abctimetracking.com',
+            'https://foo.com': 'foo.com',
+            'ftp://baz.com/goo': 'baz.com',
+            'http://my.foo.com/today': 'my.foo.com'
+        }
+
+        for k, v in domains.items():
+            assert v == get_domain(k), '[{}] not equal to [{}]'.format(v, get_domain(k))
+
+
+    def test_is_internal(self):
+        domain = 'foo.com'
+
+        url = 'foo.com' # Invalid URL (no schema)
+        assert is_internal(domain, url) == False, '{} is not internal to {}'.format(url, domain)
+
+        url = 'http://foo.com/contact.html'
+        assert is_internal(domain, url), '{} is not internal to {}'.format(url, domain)
+
+        url = 'http://john@foo.com:400/retro/active_contact.html'
+        assert is_internal(domain, url), '{} is not internal to {}'.format(url, domain)
+
 
     def test_to_absolute_url(self):
         parent = 'http://foo.com'

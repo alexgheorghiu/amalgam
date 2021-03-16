@@ -38,6 +38,16 @@ def to_absolute_url(parent_page_link, link):
 	else: #relative
 		return requests.compat.urljoin(parent_page_link, link)
 
+def is_internal(domain, url):
+	"""Tests if the specific url is an internal link
+	domain: the domain without schema
+	url: the link should be a valid URL (schema + domain)
+	"""
+	parsed = urlparse(url)
+	if domain.lower() == parsed.hostname:
+		return True
+	return False
+
 
 def report(filename, visited):
 	"""Dump all visited into a file"""
@@ -92,6 +102,13 @@ def get_links(url):
 	return page, links
 
 
+def get_domain(url):
+	parsed = urlparse(url)
+	if parsed.scheme == '':
+		raise Exception("The argument provided: [{}] does not contain scheme" . format(url))
+	domain = parsed.netloc
+	return domain
+
 class CrawlerDB(Thread):
 	def __init__(self, delegate, initialLink=None,  max_links = 0, no_workers = 10, id = str(uuid.uuid4())):
 		Thread.__init__(self)
@@ -103,20 +120,18 @@ class CrawlerDB(Thread):
 		self.delegate = delegate
 		self.listeners = []  # A list of listeners that want to listen to messages (ex: progress) from Crawler
 		self.id = id
+		self.initialLink = initialLink
 		if initialLink is not None:
 			self.add_initial_url(initialLink)
 		self.max_links = max_links
 		try:
-			self.domain_regex = re.compile(self.get_domain(initialLink))
+			self.domain_regex = re.compile(get_domain(initialLink))
 		except Exception as ex:
 			logging.error("Exception {}".format(ex))
 
-	def get_domain(self, url):
-		domain = urlparse(url).netloc
-		return domain
 
 	def add_initial_url(self, address):
-		logger.info("Add intial URL")
+		logger.info("Add initial URL")
 		with self.condition:
 			url = Url(url=address, absolute_url=address, type=Url.TYPE_INTERNAL, crawl_id=self.id, job_status=Url.JOB_STATUS_NOT_VISITED)
 			self.delegate.url_create(url)
@@ -162,10 +177,11 @@ class CrawlerDB(Thread):
 
 	def _type_links(self, links):
 		for link in links:
-			if re.search(self.domain_regex, link['absolute']): # internal link
+			if is_internal(get_domain(self.initialLink), link['absolute']):  # internal link
 				link['type'] = 'internal'
 			else: # external link
 				link['type'] = 'external'
+
 
 	def _get_links(self, link_id):
 		with self.condition:
