@@ -42,12 +42,22 @@
         }
         ,
         {
-            "name": "Crawler",
+            "name": "Crawler: One",
             "type": "python",
             "request": "launch",
             "module": "amalgam.crawler.crawler",
             "console": "integratedTerminal",
-            "args": ["-d","one.amalgam.scriptoid.com/a.html","-m","20"]
+            "args": ["-d","one.amalgam.scriptoid.com/a.html"]
+        } 
+
+        ,
+        {
+            "name": "Crawler: Two",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.crawler.crawler",
+            "console": "integratedTerminal",
+            "args": ["-d","two.amalgam.scriptoid.com/a.html"]
         } 
 
         ,
