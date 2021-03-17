@@ -87,10 +87,22 @@ class Delegate:
         session = self.get_session()
         return session.query(Resource).all()
 
+    def resource_get_all_by_crawl(self, crawl_id):
+        session = self.get_session()
+        return session.query(Resource)\
+            .filter(Resource.crawl_id==crawl_id)\
+            .all()
+
     def resource_get_by_absolute_url_and_crawl_id(self, absolute_url, crawlId):
         session = self.get_session()
         resource = session.query(Resource).filter(Resource.absolute_url == absolute_url, Resource.crawl_id == crawlId).first()
         return resource
+
+    def resource_get_by_id(self, resource_id):
+        session = self.get_session()
+        return session.query(Resource)\
+            .filter(Resource.id==resource_id)\
+            .first()
 
     def resource_is_present(self, absolute_address, crawlId):
         """Checks to see if a certain Resource is present inside a DB"""
@@ -163,6 +175,22 @@ class Delegate:
         # raw = query.compile(engine)
         from amalgam.dbutils import literalquery
         raw = literalquery(query)
+        n = query.scalar()
+        return n
+
+
+    def url_count_incoming_for_resource(self, resource_id):
+        """Counts no of urls that point to page from a different page"""
+
+        session = self.get_session()
+        query = session.query(func.count(Url.id))\
+            .filter(Url.src_resource_id != None) \
+            .filter(Url.dst_resource_id  == resource_id) \
+            .filter(Url.type == Url.TYPE_INTERNAL) \
+        # raw = query.compile(engine)
+        from amalgam.dbutils import literalquery
+        raw = literalquery(query)
+        # print(raw)
         n = query.scalar()
         return n
 

@@ -47,7 +47,7 @@
             "request": "launch",
             "module": "amalgam.crawler.crawler",
             "console": "integratedTerminal",
-            "args": ["-d","hotmug.net","-m","20"]
+            "args": ["-d","one.amalgam.scriptoid.com/a.html","-m","20"]
         } 
 
         ,

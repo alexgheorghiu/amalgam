@@ -25,7 +25,8 @@ Without this option set the data updated from a thread is not detected by anothe
 
 # Create engine
 engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, pool_recycle=3600,
-                       isolation_level= SQLALCHEMY_ISOLATION_LEVEL
+                       isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+                       pool_size=40, max_overflow=0
                        ) #  Connect to server
 session_factory = sessionmaker(bind=engine)
 Base = declarative_base()

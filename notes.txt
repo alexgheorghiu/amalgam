@@ -21,6 +21,10 @@ Python & Dashboard & Statistics ?!
 Visualization library
 	https://antv.vision/en
 
+JavaScript charts
+    https://apexcharts.com/
+    https://www.chartjs.org/
+
 
 Articles
 ========

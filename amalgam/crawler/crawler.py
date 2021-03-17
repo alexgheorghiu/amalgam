@@ -85,7 +85,7 @@ def get_links(url):
 				for link in soup.find_all("a"):
 					if 'href' in link.attrs:
 						href = link.attrs['href']
-						content = link.contents
+						content = link.contents[0]
 						absolute = to_absolute_url(url, href)
 						links.append({'href': href, 'content': content, 'absolute': absolute})
 					elif 'name' in link.attrs:
@@ -116,7 +116,7 @@ class CrawlerDB(Thread):
 		self.workers = []
 		self.running = True
 		self.paused = False
-		self.condition = Lock()
+		self.condition = RLock()
 		self.delegate = delegate
 		self.listeners = []  # A list of listeners that want to listen to messages (ex: progress) from Crawler
 		self.id = id
@@ -200,8 +200,8 @@ class CrawlerDB(Thread):
 		if 	'type' in link:
 			url.type=link['type']
 		if 'content' in link:
-			url.raw_content = repr(link['content'])
-			url.text = repr(link['content'])  # TODO: Parse the raw_content and used only the text without HTML tags or other stuff
+			url.raw_content = link['content']
+			url.text = link['content']  # TODO: Parse the raw_content and used only the text without HTML tags or other stuff
 		return url
 
 	def page2resource(self, page):
@@ -214,15 +214,26 @@ class CrawlerDB(Thread):
 			resource.elapsed = page['elapsed']
 		return resource
 
-	def add_links(self, links, resource_id=None):
+	def add_links(self, links, src_resource_id=None):
 		"""Add a bunch of URLs using the resource id as source (page where found it)"""
 		with self.condition:
 			for link in links:
-				if not self.delegate.url_is_present(link['absolute'], crawlId=self.id):
-					url = self.link2url(link)
-					if resource_id is not None:
-						url.src_resource_id = resource_id
-					self.delegate.url_create(url)
+				url = self.link2url(link)
+				if src_resource_id is not None:
+					url.src_resource_id = src_resource_id
+				
+					# Check if destination resource exists, and if does mark it as visited
+					try:
+						src_resource = delegate.resource_get_by_id(src_resource_id)
+						dest_resource = delegate.resource_get_by_absolute_url_and_crawl_id(url.absolute_url, src_resource.crawl_id)
+						if dest_resource is not None:
+							url.job_status = Url.JOB_STATUS_VISITED
+							url.dst_resource_id = dest_resource.id
+					except Exception as e:
+						logger.warning("Exception {}".format(e))
+
+				self.delegate.url_create(url)
+
 
 	def add_resource(self, page):
 		with self.condition:
@@ -306,28 +317,31 @@ class CrawlerDB(Thread):
 				logger.debug("[%s] Discovered [%d] links." % (currentThread().getName(), len(links)))
 
 				try:
-					# 1.Add Resource 2.Link URLs to (new | existing) Resources
-					resource = self.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
-					if resource is None:
-						resource = self.resource_create(page)
+					with self.condition:
+						# 1.Add Resource 2.Link URLs to (new | existing) Resources
+						resource = self.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
+						if resource is None:
+							resource = self.resource_create(page)
+							self.connect_url_to_destination(link_id, resource.id)
+							logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
+							self.add_links(links, resource.id)							
+						else:
+							# Resource already added only make the end connection
+							self.connect_url_to_destination(link_id, resource.id)
 
-					self.connect_url_to_destination(link_id, resource.id)
 
-					logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
-					self.add_links(links, resource.id)
+						self.mark_url_as_visited(link_id)
 
-					self.mark_url_as_visited(link_id)
+						msg = {
+							"status": "in_progress",
+							"visited": self.no_visited_urls(),
+							"to_visit": self.no_unvisited_urls(),
+							"max_links": 0,
+							"crawlId": crawlId,
+							"currentWorker": currentThread().getName()
+						}
 
-					msg = {
-						"status": "in_progress",
-						"visited": self.no_visited_urls(),
-						"to_visit": self.no_unvisited_urls(),
-						"max_links": 0,
-						"crawlId": crawlId,
-						"currentWorker": currentThread().getName()
-					}
-
-					self.notify(msg)
+						self.notify(msg)
 				except Exception as e:
 					print("Error {}".format(e))
 
@@ -362,9 +376,9 @@ class CrawlerDB(Thread):
 	# 	with self.noOfJobsLock:
 	# 		self.noOfJobs = self.noOfJobs - 1
 
-	def getNoOfJobs(self):
-		with self.noOfJobsLock:
-			return self.noOfJobs
+	# def getNoOfJobs(self):
+	# 	with self.noOfJobsLock:
+	# 		return self.noOfJobs
 
 	def _are_jobs_done(self):
 		# Test if noOfJobs == 0 and to_visit == 0
@@ -407,10 +421,13 @@ def main():
 	domain = 'http://abctimetracking.com'
 	max_links = 0
 
+	from manage_db import empty
+	empty()
+
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
-	parser.add_argument('-w', '--workers', type=int, default=10, help='Number of workers')
+	parser.add_argument('-w', '--workers', type=int, default=7, help='Number of workers')
 	parser.add_argument('-m', '--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()
