@@ -74,11 +74,14 @@ def get_links(url):
 		t0 = time.time()
 		pre = requests.head(url)
 
+		page['status-code'] = pre.status_code
+		logger.info("[%s] Status code : %d" % (currentThread().getName(), pre.status_code))
+		
 		if 'content-type' in pre.headers:
 			page['content-type'] = pre.headers['content-type']
 
 		if 'text/html' in pre.headers['content-type']:
-			r = requests.get(url)
+			r = requests.get(url)			
 			t1 = time.time()
 			if r.status_code == 200:								
 				soup = BeautifulSoup(r.content, "html.parser")
@@ -92,9 +95,8 @@ def get_links(url):
 						# Just anchor
 						pass
 
-				page['content'] = r.content
-			page['elapsed'] = t1-t0
-			page['status'] = r.status_code
+				page['content'] = r.content				
+			page['elapsed'] = t1-t0			
 
 	except Exception as ex:
 		logger.info("[%s] Error %s" %(currentThread().getName(), ex))
@@ -214,7 +216,7 @@ class CrawlerDB(Thread):
 			resource.elapsed = page['elapsed']
 		return resource
 
-	def add_links(self, links, src_resource_id=None):
+	def add_links(self, links, src_resource_id=None, status_code = 200):
 		"""Add a bunch of URLs using the resource id as source (page where found it)"""
 		with self.condition:
 			for link in links:
@@ -229,6 +231,7 @@ class CrawlerDB(Thread):
 						if dest_resource is not None:
 							url.job_status = Url.JOB_STATUS_VISITED
 							url.dst_resource_id = dest_resource.id
+							url.status_code = status_code
 					except Exception as e:
 						logger.warning("Exception {}".format(e))
 
@@ -318,17 +321,24 @@ class CrawlerDB(Thread):
 
 				try:
 					with self.condition:
-						# 1.Add Resource 2.Link URLs to (new | existing) Resources
-						resource = self.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
-						if resource is None:
-							resource = self.resource_create(page)
-							self.connect_url_to_destination(link_id, resource.id)
-							logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
-							self.add_links(links, resource.id)							
-						else:
-							# Resource already added only make the end connection
-							self.connect_url_to_destination(link_id, resource.id)
+						# Update links status code
+						url = delegate.url_get_by_id(link_id)
+						url.status_code = page['status-code']
+						delegate.url_update(url)
 
+						if page['status-code'] == 200:
+							# 1.Add Resource 2.Link URLs to (new | existing) Resources
+							resource = self.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
+							if resource is None:
+								resource = self.resource_create(page)
+								self.connect_url_to_destination(link_id, resource.id)
+								logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
+								self.add_links(links, resource.id, page['status-code'])							
+							else:
+								# Resource already added only make the end connection
+								self.connect_url_to_destination(link_id, resource.id)							
+						else:
+							pass						
 
 						self.mark_url_as_visited(link_id)
 
@@ -427,7 +437,7 @@ def main():
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
-	parser.add_argument('-w', '--workers', type=int, default=7, help='Number of workers')
+	parser.add_argument('-w', '--workers', type=int, default=2, help='Number of workers')
 	parser.add_argument('-m', '--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()

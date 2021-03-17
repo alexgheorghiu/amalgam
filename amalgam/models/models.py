@@ -62,6 +62,7 @@ class Url(Base):
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
     redirects = Column(Text, nullable=True)  # Contains all the redirects
     type = Column(String(20), nullable=True) # external or internal
+    status_code = Column(Integer)
     job_status = Column(String(20), default=JOB_STATUS_NOT_VISITED)  # If crawler visited the link or not
     src_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)  # Source Resource
     dst_resource_id = Column(Integer, ForeignKey('resources.id'), nullable=True)  # Destination Resource
