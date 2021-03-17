@@ -311,6 +311,7 @@ class CrawlerDB(Thread):
 			if self.paused:
 				continue
 
+			# Grab next job
 			link_id = self.next_unvisited_link_id()
 			logger.debug("[%s] Next link [%d]." % (currentThread().getName(), link_id))
 
@@ -354,8 +355,6 @@ class CrawlerDB(Thread):
 						self.notify(msg)
 				except Exception as e:
 					print("Error {}".format(e))
-
-				# self.decreaseNoOfJobs()
 
 			logger.debug("[%s] cycle ended." % (currentThread().getName()))
 		else:
