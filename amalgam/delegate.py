@@ -185,7 +185,7 @@ class Delegate:
         session = self.get_session()
         query = session.query(func.count(Url.id))\
             .filter(Url.src_resource_id != None) \
-            .filter(Url.dst_resource_id  == resource_id) \
+            .filter(Url.dst_resource_id == resource_id) \
             .filter(Url.type == Url.TYPE_INTERNAL) \
         # raw = query.compile(engine)
         from amalgam.dbutils import literalquery

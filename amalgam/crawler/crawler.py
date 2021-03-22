@@ -202,8 +202,8 @@ class CrawlerDB(Thread):
 		if 	'type' in link:
 			url.type=link['type']
 		if 'content' in link:
-			url.raw_content = link['content']
-			url.text = link['content']  # TODO: Parse the raw_content and used only the text without HTML tags or other stuff
+			url.raw_content = str(link['content'])
+			url.text = str(link['content'])  # TODO: Parse the raw_content and used only the text without HTML tags or other stuff
 		return url
 
 	def page2resource(self, page):
@@ -430,6 +430,7 @@ def main():
 	domain = 'http://abctimetracking.com'
 	max_links = 0
 
+	# Empty DB
 	from manage_db import empty
 	empty()
 
