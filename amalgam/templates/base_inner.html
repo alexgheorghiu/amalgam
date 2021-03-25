@@ -13,23 +13,39 @@
     <div class="container">
 
 		<div class="row">
-			<div class="col-md-3"><h2>Amalgam</h2></div>
-			<div class="col-md-9">
-				<div class="d-flex justify-content-end">
-					<div class="p-2">User name</div>
-					<div class="p-2"><a href="#">Settings</a></div>
-				  	<div class="p-2"><a href="/logout">Logout</a></div>
-				</div>
+			<div class="col-md-2">
+				<h2>Amalgam</h2>
+			</div>
+			<div class="col-md-10">
+					<div class="row">
+						<div class="col-md-5">
+							<div class="d-flex justify-content-start">
+								<span class="p-2">
+									<a href="#" class="not_implemented">
+										<img style="width: 24px; height: 24px;" src="static/images/add-button-svgrepo-com.svg"/>
+										Add Site
+									</a>
+								</span>
+							</div>
+						</div>
+						<div class="col-md-5">
+							<div class="d-flex justify-content-end">
+								<div class="p-2">User name</div>
+								<div class="p-2"><a href="#" class="not_implemented">Settings</a></div>
+								<div class="p-2"><a href="/logout">Logout</a></div>
+							</div>
+						</div>
+					</div>
 			</div>
 		</div>
 
 
 		<div class="row">
-			<div class="col-md-3">
+			<div class="col-md-2">
 				{% block navigation %}{% endblock%}
 				{% include "navigation.html"%}
 			</div>
-			<div class="col-md-9">
+			<div class="col-md-10" style="border-left: 1px solid gray; border-top: 1px solid gray;">
 				<!-- errors -->
 				{% if error %}
 					<p class="error"><strong>Error:</strong> {{ error }}</p>

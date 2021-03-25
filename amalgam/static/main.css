@@ -4,3 +4,7 @@
     font-size: smaller;
     color: #0c5460;
 }
+
+.not_implemented {
+    color: gray;
+}
