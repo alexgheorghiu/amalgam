@@ -117,8 +117,8 @@ def sitemap():
 @app.route('/crawl')
 @login_required
 def crawl():
-	session = delegate.get_session()
-	crawls = session.query(Crawl).all()	
+	crawls = delegate.crawl_get_all()
+	combo  = delegate.crawls_and_site()
 	return render_template('crawl.html', crawls = crawls)
 
 
@@ -285,8 +285,6 @@ def report_inner_links():
 @app.route('/report_inner_links_data', methods=['GET', 'POST'])
 @login_required
 def report_inner_links_data():
-	
-
 	id = request.args.get('id', type=int)
 
 	from amalgam.tests.report_inner_links import inner_links_data

@@ -64,6 +64,14 @@ class Delegate:
         crawls = session.query(Crawl).all()
         return crawls
 
+
+    def crawls_and_site(self):
+        session = self.get_session()
+        query = session.query(Crawl.id, Site.id, Site.name).join(Site)
+        results = query.all()
+        for r in results:
+            print(r)
+
     def crawl_delete(self, crawl):
         self.delete(crawl)
 
