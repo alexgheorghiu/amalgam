@@ -273,6 +273,29 @@ def one():
 	return "One"
 
 
+@app.route('/report_inner_links', methods=['GET', 'POST'])
+@login_required
+def report_inner_links():
+	
+	id = request.args.get('id', type=int)
+	
+	return render_template('report_inner_links.html', crawlId = id)
+
+
+@app.route('/report_inner_links_data', methods=['GET', 'POST'])
+@login_required
+def report_inner_links_data():
+	
+
+	id = request.args.get('id', type=int)
+
+	from amalgam.tests.report_inner_links import inner_links_data
+	data = inner_links_data(id)
+	# data = {'name':'Alex'}
+	# jdata =  jsonpickle.encode(data)
+	
+	return jsonify(data)
+
 
 @app.route('/two')
 def two():

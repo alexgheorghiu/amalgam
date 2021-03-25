@@ -13,15 +13,15 @@ from sqlalchemy import event
 # SQLALCHEMY_ECHO = False
 
 # MySQL
-# SQLALCHEMY_DATABASE = 'mysql'
-# SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam?charset=utf8mb4' # https://stackoverflow.com/questions/47419943/pymysql-warning-1366-incorrect-string-value-xf0-x9f-x98-x8d-t
-# SQLALCHEMY_ECHO = False
+SQLALCHEMY_DATABASE = 'mysql'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam?charset=utf8mb4' # https://stackoverflow.com/questions/47419943/pymysql-warning-1366-incorrect-string-value-xf0-x9f-x98-x8d-t
+SQLALCHEMY_ECHO = False
 
 
 # PostgreSQL
-SQLALCHEMY_DATABASE = 'postgresql'
-SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://amalgam:amalgam@localhost/amalgam'
-SQLALCHEMY_ECHO = False
+# SQLALCHEMY_DATABASE = 'postgresql'
+# SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://amalgam:amalgam@localhost/amalgam'
+# SQLALCHEMY_ECHO = False
 
 
 # SQLALCHEMY_ISOLATION_LEVEL = "READ UNCOMMITTED"

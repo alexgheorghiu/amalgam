@@ -195,6 +195,23 @@ class Delegate:
         return n
 
 
+    def url_count_internal_full(self, crawl_id):
+        """Counts no of internal urls that have both source and destingation resources"""
+
+        session = self.get_session()
+        query = session.query(func.count(Url.id))\
+            .filter(Url.src_resource_id != None) \
+            .filter(Url.dst_resource_id != None) \
+            .filter(Url.type == Url.TYPE_INTERNAL) \
+            .filter(Url.crawl_id == crawl_id)
+        
+        # raw = query.compile(engine)
+        from amalgam.dbutils import literalquery
+        raw = literalquery(query)
+        # print(raw)
+        n = query.scalar()
+        return n
+
     def url_count_pending(self, crawl_id):
         """Count unvisited and in_progress and internal links"""
 

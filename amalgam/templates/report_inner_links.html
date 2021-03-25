@@ -1,0 +1,139 @@
+{% extends "base_inner.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.css" integrity="sha512-C7hOmCgGzihKXzyPU/z4nv97W0d9bv4ALuuEbSf6hm93myico9qa0hv4dODThvCsqQUmKmLcJmlpRmCaApr83g==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js" integrity="sha512-hZf9Qhp3rlDJBvAKvmiG+goaaKRZA6LKUO35oK6EsM0/kjPK32Yw7URqrq3Q+Nvbbt8Usss+IekL7CRn83dYmw==" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        let crawlId = {{ crawlId }};
+
+
+
+        function loadData(){
+            $.ajax({
+                type: "GET",
+                url: "report_inner_links_data",
+                contentType: 'application/json; charset=utf-8',
+                data: {
+                    "id": crawlId
+                },
+                // async: false,
+                success : function(result){
+                    console.log(result);
+                    update_chart(result);
+                },
+                error : function(msg){
+                    console.log(msg);
+                }
+            });
+
+            function update_chart(new_data){
+                console.log("Data: " + new_data)
+                myChart.data.labels = new_data.labels
+                myChart.data.datasets[0].data = new_data.datasets[0].data
+                myChart.update()
+            }
+        }
+
+        function update_chart(){
+            var labels = ['Redux', 'Bluex', 'Yellowix', 'Greenix', 'Purplex', 'Orangex'];
+            myChart.data.labels = labels
+            myChart.update()
+        }
+
+        window.addEventListener('load', function() {
+            loadData();
+        });
+    </script>
+
+{% endblock %}
+
+    {% block content %}
+
+    <h2>Amalgam</h2>
+    <br>
+    <a href="/crawl">Crawls</a> &gt; Report Inner Links
+
+
+    <h3>Report Inner Links</h3>
+
+    <div class="row">
+        <div class="col-7">
+            <canvas id="myChart" width="400" height="400">Unsupported browser</canvas>
+        </div>
+        <div class="col-5 explanation">
+            <details>
+                <summary>On "Distribution of incoming links" axes we see the sum of percentages of pages that fall inside
+                    an interval of incoming links.</summary>
+                <i>For example, if page A has 5 incoming links (which means 5% of total links) and page B has 7 incoming
+                links (which means 7% of total links) both of them will fall in the 0-10% interval.<br/>
+                If A and B will be only pages from that interval then we will have 12% ( = 5% + 7%) for that interval.
+                </i>
+            </details>
+            <p style="margin-top: 10px;"/>
+            On "Percent of total links" axes we see the percentage (relative to total inner links) of total links each interval contains.
+        </div>
+    </div>
+
+
+    <script type="application/javascript">
+        var ctx = document.getElementById('myChart');
+        var myChart = new Chart(ctx, {
+            type: 'horizontalBar',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                    label: '# of incoming inner links',
+                    data: [12, 19, 3, 5, 2, 3],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Distribution of incoming links '
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Percent of total links'
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+<!--    <div>-->
+<!--        <button onclick="update_chart()">Update</button>-->
+<!--    </div>-->
+
+
+{% endblock %}

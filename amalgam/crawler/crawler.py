@@ -431,8 +431,8 @@ def main():
 	max_links = 0
 
 	# Empty DB
-	from manage_db import empty
-	empty()
+	from manage_db import empty, mock
+	mock()
 
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
