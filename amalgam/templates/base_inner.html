@@ -11,25 +11,43 @@
   </head>
   <body>
     <div class="container">
+
+		<div class="row">
+			<div class="col-md-3"><h2>Amalgam</h2></div>
+			<div class="col-md-9">
+				<div class="d-flex justify-content-end">
+					<div class="p-2">User name</div>
+					<div class="p-2"><a href="#">Settings</a></div>
+				  	<div class="p-2"><a href="/logout">Logout</a></div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="row">
+			<div class="col-md-3">
+				{% block navigation %}{% endblock%}
+				{% include "navigation.html"%}
+			</div>
+			<div class="col-md-9">
+				<!-- errors -->
+				{% if error %}
+					<p class="error"><strong>Error:</strong> {{ error }}</p>
+				{% endif %}
+
+				<!-- messages -->
+				{% for message in get_flashed_messages() %}
+					{{ message }}
+				{% endfor %}
+
+				{% block content %}{% endblock%}
+			</div>
+		</div>
+
+
 		
-		<!-- child template -->
-		{% block content %}{% endblock%}
-		
-		<!-- errors -->
-		{% if error %}
-			<p class="error"><strong>Error:</strong> {{ error }}</p>
-		{% endif %}
-		
-		<!-- messages -->
-		{% for message in get_flashed_messages() %}
-			{{ message }}
-		{% endfor %}
-		
-		<p/>
-		<!-- Logout -->
-		<p>
-			<a href="/logout">Logout</a>
-		</p>
+
+
     </div>
   </body>
 </html>
