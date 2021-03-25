@@ -10,20 +10,27 @@
   </head>
   <body>
     <div class="container">
-		<img src="static/images/logo2_small.png"/>
+		<div class="row">
+			<div class="col-md-12">
+				<img src="static/images/logo2_small.png"/>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<!-- child template -->
+				{% block content %}{% endblock%}
 
-		<!-- child template -->
-		{% block content %}{% endblock%}
-		
-		<!-- errors -->
-		{% if error %}
-			<p class="error"><strong>Error:</strong> {{ error }}</p>
-		{% endif %}
-		
-		<!-- messages -->
-		{% for message in get_flashed_messages() %}
-			{{ message }}
-		{% endfor %}
+				<!-- errors -->
+				{% if error %}
+					<p class="error"><strong>Error:</strong> {{ error }}</p>
+				{% endif %}
+
+				<!-- messages -->
+				{% for message in get_flashed_messages() %}
+					{{ message }}
+				{% endfor %}
+			</div>
+		</div>
     </div>
   </body>
 </html>
