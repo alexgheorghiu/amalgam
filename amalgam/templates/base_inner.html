@@ -12,14 +12,26 @@
   <body>
     <div class="container">
 
+		<!--Top bar-->
 		<div class="row">
 			<div class="col-md-2">
 				<h2>Amalgam</h2>
 			</div>
 			<div class="col-md-10">
 					<div class="row">
+
+						<!--Site section-->
 						<div class="col-md-5">
 							<div class="d-flex justify-content-start">
+								{% if sites | length %}
+									<select>
+										{% for site in sites %}
+										<option value="{{site.id}}">{{site.name}}</option>
+										{% endfor %}
+									</select>
+								{% else %}
+									<!--No sites-->
+								{% endif %}
 								<span class="p-2">
 									<a href="#" class="not_implemented">
 										<img style="width: 24px; height: 24px;" src="static/images/add-button-svgrepo-com.svg"/>
@@ -28,6 +40,8 @@
 								</span>
 							</div>
 						</div>
+
+						<!--User section-->
 						<div class="col-md-5">
 							<div class="d-flex justify-content-end">
 								<div class="p-2">User name</div>
@@ -41,10 +55,14 @@
 
 
 		<div class="row">
+
+			<!--Left navigation-->
 			<div class="col-md-2">
 				{% block navigation %}{% endblock%}
 				{% include "navigation.html"%}
 			</div>
+
+			<!--Content of the page-->
 			<div class="col-md-10" style="border-left: 1px solid gray; border-top: 1px solid gray;">
 				<!-- errors -->
 				{% if error %}

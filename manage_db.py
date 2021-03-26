@@ -5,7 +5,7 @@ import sys
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import User
+from amalgam.models.models import User, Site
 
 
 def drop_tables():
@@ -42,6 +42,10 @@ def mock():
     user = User(email='one@foo.com', password='one', name='one')
     delegate.user_create(user)
     print("User is [{}]".format(user.name))
+
+    site = Site(name='foo.com')
+    delegate.site_create(site)
+    print("Site is [{}{}]".format(site.name, site.id))
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime, String, Boolean, Text, Float
 
 from amalgam.database import Base
+from amalgam.database import SQLALCHEMY_DATABASE
 
 
 class Mime(Base):
@@ -84,7 +85,7 @@ class Resource(Base):
     id = Column(Integer, primary_key=True)
     absolute_url = Column(String(2048), nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    content = Column(Text(1 * 1024 * 1024), nullable=True)
+    content = Column(Text, nullable=True) if SQLALCHEMY_DATABASE == 'postgresql' else Column(Text(1 * 1024 * 1024), nullable=True) # PostgreSQL does not support bounded Text
     elapsed = Column(Float)
     mime_id = Column(Integer, ForeignKey('mimes.id'))
     crawl_id = Column(Integer, ForeignKey('crawls.id', ondelete="CASCADE"))

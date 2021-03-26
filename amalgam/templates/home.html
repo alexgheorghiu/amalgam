@@ -1,9 +1,14 @@
 {% extends "base_inner.html" %}
 {% block content %}
-<h3>Links:</h3>
-<ul>
-	<li><a href="/sitemap">Sitemap</a></li>
-	<li><a href="/crawl">Crawl</a></li>
-	<li><a href="/status">Status</a></li>
-</ul>
+
+{% if sites | length %}
+    <!--All good-->
+{% else %}
+    <form method="post" action="/site_add_exe">
+        <label for="site">Site</label>
+        <input type="text" name="site" id="site">
+        <input type="submit" value="Add">
+    </form>
+{% endif %}
+
 {% endblock %}

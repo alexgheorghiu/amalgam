@@ -9,7 +9,7 @@ import threading
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import Url, Crawl, User
+from amalgam.models.models import Url, Crawl, User, Site
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
 
@@ -105,8 +105,20 @@ def logout():
 @app.route('/home')
 @login_required
 def home():
-	return render_template('home.html')
-	
+	sites = delegate.site_get_all()
+	return render_template('home.html', sites=sites)
+
+
+@app.route('/site_add_exe', methods=['GET', 'POST'])
+@login_required
+def site_add_exe():
+	site_name = request.form['site']
+	site = Site(name=site_name)
+	delegate.site_create(site)
+
+	sites = delegate.site_get_all()
+	return render_template('home.html', sites=sites)
+
 
 @app.route('/sitemap')
 @login_required
