@@ -11,17 +11,20 @@ from sqlalchemy import event
 # SQLALCHEMY_DATABASE = 'sqlite'
 # SQLALCHEMY_DATABASE_URI = 'sqlite:///amalgam.db'
 # SQLALCHEMY_ECHO = False
+# SQLALCHEMY_ENGINE_OPTIONS = {}
 
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam?charset=utf8mb4' # https://stackoverflow.com/questions/47419943/pymysql-warning-1366-incorrect-string-value-xf0-x9f-x98-x8d-t
 SQLALCHEMY_ECHO = False
+SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 40, 'max_overflow': 0}
 
 
 # PostgreSQL
 # SQLALCHEMY_DATABASE = 'postgresql'
 # SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://amalgam:amalgam@localhost/amalgam'
 # SQLALCHEMY_ECHO = False
+# SQLALCHEMY_ENGINE_OPTIONS = {}
 
 
 # SQLALCHEMY_ISOLATION_LEVEL = "READ UNCOMMITTED"
@@ -34,7 +37,7 @@ Without this option set the data updated from a thread is not detected by anothe
 # Create engine
 engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, pool_recycle=3600,
                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                    #    pool_size=40, max_overflow=0 # Only for MySQL
+                       **SQLALCHEMY_ENGINE_OPTIONS
                        ) #  Connect to server
 session_factory = sessionmaker(bind=engine)
 Base = declarative_base()
