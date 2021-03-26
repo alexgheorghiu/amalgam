@@ -43,7 +43,11 @@ def mock():
     delegate.user_create(user)
     print("User is [{}]".format(user.name))
 
-    site = Site(name='foo.com')
+    site = Site(name='One', url='http://one.amalgam.scriptoid.com/a.html')
+    delegate.site_create(site)
+    print("Site is [{}{}]".format(site.name, site.id))
+
+    site = Site(name='Two', url='http://two.amalgam.scriptoid.com/a.html')
     delegate.site_create(site)
     print("Site is [{}{}]".format(site.name, site.id))
 

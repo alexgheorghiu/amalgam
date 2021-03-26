@@ -45,7 +45,8 @@ class TestDelegate(unittest.TestCase):
 
         # Site 1
         site1 = Site()	
-        site1.name = "Site1"        
+        site1.name = "Site1"       
+        site1.url = 'http://foo.com' 
         delegate.site_create(site1)
         
 
@@ -55,6 +56,7 @@ class TestDelegate(unittest.TestCase):
         # Site 2
         site2 = Site()	
         site2.name = "Site2"
+        site2.url = 'http://foo.com'
         delegate.site_create(site2)
 
         # # User.query.all()
@@ -75,7 +77,8 @@ class TestDelegate(unittest.TestCase):
 
         # Site 1
         site1 = Site()	
-        site1.name = "Site1"        
+        site1.name = "Site1"      
+        site1.url = 'http://foo.com'  
         delegate.site_create(site1)
 
 
@@ -107,7 +110,8 @@ class TestDelegate(unittest.TestCase):
         print("test_page started")
         # Site 1
         site1 = Site()	
-        site1.name = "Site1"        
+        site1.name = "Site1"
+        site1.url = 'http://foo.com'
         delegate.site_create(site1)
 
         # Crawl
@@ -144,7 +148,8 @@ class TestDelegate(unittest.TestCase):
         print("test_page started")
         # Site 1
         site1 = Site()	
-        site1.name = "Site1"        
+        site1.name = "Site1" 
+        site1.url = 'http://foo.com'       
         delegate.site_create(site1)
 
         # Crawl

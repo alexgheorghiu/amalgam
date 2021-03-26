@@ -25,12 +25,14 @@ class User(Base):
     name = Column(String(100), nullable=True)
     email = Column(String(100), nullable=True, unique=True)
     password = Column(String(100), nullable=True)
+    current_site_id = Column(Integer, ForeignKey('sites.id', ondelete="SET NULL"))
 
 
 class Site(Base):
     __tablename__ = "sites"
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
+    url = Column(String(2048), nullable=False)
     crawls = relationship("Crawl", backref="site", cascade="all, delete")
 
 

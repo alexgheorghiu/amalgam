@@ -88,6 +88,19 @@ def login():
 			# session['progress_tracker'] = jsonpickle.encode(ProgressTracker())
 			# progress_tracker = jsonpickle.decode(session['progress_tracker'])
 
+			# Get first selected site
+
+			if user.current_site_id != None:
+				session['current_site_id'] = user.current_site_id	
+			else:
+				sites = delegate.site_get_all()
+				if len(sites) > 0:
+					current_site = sites[0]
+					session['current_site_id'] = current_site.id
+
+					user.current_site_id = current_site.id
+					delegate.user_update(user)
+
 			flash('You were just logged in!')
 			return redirect(url_for('home'))
 	return render_template('login.html', error=error)
@@ -113,7 +126,8 @@ def home():
 @login_required
 def site_add_exe():
 	site_name = request.form['site']
-	site = Site(name=site_name)
+	site_url = request.form['url']
+	site = Site(name=site_name, url=site_url)
 	delegate.site_create(site)
 
 	sites = delegate.site_get_all()
@@ -129,9 +143,26 @@ def sitemap():
 @app.route('/crawl')
 @login_required
 def crawl():
+	current_site_id = session['current_site_id']
+	site = delegate.site_get_by_id(current_site_id)
 	crawls = delegate.crawl_get_all()
 	combo  = delegate.crawls_and_site()
-	return render_template('crawl.html', crawls = crawls)
+	return render_template('crawl.html', crawls = crawls, site=site)
+
+
+@app.route('/switch_site')
+@login_required
+def switch_site():
+	user_id = session['user_id']
+	user = delegate.user_get_by_id(user_id)
+
+	site_id = request.args.get('site_id')
+	session['current_site_id'] = site_id	
+
+	user.current_site_id = site_id
+	delegate.user_update(user)
+	
+	return redirect(url_for('home'))
 
 
 @app.route('/crawl.exe', methods=['GET', 'POST'])
@@ -158,7 +189,8 @@ def crawl_exe():
 		return redirect(url_for('crawl'))
 
 	# Save to DB
-	crawl = Crawl()	
+	current_site_id = session['current_site_id']	
+	crawl = Crawl(site_id=current_site_id)	
 	delegate.crawl_create(crawl)
 	
 

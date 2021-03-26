@@ -7,6 +7,12 @@
 	<script type="text/javascript" src="static/jquery-3.5.1.js" ></script>
 	<script type="text/javascript" src="static/bootstrap.min.js" ></script>
 	<link href="static/main.css" rel="stylesheet" media="screen">
+	<script type="text/javascript">
+		function switch_site(site_id){
+			console.info("Switching to " + site_id);
+			window.location = '/switch_site?site_id='+site_id;
+		}
+	</script>
 	{% block head %}{% endblock%}
   </head>
   <body>
@@ -23,10 +29,13 @@
 						<!--Site section-->
 						<div class="col-md-5">
 							<div class="d-flex justify-content-start">
+								<script>
+									//
+								</script>
 								{% if sites | length %}
 									<select>
 										{% for site in sites %}
-										<option value="{{site.id}}">{{site.name}}</option>
+										<option value="{{site.id}}" onclick="switch_site({{site.id}})">{{site.name}}</option>
 										{% endfor %}
 									</select>
 								{% else %}

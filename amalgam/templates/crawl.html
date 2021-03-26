@@ -1,11 +1,7 @@
 {% extends "base_inner.html" %}
 {% block content %}
 
-<a href="/home">Home</a> &gt; <a href="/crawl">Crawl</a>
-
-<p/>
-
-<h2>New crawl</h2>
+<h2>Crawls for {{site.name}} {{site.url}}</h2>
 <p/>
 <form action="/crawl.exe" method="post">
 	Site address:
