@@ -158,6 +158,17 @@ Install Python libraries
 	See https://github.com/realpython/discover-flask/blob/master/requirements.txt
 ```
 
+__Note__: If you got an error like:
+```
+ " fatal error: libpq-fe.h: No such file or directory"
+```
+
+simply run:
+
+```sh
+sudo apt-get install libpq-dev
+```
+
 Run Flask	
 
 ```sh
