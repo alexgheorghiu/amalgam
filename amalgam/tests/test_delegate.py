@@ -118,7 +118,7 @@ class TestDelegate(unittest.TestCase):
         # Page
         page = Resource()
         page.crawl_id = crawl.id
-        page.content = "Ala bala portocala"
+        page.content = "A long content " + "a" * 1024 * 1024
         page.absolute_url = "https://scriptoid.com/index.php"
         delegate.resource_create(page)
         assert page.id > 0
