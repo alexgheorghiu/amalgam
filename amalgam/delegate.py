@@ -64,6 +64,12 @@ class Delegate:
         crawls = session.query(Crawl).all()
         return crawls
 
+    def crawl_get_all_for_site(self, site_id):
+        session = self.get_session()
+        return session.query(Crawl)\
+            .filter(Crawl.site_id==site_id)\
+            .all()
+
 
     def crawls_and_site(self):
         session = self.get_session()
@@ -78,6 +84,8 @@ class Delegate:
     def crawl_delete_all(self):
         session = self.get_session()
         session.query(Crawl).delete()
+
+    # --------------------------------------------------------------------------
 
     def links_get_for_crawl(self, crawl):
         # session = delegate.get_session()

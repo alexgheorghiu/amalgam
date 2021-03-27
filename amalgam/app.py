@@ -144,10 +144,10 @@ def sitemap():
 @app.route('/crawl')
 @login_required
 def crawl():
-	current_site_id = session['current_site_id']
+	# current_site_id = session['current_site_id']
 	user = delegate.user_get_by_id(session['user_id'])	
-	site = delegate.site_get_by_id(current_site_id)
-	crawls = delegate.crawl_get_all()
+	site = delegate.site_get_by_id(user.current_site_id)
+	crawls = delegate.crawl_get_all_for_site(user.current_site_id)
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('crawl.html', crawls = crawls, site=site, user=user, sites=sites)
 
@@ -190,6 +190,9 @@ def crawl_exe():
 		flash('No address.')
 		return redirect(url_for('crawl'))
 
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+
 	# Save to DB
 	current_site_id = session['current_site_id']	
 	crawl = Crawl(site_id=current_site_id)	
@@ -203,14 +206,14 @@ def crawl_exe():
 	crawler.addListener(notify)
 	crawler.start()
 	
-	return render_template('crawlProgress.html', crawl=crawl)	
+	return render_template('crawlProgress.html', crawl=crawl, user=user, sites=sites)	
 
 
 @app.route('/crawl.report', methods=['GET', 'POST'])
 @login_required
 def crawl_report():
 	global PROGRESS_TRACKER
-
+	
 	# print("\n{}: Current session tracker: {}".format(threading.current_thread().ident, session['progress_tracker']))
 	crawlId = request.args.get('id')
 	try:
@@ -262,7 +265,9 @@ def viewCrawl():
 		id = request.args.get('id', type=int)
 		crawl = delegate.crawl_get_by_id(id)
 		links = delegate.url_get_all_by_crawl_id(id)
-		return render_template('viewCrawl.html', crawl=crawl, links = links)
+		user = delegate.user_get_by_id(session['user_id'])	
+		sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+		return render_template('viewCrawl.html', crawl=crawl, links = links, user=user, sites=sites)
 	except ValueError as ve:
 		flash('No crawl id.')
 		return redirect(url_for('crawl'))	
@@ -327,8 +332,10 @@ def one():
 def report_inner_links():
 	
 	id = request.args.get('id', type=int)
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	
-	return render_template('report_inner_links.html', crawlId = id)
+	return render_template('report_inner_links.html', crawlId = id, user=user, sites=sites)
 
 
 @app.route('/report_inner_links_data', methods=['GET', 'POST'])
