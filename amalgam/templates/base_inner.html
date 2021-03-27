@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Amalgam</title>
+    <title>Amalgam : {{page}}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">	
 	<link href="static/bootstrap.min.css" rel="stylesheet" media="screen">
 	<script type="text/javascript" src="static/jquery-3.5.1.js" ></script>
@@ -66,7 +66,7 @@
 		<div class="row">
 
 			<!--Left navigation-->
-			<div class="col-md-2">
+			<div class="col-md-2 p-0" id="left-navigation">
 				{% block navigation %}{% endblock%}
 				{% include "navigation.html"%}
 			</div>

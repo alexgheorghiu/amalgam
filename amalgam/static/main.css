@@ -8,3 +8,11 @@
 .not_implemented {
     color: gray;
 }
+
+#left-navigation{
+    background-color: #f9f9f9;
+}
+
+a.nav-link-selected{
+    background-color: white !important;
+}

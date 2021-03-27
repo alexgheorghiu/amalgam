@@ -1,9 +1,9 @@
-<ul class="nav flex-column">
+<nav class="nav flex-column">
     <li class="nav-item">
-        <a class="nav-link" href="./home">Home</a>
+        <a class="nav-link {%if page == 'home'%}nav-link-selected{%endif%}" href="./home">Home</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="./crawl">Crawls</a>
+        <a class="nav-link {%if page == 'crawl'%}nav-link-selected{%endif%}" href="./crawl">Crawls</a>
     </li>
     <li class="nav-item">
         <a class="nav-link disabled" href="#">Internal linking</a>
@@ -24,6 +24,6 @@
         <a class="nav-link disabled" href="#">URL Analysis</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link " href="./status">App status</a>
+        <a class="nav-link {%if page == 'status'%}nav-link-selected{%endif%}" href="./status">App status</a>
     </li>
 </ul>
