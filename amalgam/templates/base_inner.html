@@ -35,7 +35,7 @@
 								{% if sites | length %}
 									<select>
 										{% for site in sites %}
-										<option value="{{site.id}}" onclick="switch_site({{site.id}})">{{site.name}}</option>
+										<option value="{{site.id}}" {% if site.id == user.current_site_id%} selected {% endif %}  onclick="switch_site({{site.id}})">{{site.name}}</option>
 										{% endfor %}
 									</select>
 								{% else %}
@@ -53,7 +53,7 @@
 						<!--User section-->
 						<div class="col-md-5">
 							<div class="d-flex justify-content-end">
-								<div class="p-2">User name</div>
+								<div class="p-2">{{user.name}} [{{user.email}}]</div>
 								<div class="p-2"><a href="#" class="not_implemented">Settings</a></div>
 								<div class="p-2"><a href="/logout">Logout</a></div>
 							</div>

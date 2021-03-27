@@ -119,7 +119,8 @@ def logout():
 @login_required
 def home():
 	sites = delegate.site_get_all()
-	return render_template('home.html', sites=sites)
+	user = delegate.user_get_by_id(session['user_id'])
+	return render_template('home.html', sites=sites, user=user)
 
 
 @app.route('/site_add_exe', methods=['GET', 'POST'])
@@ -144,10 +145,11 @@ def sitemap():
 @login_required
 def crawl():
 	current_site_id = session['current_site_id']
+	user = delegate.user_get_by_id(session['user_id'])
 	site = delegate.site_get_by_id(current_site_id)
 	crawls = delegate.crawl_get_all()
 	combo  = delegate.crawls_and_site()
-	return render_template('crawl.html', crawls = crawls, site=site)
+	return render_template('crawl.html', crawls = crawls, site=site, user=user)
 
 
 @app.route('/switch_site')
