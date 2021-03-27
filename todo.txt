@@ -9,4 +9,12 @@ URL position for a keyword
 Internal linking map
 Broken URL
 URL word statistics
+
+Next steps
+----------
+* Get rid of session['current_site_id']
+* On site switch return to page from where it was triggered
+* Add max no of pages on (initial) add site and remove it from Crawl exe.
+
+
 	
