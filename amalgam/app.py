@@ -118,8 +118,8 @@ def logout():
 @app.route('/home')
 @login_required
 def home():
-	sites = delegate.site_get_all()
 	user = delegate.user_get_by_id(session['user_id'])
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('home.html', sites=sites, user=user)
 
 
@@ -145,11 +145,11 @@ def sitemap():
 @login_required
 def crawl():
 	current_site_id = session['current_site_id']
-	user = delegate.user_get_by_id(session['user_id'])
+	user = delegate.user_get_by_id(session['user_id'])	
 	site = delegate.site_get_by_id(current_site_id)
 	crawls = delegate.crawl_get_all()
-	combo  = delegate.crawls_and_site()
-	return render_template('crawl.html', crawls = crawls, site=site, user=user)
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	return render_template('crawl.html', crawls = crawls, site=site, user=user, sites=sites)
 
 
 @app.route('/switch_site')
@@ -295,7 +295,10 @@ def status():
 	from shutil import which
 	status.append({'key':'Graphviz present', 'value': which('dot') is not None})	
 	
-	return render_template('status.html', status=status)
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+
+	return render_template('status.html', status=status, user=user, sites=sites)
 
 
 @app.route('/one')

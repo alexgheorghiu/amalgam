@@ -1,13 +1,13 @@
 {% extends "base_inner.html" %}
 {% block content %}
 
-<h2>Crawls for {{site.name}} {{site.url}}</h2>
+<h3>Crawls for {{site.name}}</h3>
 <p/>
 <form action="/crawl.exe" method="post">
 	Site address:
-	<input type="text" placeholder="Site address with protocol" name="address" value="{{request.form.address}}">
+	<input type="text" disabled placeholder="Site address with protocol" name="address" value="{{site.url}}">
 	<br/>
-	Max no of links <input type="text" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
+	Max. no. of links <input type="text" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
 	<br/>
 	<input class="btn btn-dark" type="submit" value="Crawl it!">
 </form>
