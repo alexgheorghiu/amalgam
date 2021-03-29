@@ -85,19 +85,12 @@ def login():
 		else:
 			session['logged_in'] = True			
 			session['user_id'] = user.id
-			# session['progress_tracker'] = jsonpickle.encode(ProgressTracker())
-			# progress_tracker = jsonpickle.decode(session['progress_tracker'])
 
 			# Get first selected site
-
-			if user.current_site_id != None:
-				session['current_site_id'] = user.current_site_id	
-			else:
+			if user.current_site_id == None:
 				sites = delegate.site_get_all()
 				if len(sites) > 0:
 					current_site = sites[0]
-					session['current_site_id'] = current_site.id
-
 					user.current_site_id = current_site.id
 					delegate.user_update(user)
 
@@ -144,7 +137,6 @@ def sitemap():
 @app.route('/crawl')
 @login_required
 def crawl():
-	# current_site_id = session['current_site_id']
 	user = delegate.user_get_by_id(session['user_id'])	
 	site = delegate.site_get_by_id(user.current_site_id)
 	crawls = delegate.crawl_get_all_for_site(user.current_site_id)
@@ -159,7 +151,6 @@ def switch_site():
 	user = delegate.user_get_by_id(user_id)
 
 	site_id = request.args.get('site_id')
-	session['current_site_id'] = site_id	
 
 	user.current_site_id = site_id
 	delegate.user_update(user)
@@ -193,9 +184,8 @@ def crawl_exe():
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 
-	# Save to DB
-	current_site_id = session['current_site_id']	
-	crawl = Crawl(site_id=current_site_id)	
+	# Save to DB	
+	crawl = Crawl(site_id=user.current_site_id)	
 	delegate.crawl_create(crawl)
 	
 
