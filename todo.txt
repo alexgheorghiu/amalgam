@@ -14,5 +14,6 @@ Next steps
 ----------
 * Add max no of pages on (initial) add site and remove it from Crawl exe.
 * Manage profiles (add, delete, sites)
+* Default DB to SQLite (as people might not have MySQL or PostgreSQL installed)
 
 	

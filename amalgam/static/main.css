@@ -16,3 +16,7 @@
 a.nav-link-selected{
     background-color: white !important;
 }
+
+i.fa-size {
+    width: 24px;
+}

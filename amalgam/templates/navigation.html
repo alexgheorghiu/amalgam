@@ -1,29 +1,56 @@
 <nav class="nav flex-column">
     <li class="nav-item">
-        <a class="nav-link {%if page == 'home'%}nav-link-selected{%endif%}" href="./home">Home</a>
+        <a class="nav-link {%if page == 'home'%}nav-link-selected{%endif%}" href="./home">
+            <i class="fa fa-home fa-size" aria-hidden="true"></i>
+            Home
+        </a>
+    </li>
+    <li class="nav-item">        
+        <a class="nav-link {%if page == 'crawl'%}nav-link-selected{%endif%}" href="./crawl">
+            <i class="fa fa-bug fa-size" aria-hidden="true"></i>
+            Crawls
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link {%if page == 'crawl'%}nav-link-selected{%endif%}" href="./crawl">Crawls</a>
+        <a class="nav-link disabled" href="#">
+            <i class="fa fa-project-diagram fa-size"></i>
+            Internal linking
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="#">Internal linking</a>
+        <a class="nav-link disabled" href="#">
+            <i class="fa fa-file-alt fa-size" aria-hidden="true"></i>
+            Content analysis
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="#">Content analysis</a>
+        <a class="nav-link disabled" href="#">
+            <i class="fa fa-code fa-size" aria-hidden="true"></i>
+            Meta analysis
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="#">Meta analysis</a>
+        <a class="nav-link disabled" href="#">
+            <i class="fa fa-search-dollar fa-size" aria-hidden="true"></i>
+            Crawl budget
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="#">Crawl budget</a>
+        <a class="nav-link disabled" href="#">
+            <i class="fa fa-compass fa-size" aria-hidden="true"></i>
+            Indexability
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="#">Indexability</a>
+        <a class="nav-link disabled" href="#">
+            <i class="fa fa-glasses fa-size" aria-hidden="true"></i>
+            URL Analysis
+        </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" href="#">URL Analysis</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {%if page == 'status'%}nav-link-selected{%endif%}" href="./status">App status</a>
+        <a class="nav-link {%if page == 'status'%}nav-link-selected{%endif%}" href="./status">
+            <i class="fas fa-thermometer-three-quarters fa-size"></i>
+            App status
+        </a>
     </li>
 </ul>
