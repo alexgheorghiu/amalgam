@@ -10,7 +10,7 @@
 	<script type="text/javascript">
 		function switch_site(site_id){
 			console.info("Switching to " + site_id);
-			window.location = '/switch_site?site_id='+site_id;
+			window.location = '/switch_site?site_id='+site_id+'&page={{page}}';
 		}
 	</script>
 	{% block head %}{% endblock%}

@@ -12,8 +12,7 @@ URL word statistics
 
 Next steps
 ----------
-* On site switch return to page from where it was triggered
 * Add max no of pages on (initial) add site and remove it from Crawl exe.
-
+* Manage profiles (add, delete, sites)
 
 	

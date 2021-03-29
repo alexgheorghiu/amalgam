@@ -151,11 +151,19 @@ def switch_site():
 	user = delegate.user_get_by_id(user_id)
 
 	site_id = request.args.get('site_id')
+	page = request.args.get('page')
 
 	user.current_site_id = site_id
 	delegate.user_update(user)
-	
-	return redirect(url_for('home'))
+
+	if page == 'home':
+		return redirect(url_for('home'))
+	elif page == 'crawl':
+		return redirect(url_for('crawl'))
+	elif page == 'status':
+		return redirect(url_for('status'))
+	else:
+		return redirect(url_for('home'))
 
 
 @app.route('/crawl.exe', methods=['GET', 'POST'])
