@@ -1,0 +1,13 @@
+{% set page = 'personal_settings' %}
+{% extends "base_settings.html" %}
+{% block content %}
+<h3>Personal settings</h3>
+<p>
+	<!-- messages -->
+	{% for info in status %}
+		<div>
+		<span class="font-weight-bold" >{{ info.key }}</span> : {{ info.value }}
+		</div>
+	{% endfor %}
+</p>
+{% endblock %}

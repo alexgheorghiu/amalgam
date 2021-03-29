@@ -349,6 +349,36 @@ def report_inner_links_data():
 	return jsonify(data)
 
 
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+	return redirect(url_for('personal_settings'))
+
+
+@app.route('/personal_settings', methods=['GET', 'POST'])
+@login_required
+def personal_settings():
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	return render_template('personal_settings.html', user=user, sites=sites)
+
+
+@app.route('/sites', methods=['GET', 'POST'])
+@login_required
+def sites():
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	return render_template('sites.html', user=user, sites=sites)
+
+
+@app.route('/users', methods=['GET', 'POST'])
+@login_required
+def users():
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	return render_template('users.html', user=user, sites=sites)
+
+
 @app.route('/two')
 def two():
 	v = session['v'] 

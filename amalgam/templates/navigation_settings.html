@@ -1,0 +1,39 @@
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link {%if page == 'home'%}nav-link-selected{%endif%}" href="./home">
+            <i class="fa fa-home fa-size" aria-hidden="true"></i>
+            Home
+        </a>
+    </li>
+
+    <li class="nav-item">        
+        <a class="nav-link {%if page == 'personal_settings'%}nav-link-selected{%endif%}" href="./personal_settings">
+            <i class="fa fa-id-card fa-size" aria-hidden="true"></i>
+            Personal Settings 
+        </a>
+    </li>
+
+    {% if user.level == 'admin'%}
+
+    <li class="nav-item" style="border-bottom: 1px solid gray;">                
+        <span style="margin-left: 10px; ">
+            Admin section
+        </span>
+    </li>
+
+    <li class="nav-item">        
+        <a class="nav-link {%if page == 'sites'%}nav-link-selected{%endif%}" href="./sites">
+            <i class="fa fa-cube fa-size" aria-hidden="true"></i>
+            Sites 
+        </a>
+    </li>
+
+    <li class="nav-item">        
+        <a class="nav-link {%if page == 'users'%}nav-link-selected{%endif%}" href="./users">
+            <i class="fa fa-users fa-size" aria-hidden="true"></i>
+            Users
+        </a>
+    </li>
+
+    {% endif%}    
+</ul>

@@ -20,12 +20,17 @@ class Setting(Base):
 
 
 class User(Base):
+
+    LEVEL_NORMAL = 'normal'
+    LEVEL_ADMIN = 'admin'
+
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)    
     name = Column(String(100), nullable=True)
     email = Column(String(100), nullable=True, unique=True)
     password = Column(String(100), nullable=True)
     current_site_id = Column(Integer, ForeignKey('sites.id', ondelete="SET NULL"))
+    level = Column(String(100), default=LEVEL_NORMAL)
 
 
 class Site(Base):

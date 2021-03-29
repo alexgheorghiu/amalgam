@@ -25,37 +25,13 @@
 				<h2>Amalgam</h2>
 			</div>
 			<div class="col-md-10">
-					<div class="row">
-
-						<!--Site section-->
-						<div class="col-md-7">
-							<div class="d-flex justify-content-start">
-								<script>
-									//
-								</script>
-								{% if sites | length %}
-									<select>
-										{% for site in sites %}
-										<option value="{{site.id}}" {% if site.id == user.current_site_id%} selected {% endif %}  onclick="switch_site({{site.id}})">{{site.name}}</option>
-										{% endfor %}
-									</select>
-								{% else %}
-									<!--No sites-->
-								{% endif %}
-								<span class="p-2">
-									<a href="#" class="not_implemented">
-										<img style="width: 24px; height: 24px;" src="static/images/add-button-svgrepo-com.svg"/>
-										Add Site
-									</a>
-								</span>
-							</div>
-						</div>
+					<div class="row">						
 
 						<!--User section-->
-						<div class="col-md-5">
+						<div class="col-md-12">
 							<div class="d-flex justify-content-end">
 								<div class="p-2">{{user.name}} [{{user.email}}]</div>
-								<div class="p-2"><a href="/settings">Settings</a></div>
+								<div class="p-2">Settings</div>
 								<div class="p-2"><a href="/logout">Logout</a></div>
 							</div>
 						</div>
@@ -69,7 +45,7 @@
 			<!--Left navigation-->
 			<div class="col-md-2 p-0" id="left-navigation">
 				{% block navigation %}{% endblock%}
-				{% include "navigation.html"%}
+				{% include "navigation_settings.html"%}
 			</div>
 
 			<!--Content of the page-->

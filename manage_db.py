@@ -39,7 +39,7 @@ def empty():
 def mock():
     """Creates a pre-populated DB"""
     empty()
-    user = User(email='one@foo.com', password='one', name='one')
+    user = User(email='one@foo.com', password='one', name='one', level=User.LEVEL_ADMIN)
     delegate.user_create(user)
     print("User is [{}]".format(user.name))
 
