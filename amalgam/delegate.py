@@ -301,7 +301,7 @@ class Delegate:
     def user_update(self, user):
         self.update(user)
 
-    def user_get_all(self, id):
+    def user_get_all(self):
         session = self.get_session()
         users = session.query(User).all()
         return users

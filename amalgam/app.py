@@ -401,7 +401,8 @@ def site_delete():
 def users():
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
-	return render_template('users.html', user=user, sites=sites)
+	users = delegate.user_get_all()
+	return render_template('users.html', user=user, sites=sites, users=users, clazz=User)
 
 
 @app.route('/two')
