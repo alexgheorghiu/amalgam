@@ -5,7 +5,8 @@
 {% if sites | length %}
     <!--All good-->
 {% else %}
-    <form method="post" action="/site_add_exe">
+    <form method="post" action="/site.add">
+        <input type="hidden" name="page" id="page" value="{{page}}">
         <label for="site">Site</label>
         <input type="text" name="site" id="site">
         <label for="url">Address</label>

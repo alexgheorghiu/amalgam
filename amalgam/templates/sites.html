@@ -3,11 +3,41 @@
 {% block content %}
 <h3>Sites</h3>
 <p>
-	<!-- messages -->
-	{% for info in status %}
-		<div>
-		<span class="font-weight-bold" >{{ info.key }}</span> : {{ info.value }}
-		</div>
-	{% endfor %}
+	<!-- Add site form -->
+	<h4>Add site</h4>
+	<form method="post" action="/site.add">
+		<input type="hidden" name="page" id="page" value="{{page}}">
+        <label for="site">Site</label>
+        <input type="text" name="site" id="site">
+        <label for="url">Address</label>
+        <input type="text" name="url" id="url">
+        <input type="submit" value="Add">
+    </form>
+
+	<p/>
+
+	<!-- Existing sites -->
+	<h4>Existing Sites</h4>
+	{% if sites | length %}
+		<table class="table">
+			<tr>
+				<th>Id</th>
+				<th>Name</th>
+				<th>Address</th>
+				<th>Delete</th>
+			</tr>
+			{% for site in sites %}
+			<tr>
+				<td>{{site.id}}</td>
+				<td>{{site.name}}</td>
+				<td>{{site.url}}</td>
+				<td><a href="/site.delete?site_id={{site.id}}">delete</a></td>			
+			</tr>
+			{% endfor %}
+		</table>
+	{% else %}
+		<!--No sites-->
+		No sites yet :(
+	{% endif %}
 </p>
 {% endblock %}

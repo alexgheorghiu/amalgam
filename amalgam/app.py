@@ -116,16 +116,23 @@ def home():
 	return render_template('home.html', sites=sites, user=user)
 
 
-@app.route('/site_add_exe', methods=['GET', 'POST'])
+@app.route('/site.add', methods=['GET', 'POST'])
 @login_required
-def site_add_exe():
+def site_add():
+	page = request.args.get('page', type=str)
+	user = delegate.user_get_by_id(session['user_id'])
+	page = request.form['page']
 	site_name = request.form['site']
 	site_url = request.form['url']
 	site = Site(name=site_name, url=site_url)
 	delegate.site_create(site)
 
 	sites = delegate.site_get_all()
-	return render_template('home.html', sites=sites)
+
+	if page == 'home':
+		return redirect(url_for('home'))
+	else:
+		return redirect(url_for('sites'))
 
 
 @app.route('/sitemap')
@@ -304,25 +311,25 @@ def status():
 	return render_template('status.html', status=status, user=user, sites=sites)
 
 
-@app.route('/one')
-def one():
-	@copy_current_request_context
-	def x():
-		try:
-			# id = request.args.get('id', type=int)
-			id = 1
-			crawl = Crawl.query.get(id)			
+# @app.route('/one')
+# def one():
+# 	@copy_current_request_context
+# 	def x():
+# 		try:
+# 			# id = request.args.get('id', type=int)
+# 			id = 1
+# 			crawl = Crawl.query.get(id)			
 
-			crawl.note = "Hello from X"
-			session = delegate.get_session()
-			session.commit()	
-		except ValueError as ve:
-			flash('No crawl id.')
-			return redirect(url_for('crawl'))		
+# 			crawl.note = "Hello from X"
+# 			session = delegate.get_session()
+# 			session.commit()	
+# 		except ValueError as ve:
+# 			flash('No crawl id.')
+# 			return redirect(url_for('crawl'))		
 
-	t = threading.Thread(target=x)
-	t.start()
-	return "One"
+# 	t = threading.Thread(target=x)
+# 	t.start()
+# 	return "One"
 
 
 @app.route('/report_inner_links', methods=['GET', 'POST'])
@@ -370,6 +377,24 @@ def sites():
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('sites.html', user=user, sites=sites)
 
+
+@app.route('/site.delete', methods=['GET', 'POST'])
+@login_required
+def site_delete():
+	site_id = request.args.get('site_id', type=int)
+	# page = request.args.get('page', type=str)
+
+	delegate.site_delete_by_id(site_id)
+
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	
+	# if page == 'sites':
+	# 	return redirect(url_for('sites'))
+	# else:
+	# 	return render_template('sites.html', user=user, sites=sites)
+	return render_template('sites.html', user=user, sites=sites)
+		
 
 @app.route('/users', methods=['GET', 'POST'])
 @login_required

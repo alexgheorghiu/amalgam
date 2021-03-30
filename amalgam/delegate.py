@@ -277,6 +277,11 @@ class Delegate:
     def site_delete(self, site):
         self.delete(site)
 
+    def site_delete_by_id(self, site_id):
+        session = self.get_session()
+        session.query(Site).filter(Site.id == site_id).delete()
+        session.commit()        
+
     def user_create(self, user):
         self.create(user)
 
