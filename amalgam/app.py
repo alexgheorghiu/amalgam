@@ -9,7 +9,7 @@ import threading
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import Url, Crawl, User, Site
+from amalgam.models.models import Url, Crawl, User, Site, User
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
 
@@ -311,27 +311,6 @@ def status():
 	return render_template('status.html', status=status, user=user, sites=sites)
 
 
-# @app.route('/one')
-# def one():
-# 	@copy_current_request_context
-# 	def x():
-# 		try:
-# 			# id = request.args.get('id', type=int)
-# 			id = 1
-# 			crawl = Crawl.query.get(id)			
-
-# 			crawl.note = "Hello from X"
-# 			session = delegate.get_session()
-# 			session.commit()	
-# 		except ValueError as ve:
-# 			flash('No crawl id.')
-# 			return redirect(url_for('crawl'))		
-
-# 	t = threading.Thread(target=x)
-# 	t.start()
-# 	return "One"
-
-
 @app.route('/report_inner_links', methods=['GET', 'POST'])
 @login_required
 def report_inner_links():
@@ -405,10 +384,33 @@ def users():
 	return render_template('users.html', user=user, sites=sites, users=users, clazz=User)
 
 
-@app.route('/two')
-def two():
-	v = session['v'] 
-	return "Two: {}".format(v)
+@app.route('/user.add', methods=['GET', 'POST'])
+def user_add():
+	if not request.form['name']:
+		flash('No name.')
+		return redirect(url_for('users'))
+	name = request.form['name']
+
+	if not request.form['email']:
+		flash('No email.')
+		return redirect(url_for('users'))
+	email = request.form['email']
+
+	if not request.form['password']:
+		flash('No password.')
+		return redirect(url_for('users'))
+	password = request.form['password']
+
+	if not request.form['level']:
+		flash('No level.')
+		return redirect(url_for('users'))
+	level = request.form['level']
+
+
+	user = User(name=name, email=email, password=password, level=level)
+	delegate.user_create(user)
+
+	return redirect(url_for('users'))
 
 
 # start the server with the 'run()' method
