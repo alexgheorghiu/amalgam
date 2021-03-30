@@ -116,24 +116,6 @@ def home():
 	return render_template('home.html', sites=sites, user=user)
 
 
-@app.route('/site.add', methods=['GET', 'POST'])
-@login_required
-def site_add():
-	page = request.args.get('page', type=str)
-	user = delegate.user_get_by_id(session['user_id'])
-	page = request.form['page']
-	site_name = request.form['site']
-	site_url = request.form['url']
-	site = Site(name=site_name, url=site_url)
-	delegate.site_create(site)
-
-	sites = delegate.site_get_all()
-
-	if page == 'home':
-		return redirect(url_for('home'))
-	else:
-		return redirect(url_for('sites'))
-
 
 @app.route('/sitemap')
 @login_required
@@ -413,6 +395,26 @@ def site_delete():
 	flash('Site deleted !')
 	return render_template('sites.html', user=user, sites=sites)
 		
+
+@app.route('/site.add', methods=['GET', 'POST'])
+@login_required
+def site_add():
+	page = request.args.get('page', type=str)
+	user = delegate.user_get_by_id(session['user_id'])
+	page = request.form['page']
+	site_name = request.form['site']
+	site_url = request.form['url']
+	site = Site(name=site_name, url=site_url)
+	delegate.site_create(site)
+
+	user.current_site_id = site.id
+	delegate.site_update(site)
+
+	if page == 'home':
+		return redirect(url_for('home'))
+	else:
+		return redirect(url_for('sites'))
+
 
 @app.route('/users', methods=['GET', 'POST'])
 @login_required

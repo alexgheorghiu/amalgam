@@ -2,43 +2,52 @@
 {% extends "base_inner.html" %}
 {% block content %}
 
-<h3>Crawls for {{site.name}}</h3>
-<p/>
-<form action="/crawl.exe" method="post">
-	Site address:
-	<input type="text" placeholder="Site address with protocol" name="address" value="{{site.url}}">
-	<br/>
-	Max. no. of links <input type="text" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
-	<br/>
-	<input class="btn btn-dark" type="submit" value="Crawl it!">
-</form>
 
+<div class="row">
+	<div class="col-12">
+		<h4>Crawls for {{site.name}}</h4>
+		<p/>
+		<form class="form" action="/crawl.exe" method="post">
+			Site address:
+			<input class="form-control"  type="text" placeholder="Site address with protocol" name="address" value="{{site.url}}">
+			<br/>
+			Max. no. of links <input type="text" class="form-control" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
+			<br/>
+			<button class="btn btn-dark" type="submit" value="submit">Crawl it!</button>
+		</form>
+	</div>
+</div>
 <p/>
 
-<h2>Crawls</h2>
-<table border="1">
-	<tr>
-		<!-- <th>Id</th> -->
-		<th>Date</th>
-		<th>Actions</th>
-		<th>Inner links</th>
-		<th>Note</th>
-	</tr>
-</tr>
-{% for crawl in crawls %}
-	<tr>
-		<!-- <td>{{ crawl.id }}</td> -->
-		<td>{{ crawl.date.strftime("%X %x") }}</td>
-		<td>
-			<a href="/viewCrawl?id={{ crawl.id }}">View</a>			
-			<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>			
-		</td>
-		<td>
-			<a href="/report_inner_links?id={{ crawl.id }}" >Inner Links</a>
-		</td>
-		<td>{{ crawl.note }}</td>
-	</tr>
-{% endfor %}
-</table>
+<div class="row">
+	<div class="col-12">
+		<h4>Crawls</h4>
+		<table class="table">
+			<tr>
+				<!-- <th>Id</th> -->
+				<th>Date</th>
+				<th>Actions</th>
+				<th>Inner links</th>
+				<th>Note</th>
+			</tr>
+		</tr>
+		{% for crawl in crawls %}
+			<tr>
+				<!-- <td>{{ crawl.id }}</td> -->
+				<td>{{ crawl.date.strftime("%X %x") }}</td>
+				<td>
+					<a href="/viewCrawl?id={{ crawl.id }}">View</a>			
+					<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>			
+				</td>
+				<td>
+					<a href="/report_inner_links?id={{ crawl.id }}" >Inner Links</a>
+				</td>
+				<td>{{ crawl.note }}</td>
+			</tr>
+		{% endfor %}
+		</table>
+	</div>
+</div>
+
 
 {% endblock %}

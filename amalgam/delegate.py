@@ -259,6 +259,10 @@ class Delegate:
     def site_create(self, site):
         self.create(site)
 
+
+    def site_update(self, site):
+        self.update(site)
+
     def site_delete_all(self):
         session = self.get_session()
         session.query(Site).delete()
