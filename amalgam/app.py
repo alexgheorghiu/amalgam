@@ -346,7 +346,49 @@ def settings():
 def personal_settings():
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
-	return render_template('personal_settings.html', user=user, sites=sites)
+	return render_template('personal_settings.html', user=user, sites=sites, clazz=User)
+
+
+@app.route('/personal_settings.edit', methods=['GET', 'POST'])
+@login_required
+def personal_settings_edit():
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	return render_template('personal_settings_edit.html', user=user, sites=sites, clazz=User)
+
+
+@app.route('/personal_settings.update', methods=['GET', 'POST'])
+@login_required
+def personal_settings_update():	
+	user = delegate.user_get_by_id(session['user_id'])	
+	
+	if not request.form['name']:
+		flash('No name.')
+		return redirect(url_for('users'))
+	name = request.form['name']
+	user.name = name
+
+	if not request.form['email']:
+		flash('No email.')
+		return redirect(url_for('users'))
+	email = request.form['email']
+	user.email = email
+
+	if request.form['password']:				
+		password = request.form['password']
+		user.password = password
+
+	if not request.form['level']:
+		flash('No level.')
+		return redirect(url_for('users'))
+	level = request.form['level']
+	user.level = level
+
+	delegate.user_update(user)
+	
+	flash('User updated !')
+
+	return redirect(url_for('personal_settings'))
 
 
 @app.route('/sites', methods=['GET', 'POST'])

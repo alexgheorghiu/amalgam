@@ -1,13 +1,25 @@
 {% set page = 'personal_settings' %}
 {% extends "base_settings.html" %}
 {% block content %}
-<h3>Personal settings</h3>
-<p>
-	<!-- messages -->
-	{% for info in status %}
-		<div>
-		<span class="font-weight-bold" >{{ info.key }}</span> : {{ info.value }}
+<h3>Personal settings</h3> <a href="/personal_settings.edit">(edit)</a>
+<div>
+	<div class="row">
+		<div class="col-md-12">
+			<table class="table">
+				<tr>
+					<th>Name</th>
+					<td>{{user.name}}</td>
+				</tr>
+				<tr>
+					<th>Email</th>
+					<td>{{user.email}}</td>
+				</tr>
+				<tr>
+					<th>Level</th>
+					<td>{% if user.level == clazz.LEVEL_NORMAL %} Normal {% else %} Admin {% endif %}</td>
+				</tr>
+			</table>
 		</div>
-	{% endfor %}
-</p>
+	</div>
+</div>
 {% endblock %}
