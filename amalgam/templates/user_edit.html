@@ -1,0 +1,35 @@
+{% set page = 'users' %}
+{% extends "base_settings.html" %}
+{% block content %}
+
+<h4>Add user</h4>
+<form method="post" action="/user.update">
+	<input type="hidden" name="page" id="page" value="{{page}}">
+	<input type="hidden" name="edited_user_id" id="edited_user_id" value="{{edited_user.id}}">
+
+	<div class="form-group">
+		<label for="name">Name</label>
+		<input class="form-control" type="text" name="name" id="name" value="{{edited_user.name}}">
+	</div>
+	<div class="form-group">
+		<label for="name">Email</label>
+		<input class="form-control" type="text" name="email" id="email" value="{{edited_user.email}}">
+	</div>
+	<div class="form-group">
+		<label for="level">Level</label>
+		<select class="form-control" id="level" name="level">
+			<option {% if edited_user.level == clazz.LEVEL_NORMAL%} selected {% endif %} value="{{clazz.LEVEL_NORMAL}}">Normal</option>
+			<option {% if edited_user.level == clazz.LEVEL_ADMIN%} selected {% endif %} value="{{clazz.LEVEL_ADMIN}}">Administrator</option>
+		</select>
+	</div>
+	<div class="form-group">
+		<label for="password">Password</label>
+		<input class="form-control" type="text" name="password" id="password">
+	</div>
+	<a href="/users">Cancel</a>
+	<button class="btn btn-primary" type="submit" value="submit">Update user</button>
+</form>
+
+<p/>
+
+{% endblock %}

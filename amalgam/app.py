@@ -368,10 +368,7 @@ def site_delete():
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	
-	# if page == 'sites':
-	# 	return redirect(url_for('sites'))
-	# else:
-	# 	return render_template('sites.html', user=user, sites=sites)
+	flash('Site deleted !')
 	return render_template('sites.html', user=user, sites=sites)
 		
 
@@ -411,6 +408,68 @@ def user_add():
 	delegate.user_create(user)
 
 	return redirect(url_for('users'))
+
+
+@app.route('/user.delete', methods=['GET', 'POST'])
+@login_required
+def user_delete():
+	user_id = request.args.get('user_id', type=int)
+	# page = request.args.get('page', type=str)
+
+	delegate.user_delete_by_id(user_id)
+
+	flash('User deleted !')
+
+	return redirect(url_for('users'))
+
+
+@app.route('/user.edit', methods=['GET', 'POST'])
+@login_required
+def user_edit():	
+	user_id = request.args.get('user_id', type=int)
+	edited_user = delegate.user_get_by_id(user_id)	
+
+	user = delegate.user_get_by_id(session['user_id'])	
+	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	users = delegate.user_get_all()
+	
+	return render_template('user_edit.html', user=user, sites=sites, users=users, clazz=User, edited_user=edited_user)
+
+
+@app.route('/user.update', methods=['GET', 'POST'])
+@login_required
+def user_update():	
+	edited_user_id = request.form['edited_user_id']
+	edited_user = delegate.user_get_by_id(edited_user_id)	
+
+	if not request.form['name']:
+		flash('No name.')
+		return redirect(url_for('users'))
+	name = request.form['name']
+	edited_user.name = name
+
+	if not request.form['email']:
+		flash('No email.')
+		return redirect(url_for('users'))
+	email = request.form['email']
+	edited_user.email = email
+
+	if request.form['password']:				
+		password = request.form['password']
+		edited_user.password = password
+
+	if not request.form['level']:
+		flash('No level.')
+		return redirect(url_for('users'))
+	level = request.form['level']
+	edited_user.level = level
+
+	delegate.user_update(edited_user)
+	
+	flash('User updated !')
+
+	return redirect(url_for('users'))
+
 
 
 # start the server with the 'run()' method

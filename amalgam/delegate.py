@@ -310,6 +310,11 @@ class Delegate:
         session = self.get_session()
         session.query(User).delete()
         session.commit()
+    
+    def user_delete_by_id(self, user_id):
+        session = self.get_session()
+        session.query(User).filter(User.id == user_id).delete()
+        session.commit()
 
 
 # Create and "export" Delegate
