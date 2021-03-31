@@ -11,6 +11,9 @@ STEP  = 10
 
 
 def inner_links_data(crawl_id):
+    """
+    crawl_id - crawl id
+    """
     intervals = []
     for i in range(0, 100, STEP):
         intervals.append([i, i+STEP])

@@ -1,10 +1,11 @@
+{% set page = 'internal_linking' %}
 {% extends "base_inner.html" %}
 
 {% block head %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.css" integrity="sha512-C7hOmCgGzihKXzyPU/z4nv97W0d9bv4ALuuEbSf6hm93myico9qa0hv4dODThvCsqQUmKmLcJmlpRmCaApr83g==" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js" integrity="sha512-hZf9Qhp3rlDJBvAKvmiG+goaaKRZA6LKUO35oK6EsM0/kjPK32Yw7URqrq3Q+Nvbbt8Usss+IekL7CRn83dYmw==" crossorigin="anonymous"></script>
     <script type="text/javascript">
-        let crawlId = {{ crawlId }};
+        let crawlId = {{ last_crawl_id }};
 
 
 
@@ -49,12 +50,7 @@
 
     {% block content %}
 
-    <h2>Amalgam</h2>
-    <br>
-    <a href="/crawl">Crawls</a> &gt; Report Inner Links
-
-
-    <h3>Report Inner Links</h3>
+    <h4>Report Inner Links</h4>
 
     <div class="row">
         <div class="col-7">
@@ -80,10 +76,14 @@
         var myChart = new Chart(ctx, {
             type: 'horizontalBar',
             data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                labels: [
+                    // 'Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'
+                ],
                 datasets: [{
                     label: '# of incoming inner links',
-                    data: [12, 19, 3, 5, 2, 3],
+                    data: [
+                        // 12, 19, 3, 5, 2, 3
+                    ],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(54, 162, 235, 0.2)',

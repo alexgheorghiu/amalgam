@@ -1,5 +1,5 @@
 from sqlalchemy.orm import scoped_session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, desc
 
 from amalgam.database import session_factory, engine
 from amalgam.models.models import Site, User, Crawl, Url, Resource
@@ -69,6 +69,13 @@ class Delegate:
         return session.query(Crawl)\
             .filter(Crawl.site_id==site_id)\
             .all()
+
+    def crawl_get_last_for_site(self, site_id):
+        session = self.get_session()
+        return session.query(Crawl)\
+            .order_by(desc(Crawl.date))\
+            .filter(Crawl.site_id==site_id)\
+            .first()
 
 
     def crawls_and_site(self):

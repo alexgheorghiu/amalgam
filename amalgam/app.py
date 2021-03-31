@@ -133,28 +133,6 @@ def crawl():
 	return render_template('crawl.html', crawls = crawls, site=site, user=user, sites=sites)
 
 
-@app.route('/switch_site')
-@login_required
-def switch_site():
-	user_id = session['user_id']
-	user = delegate.user_get_by_id(user_id)
-
-	site_id = request.args.get('site_id')
-	page = request.args.get('page')
-
-	user.current_site_id = site_id
-	delegate.user_update(user)
-
-	if page == 'home':
-		return redirect(url_for('home'))
-	elif page == 'crawl':
-		return redirect(url_for('crawl'))
-	elif page == 'status':
-		return redirect(url_for('status'))
-	else:
-		return redirect(url_for('home'))
-
-
 @app.route('/crawl.exe', methods=['GET', 'POST'])
 @login_required
 def crawl_exe():
@@ -309,15 +287,19 @@ def status():
 	return render_template('status.html', status=status, user=user, sites=sites)
 
 
-@app.route('/report_inner_links', methods=['GET', 'POST'])
+@app.route('/internal_linking', methods=['GET', 'POST'])
 @login_required
-def report_inner_links():
-	
-	id = request.args.get('id', type=int)
+def internal_linking():
 	user = delegate.user_get_by_id(session['user_id'])	
+	# site = delegate.site_delete_by_id(user.current_site_id)
+	last_crawl = delegate.crawl_get_last_for_site(user.current_site_id)
+	last_crawl_id = 'null' # Values for JavaScript
+	if last_crawl is not None:
+		last_crawl_id = last_crawl.id
+	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	
-	return render_template('report_inner_links.html', crawlId = id, user=user, sites=sites)
+	return render_template('internal_linking.html', last_crawl_id = last_crawl_id, user=user, sites=sites)
 
 
 @app.route('/report_inner_links_data', methods=['GET', 'POST'])
@@ -431,6 +413,30 @@ def site_add():
 	else:
 		return redirect(url_for('sites'))
 
+
+@app.route('/switch_site')
+@login_required
+def switch_site():
+	user_id = session['user_id']
+	user = delegate.user_get_by_id(user_id)
+
+	site_id = request.args.get('site_id')
+	page = request.args.get('page')
+
+	user.current_site_id = site_id
+	delegate.user_update(user)
+
+	if page == 'home':
+		return redirect(url_for('home'))
+	elif page == 'crawl':
+		return redirect(url_for('crawl'))
+	elif page == 'status':
+		return redirect(url_for('status'))
+	elif page == 'internal_linking':
+		return redirect(url_for('internal_linking'))		
+	else:
+		return redirect(url_for('home'))
+		
 
 @app.route('/users', methods=['GET', 'POST'])
 @login_required

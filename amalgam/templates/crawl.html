@@ -29,7 +29,6 @@
 				<th>Links</th>
 				<th>Pages</th>				
 				<th>Note</th>
-				<th>Report</th>
 				<th>Delete</th>
 			</tr>
 		</tr>
@@ -44,9 +43,6 @@
 					<a href="/crawl.view_pages?id={{ crawl.id }}">Pages</a>
 				</td>
 				<td>{{ crawl.note }}</td>				
-				<td>
-					<a href="/report_inner_links?id={{ crawl.id }}" >Inner Links</a>
-				</td>
 				<td>
 					<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>			
 				</td>
