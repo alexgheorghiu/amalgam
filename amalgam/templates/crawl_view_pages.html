@@ -10,14 +10,16 @@
     <div class="col-12">
         <table class="table">
             <tr>
-                <th>Id</th>
+                <!-- <th>Id</th> -->
+                <th>No</th>
                 <th>URL</th>
                 <th>Fetch time</th>
                 <th>Mime</th>
             </tr>
             {% for resource in resources %}
             <tr>
-                <td>{{ resource.id }}</td>
+                <!-- <td>{{ resource.id }}</td> -->
+                <td>{{ loop.index }}</td>
                 <td>{{ resource.absolute_url }}</td>
                 <td>{{ resource.elapsed }}s</td>
                 <td>{{ resource.mime_id }}</td>

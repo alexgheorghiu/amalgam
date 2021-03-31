@@ -165,8 +165,11 @@ def crawl_exe():
 	
 
 	initial_url = request.form['address']
+	max_links = 0
+	if int(request.form['max']) > 0:
+		max_links = int(request.form['max'])
 
-	crawler = CrawlerDB(delegate, initial_url, id=crawl.id, no_workers=10)
+	crawler = CrawlerDB(delegate, initial_url, id=crawl.id, no_workers=10, max_links=max_links)
 	CRAWLS[crawl.id] = crawler
 	crawler.addListener(notify)
 	crawler.start()

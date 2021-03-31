@@ -154,6 +154,10 @@ class CrawlerDB(Thread):
 		with self.condition:
 			return self.delegate.url_count_visited(self.id)
 
+	def no_visited_resources(self):
+		with self.condition:
+			return self.delegate.resource_count_visited(self.id)
+
 	def no_external_urls(self):
 		with self.condition:
 			return self.delegate.url_count_external(self.id)
@@ -297,7 +301,7 @@ class CrawlerDB(Thread):
 			"status": "done",
 			"visited": self.no_visited_urls(),
 			"to_visit": self.no_unvisited_urls(),
-			"max_links": 0,
+			"max_links": self.max_links,
 			"crawlId": self.id
 		}
 
@@ -311,6 +315,12 @@ class CrawlerDB(Thread):
 			if self.paused:
 				continue
 
+			# If max pages specified see if we already reached it			
+			if self.max_links > 0:
+				no_pages_visited = self.no_visited_resources()
+				if no_pages_visited >= self.max_links:
+					continue
+			
 			# Grab next job
 			link_id = self.next_unvisited_link_id()
 			logger.debug("[%s] Next link [%d]." % (currentThread().getName(), link_id))
@@ -331,10 +341,18 @@ class CrawlerDB(Thread):
 							# 1.Add Resource 2.Link URLs to (new | existing) Resources
 							resource = self.resource_get_by_absolute_url_and_crawl_id(page['url'], self.id)
 							if resource is None:
-								resource = self.resource_create(page)
-								self.connect_url_to_destination(link_id, resource.id)
-								logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
-								self.add_links(links, resource.id, page['status-code'])							
+								#Add it only if max links not reached
+								maximum_reached = False
+								if self.max_links > 0: # We have a max_link specified
+									no_pages_visited = self.no_visited_resources()
+									if no_pages_visited >= self.max_links:
+										maximum_reached = True
+								
+								if not maximum_reached:
+									resource = self.resource_create(page)
+									self.connect_url_to_destination(link_id, resource.id)
+									logger.debug("[%s] Adding links to DB linked to resource [%d]" % (currentThread().getName(), resource.id))
+									self.add_links(links, resource.id, page['status-code'])							
 							else:
 								# Resource already added only make the end connection
 								self.connect_url_to_destination(link_id, resource.id)							
@@ -347,7 +365,7 @@ class CrawlerDB(Thread):
 							"status": "in_progress",
 							"visited": self.no_visited_urls(),
 							"to_visit": self.no_unvisited_urls(),
-							"max_links": 0,
+							"max_links": self.max_links,
 							"crawlId": crawlId,
 							"currentWorker": currentThread().getName()
 						}
@@ -377,17 +395,6 @@ class CrawlerDB(Thread):
 		for w in self.workers:
 			w.start()
 
-	# def increaseNoOfJobs(self):
-	# 	with self.noOfJobsLock:
-	# 		self.noOfJobs = self.noOfJobs + 1
-	#
-	# def decreaseNoOfJobs(self):
-	# 	with self.noOfJobsLock:
-	# 		self.noOfJobs = self.noOfJobs - 1
-
-	# def getNoOfJobs(self):
-	# 	with self.noOfJobsLock:
-	# 		return self.noOfJobs
 
 	def _are_jobs_done(self):
 		# Test if noOfJobs == 0 and to_visit == 0
@@ -402,6 +409,13 @@ class CrawlerDB(Thread):
 
 		if no_pending_urls == 0:
 			return True
+
+		# Test if we have reached the max no of pages
+		if self.max_links > 0:
+			no_pages_visited = self.no_visited_resources()
+			if no_pages_visited >= self.max_links:
+				return True
+
 		return False
 
 

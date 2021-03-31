@@ -99,6 +99,13 @@ class Delegate:
         # links = session.query(Link).filter
         pass
 
+    def resource_count_visited(self, crawl_id):
+        session = self.get_session()
+        n = session.query(func.count(Resource.id)) \
+            .filter(Resource.crawl_id == crawl_id) \
+            .scalar()
+        return n
+
     def resource_create(self, page):
         self.create(page)
 

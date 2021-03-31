@@ -10,14 +10,16 @@
     <div class="col-12">
         <table class="table">
             <tr>
-                <th>Id</th>
+                <th>No</th>
+                <!-- <th>Id</th> -->
                 <th>URL</th>
                 <th>Text</th>
                 <th>Type</th>
             </tr>
             {% for link in links %}
             <tr>
-                <td>{{ link.id }}</td>
+                <td>{{ loop.index }}</td>
+                <!-- <td>{{ link.id }}</td> -->
                 <td>{{ link.absolute_url }}</td>
                 <td>{{ link.text }}</td>
                 <td>{{ link.type }}</td>

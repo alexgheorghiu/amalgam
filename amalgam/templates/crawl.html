@@ -8,15 +8,17 @@
 		<h4>Crawls for {{site.name}}</h4>
 		<p/>
 		<form class="form" action="/crawl.exe" method="post">
-			Site address:
-			<input class="form-control" readonly  type="text" placeholder="Site address with protocol" name="address" value="{{site.url}}">
+			<label for="address">Site address:</label>
+			<input class="form-control" readonly  type="text" placeholder="Site address with protocol" name="address" id="address" value="{{site.url}}">
 			<br/>
-			Max. no. of links <input type="text" class="form-control" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
-			<br/>
-			<button class="btn btn-dark" type="submit" value="submit">Crawl it!</button>
+			<label for="max">Max. no. of links</label> (<small>Leave it empty or 0 for no limits</small>)
+			<input type="text" class="form-control" placeholder="Max no of links" name="max" value="{{request.form.max}}" >
+
+			<button class="btn btn-primary" type="submit" value="submit">Crawl it!</button>
 		</form>
 	</div>
 </div>
+
 <p/>
 
 <div class="row">

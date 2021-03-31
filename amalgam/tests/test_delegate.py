@@ -118,7 +118,10 @@ class TestDelegate(unittest.TestCase):
         crawl = Crawl(site_id = site1.id)
         delegate.crawl_create(crawl)
         assert crawl.id > 0
-        
+
+        no_pages = delegate.resource_count_visited(crawl.id)
+        assert no_pages == 0, "No of pages is {}".format(no_pages)
+
         # Page
         page = Resource()
         page.crawl_id = crawl.id
@@ -129,6 +132,9 @@ class TestDelegate(unittest.TestCase):
 
         pages = delegate.resource_get_all()
         assert len(pages) > 0 
+
+        no_pages = delegate.resource_count_visited(crawl.id)
+        assert no_pages == 1, "No of pages is {}".format(no_pages)
 
         # # Test cascade delete
         delegate.crawl_delete_all()        
@@ -162,7 +168,7 @@ class TestDelegate(unittest.TestCase):
         page.crawl_id = crawl.id
         page.content = "Ala bala portocala"
         page.absolute_url = "https://scriptoid.com/index.php"
-        delegate.resource_create(page)
+        delegate.resource_create(page)        
 
         # Link
         url = Url()
