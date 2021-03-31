@@ -73,7 +73,7 @@ class Url(Base):
     status_code = Column(Integer)
     job_status = Column(String(20), default=JOB_STATUS_NOT_VISITED)  # If crawler visited the link or not
     src_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True)  # Source Resource
-    dst_resource_id = Column(Integer, ForeignKey('resources.id'), nullable=True)  # Destination Resource
+    dst_resource_id = Column(Integer, ForeignKey('resources.id', ondelete="CASCADE"), nullable=True, comment = 'Destination Resource')  # Destination Resource
     crawl_id = Column('crawl_id', Integer, ForeignKey('crawls.id', ondelete="CASCADE"))
 
 
