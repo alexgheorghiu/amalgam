@@ -1,0 +1,30 @@
+{% extends "base_inner.html" %}
+{% block content %}
+<!-- <h2>Amalgam</h2>
+<br>
+<a href="/home">Home</a> &gt; <a href="/crawl">Crawl</a> &gt; Crawl on {{ crawl.date }}
+<p/> -->
+<h4>Links for crawl on date {{ crawl.date }} </h4>
+<p>
+<div class="row">
+    <div class="col-12">
+        <table class="table">
+            <tr>
+                <th>Id</th>
+                <th>URL</th>
+                <th>Text</th>
+                <th>Type</th>
+            </tr>
+            {% for link in links %}
+            <tr>
+                <td>{{ link.id }}</td>
+                <td>{{ link.absolute_url }}</td>
+                <td>{{ link.text }}</td>
+                <td>{{ link.type }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>    
+{% endblock %}

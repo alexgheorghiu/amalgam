@@ -245,16 +245,32 @@ def crawl_cancel():
 		return "failed"
 
 
-@app.route('/viewCrawl', methods=['GET'])
+@app.route('/crawl.view_links', methods=['GET'])
 @login_required
-def viewCrawl():
+def crawl_view_links():
 	try:
 		id = request.args.get('id', type=int)
 		crawl = delegate.crawl_get_by_id(id)
 		links = delegate.url_get_all_by_crawl_id(id)
 		user = delegate.user_get_by_id(session['user_id'])	
 		sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
-		return render_template('viewCrawl.html', crawl=crawl, links = links, user=user, sites=sites)
+		return render_template('crawl_view_links.html', crawl=crawl, links = links, user=user, sites=sites)
+	except ValueError as ve:
+		flash('No crawl id.')
+		return redirect(url_for('crawl'))	
+
+
+@app.route('/crawl.view_pages', methods=['GET'])
+@login_required
+def crawl_view_pages():
+	try:
+		id = request.args.get('id', type=int)
+		crawl = delegate.crawl_get_by_id(id)
+		# links = delegate.url_get_all_by_crawl_id(id)
+		resources = delegate.resource_get_all_by_crawl(id)
+		user = delegate.user_get_by_id(session['user_id'])	
+		sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+		return render_template('crawl_view_pages.html', crawl=crawl, resources = resources, user=user, sites=sites)
 	except ValueError as ve:
 		flash('No crawl id.')
 		return redirect(url_for('crawl'))	

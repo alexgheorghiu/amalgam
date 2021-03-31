@@ -26,9 +26,11 @@
 			<tr>
 				<!-- <th>Id</th> -->
 				<th>Date</th>
-				<th>Actions</th>
-				<th>Inner links</th>
+				<th>Links</th>
+				<th>Pages</th>				
 				<th>Note</th>
+				<th>Report</th>
+				<th>Delete</th>
 			</tr>
 		</tr>
 		{% for crawl in crawls %}
@@ -36,15 +38,20 @@
 				<!-- <td>{{ crawl.id }}</td> -->
 				<td>{{ crawl.date.strftime("%X %x") }}</td>
 				<td>
-					<a href="/viewCrawl?id={{ crawl.id }}">View</a>			
-					<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>			
+					<a href="/crawl.view_links?id={{ crawl.id }}">Links</a>	
 				</td>
+				<td>
+					<a href="/crawl.view_pages?id={{ crawl.id }}">Pages</a>
+				</td>
+				<td>{{ crawl.note }}</td>				
 				<td>
 					<a href="/report_inner_links?id={{ crawl.id }}" >Inner Links</a>
 				</td>
-				<td>{{ crawl.note }}</td>
+				<td>
+					<a href="/crawl.delete?id={{ crawl.id }}" onclick="return confirm('Are you sure?')">Delete</a>			
+				</td>
 			</tr>
-		{% endfor %}
+		{% endfor %}			
 		</table>
 	</div>
 </div>

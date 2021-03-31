@@ -1,0 +1,36 @@
+{% extends "base_inner.html" %}
+{% block content %}
+<!-- <h2>Amalgam</h2>
+<br>
+<a href="/home">Home</a> &gt; <a href="/crawl">Crawl</a> &gt; Crawl on {{ crawl.date }}
+<p/> -->
+<h4>Pages for crawl on date {{ crawl.date }} </h4>
+<p>
+<div class="row">
+    <div class="col-12">
+        <table class="table">
+            <tr>
+                <th>Id</th>
+                <th>URL</th>
+                <th>Fetch time</th>
+                <th>Mime</th>
+            </tr>
+            {% for resource in resources %}
+            <tr>
+                <td>{{ resource.id }}</td>
+                <td>{{ resource.absolute_url }}</td>
+                <td>{{ resource.elapsed }}s</td>
+                <td>{{ resource.mime_id }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td></td>
+				<td>Total</td>
+				<td>{{ resources|sum(attribute='elapsed') }}s</td>
+                <td></td>
+			</tr>
+        </table>
+    </div>
+
+</div>    
+{% endblock %}
