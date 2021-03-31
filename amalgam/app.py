@@ -193,7 +193,7 @@ def crawl_exe():
 	crawler.addListener(notify)
 	crawler.start()
 	
-	return render_template('crawlProgress.html', crawl=crawl, user=user, sites=sites)	
+	return render_template('crawl_progress.html', crawl=crawl, user=user, sites=sites)	
 
 
 @app.route('/crawl.report', methods=['GET', 'POST'])

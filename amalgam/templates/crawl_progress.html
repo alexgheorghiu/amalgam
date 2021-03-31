@@ -1,4 +1,45 @@
 {% extends "base_inner.html" %}
+
+{% block head %}
+    <style >
+        #myProgress {
+            width: 100%;
+            background-color: #ddd;
+        }
+
+        #bar_done {
+            width: 0%;
+            height: 30px;
+            line-height: 30px;
+            background-color: #4CAF50; 
+            overflow: hidden; 
+            text-overflow: clip;
+            float: left;
+            text-align: center;
+        }
+        #bar_backlog {
+            width: 0%;
+            height: 30px;
+            line-height: 30px;
+            background-color: crimson; 
+            overflow: hidden; 
+            text-overflow: clip;
+            float: right;  
+            text-align: center;
+        }
+    </style>
+    <script>
+        function update_status(done, backlog){
+            var done_percent = Math.round(done * 100 / (done + backlog));
+            var backlog_percent = 100 - done_percent;
+            var done_elem = document.getElementById("bar_done");
+            var backlog_elem = document.getElementById("bar_backlog");
+            done_elem.style.width = done_percent + "%";
+            backlog_elem.style.width = backlog_percent + "%";
+        }
+    </script>
+{% endblock %}
+
 {% block content %}
 <h2>Amalgam</h2>
 <br>
@@ -35,6 +76,7 @@
         let l = document.getElementById('log');
         let visited = result["visited"];
         let to_visit = result["to_visit"];
+        // let total = visited + to_visit
         let max_links = result["max_links"];
         let status = result["status"];
 
@@ -44,6 +86,9 @@
             + " status: " + status
             ;
 
+        // updateProgress(visited, total);
+        update_status(visited, to_visit)
+
         if ( status==='done' || ((max_links > 0 ) && (visited >= max_links)) ){
             //stop handler
             stopHandler();
@@ -51,6 +96,12 @@
             //redirect to results
             window.location.href = "/viewCrawl?id=" + crawlId;
         }
+    }
+
+    function updateProgress(done, total){
+        let cp = document.getElementById('crawl_progress');
+        cp.setAttribute("value", done);
+        cp.setAttribute("max", total);
     }
 
     function stopHandler(){
@@ -89,7 +140,13 @@
 
 <a onclick="cancelJob();" href="#">Cancel</a>
 <div id="log">
-    Log.......
+    Log.......    
 </div>    
+<!-- <progress id="crawl_progress" value="0" max="100"> <span class="crawl_progress_text"></span> </progress> -->
+
+<div id="myProgress">
+    <div id="bar_done">Scanned</div>
+    <div id="bar_backlog">Backlog</div>
+</div>
 
 {% endblock %}
