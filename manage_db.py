@@ -39,15 +39,19 @@ def empty():
 def mock():
     """Creates a pre-populated DB"""
     empty()
-    user = User(email='one@foo.com', password='one', name='one', level=User.LEVEL_ADMIN)
+    user = User(email='user@test.com', password='user', name='User', level=User.LEVEL_NORMAL)
     delegate.user_create(user)
     print("User is [{}]".format(user.name))
 
-    site = Site(name='One', url='http://one.amalgam.scriptoid.com/a.html')
+    user = User(email='admin@test.com', password='admin', name='Admin', level=User.LEVEL_ADMIN)
+    delegate.user_create(user)
+    print("User is [{}]".format(user.name))
+
+    site = Site(name='One', url='http://one.amalgam.link/a.html')
     delegate.site_create(site)
     print("Site is [{}{}]".format(site.name, site.id))
 
-    site = Site(name='Two', url='http://two.amalgam.scriptoid.com/a.html')
+    site = Site(name='Two', url='http://two.amalgam.link/a.html')
     delegate.site_create(site)
     print("Site is [{}{}]".format(site.name, site.id))
 
