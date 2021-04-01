@@ -28,8 +28,9 @@ PROGRESS_TRACKER = ProgressTracker()
 CRAWLS = {}
 
 def check_db(app):
-	if not os.path.isfile('./amalgam.db'):
-		setup_database(app)
+	if database.SQLALCHEMY_DATABASE == 'sqlite':
+		if not os.path.isfile('./amalgam.db'):
+			setup_database(app)
 
 
 def setup_database(app):
@@ -544,6 +545,6 @@ def user_update():
 # start the server with the 'run()' method
 if __name__ == '__main__':
 	# app = create_app()
-	if not os.path.isfile('./amalgam.db'):
-		setup_database(app)
+	# if not os.path.isfile('./amalgam.db'):
+	# 	setup_database(app)
 	app.run()
