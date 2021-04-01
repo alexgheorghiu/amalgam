@@ -167,7 +167,7 @@ def crawl_exe():
 
 	initial_url = request.form['address']
 	max_links = 0
-	if int(request.form['max']) > 0:
+	if len(request.form['max']) > 0 and int(request.form['max']) > 0:
 		max_links = int(request.form['max'])
 
 	crawler = CrawlerDB(delegate, initial_url, id=crawl.id, no_workers=10, max_links=max_links)
@@ -547,4 +547,5 @@ if __name__ == '__main__':
 	# app = create_app()
 	# if not os.path.isfile('./amalgam.db'):
 	# 	setup_database(app)
-	app.run()
+	
+	app.run() # To run it a on certain port use: app.run(host='0.0.0.0', port=80)
