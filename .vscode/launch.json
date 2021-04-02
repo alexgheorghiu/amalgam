@@ -59,7 +59,6 @@
             "console": "integratedTerminal",
             "args": ["-d","two.amalgam.scriptoid.com/a.html"]
         } 
-
         ,
         {
             "name": "Test All",
@@ -67,7 +66,15 @@
             "request": "launch",
             "module": "amalgam.tests.test_all",
             "console": "integratedTerminal",            
-        },
-
+        }
+        ,
+        {
+            "name": "Test Scoped_Session",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.tests.test_scoped_session",
+            "console": "integratedTerminal",            
+        }
+        ,
     ]
 }
