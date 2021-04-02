@@ -469,7 +469,7 @@ def main():
 	noOfWorkers = args.workers
 
 
-	site = Site(name=domain)
+	site = Site(name=domain, url=theURL)
 	delegate.site_create(site)
 	crawl = Crawl(site_id=site.id)
 	delegate.crawl_create(crawl)
