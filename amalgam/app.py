@@ -143,6 +143,11 @@ def crawl_exe():
 	@copy_current_request_context
 	def notify(msg):
 		crawlId = str(msg['crawlId'])		
+
+		# FIXME: Naive way to avoid leaks (byt keeping references)
+		if msg['status'] == 'done':
+			del CRAWLS[int(crawlId)]
+
 		# progress = ProgressTracker._msg_to_progress(msg)
 		# pj = jsonpickle.encode(progress)
 		PROGRESS_TRACKER.set_progress(crawlId, msg)

@@ -33,13 +33,11 @@ class Delegate:
         session = self.get_session()
         session.add_all([user])
         session.commit()
-        session.remove()
 
     def create(self, object):
         session = self.get_session()
         session.add(object)
         session.commit()
-        session.remove()
 
     def update(self, object):
         session = self.get_session()
