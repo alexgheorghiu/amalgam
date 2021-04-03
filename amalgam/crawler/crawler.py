@@ -297,6 +297,8 @@ class CrawlerDB(Thread):
 		# Join them
 		self._join_all_workers()
 
+		# delegate.get_session().close()
+
 		msg = {
 			"status": "done",
 			"visited": self.no_visited_urls(),
@@ -451,7 +453,7 @@ def main():
 	# Parse arguments
 	parser = argparse.ArgumentParser(description="A simple website crawler.")
 	parser.add_argument('-d', '--domain', type=str, default=domain, help='Domain to crawl', required=True)
-	parser.add_argument('-w', '--workers', type=int, default=2, help='Number of workers')
+	parser.add_argument('-w', '--workers', type=int, default=10, help='Number of workers')
 	parser.add_argument('-m', '--max-links', type=int, default=0, help='Maximum no. of links to index')
 	parser.add_argument('--delay', type=int, default=0, help='Delay between requests')
 	args = parser.parse_args()
@@ -494,6 +496,11 @@ def main():
 	# report('./crawl-requests-report.log', crawler.visited)
 
 	# crawler.export()
+	print("All done. In limbo")
+
+	crawler = None
+	
+	time.sleep(10)
 
 
 if __name__ == "__main__":
