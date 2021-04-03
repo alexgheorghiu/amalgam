@@ -18,7 +18,8 @@ import uuid
 
 from amalgam.models.models import Crawl, Url, Resource, Site
 from amalgam.models import inside
-from amalgam.delegate import delegate
+from amalgam.delegate import Delegate
+from amalgam.database import session_factory
 
 
 logging.basicConfig(filename='crawler.log', level=logging.INFO)
@@ -119,7 +120,7 @@ class CrawlerDB(Thread):
 		self.running = True
 		self.paused = False
 		self.condition = RLock()
-		self.delegate = delegate
+		self.delegate = Delegate(strategy=Delegate.SESSION_STATEGY_THREAD_ISOLATION, session_object=session_factory)
 		self.listeners = []  # A list of listeners that want to listen to messages (ex: progress) from Crawler
 		self.id = id
 		self.initialLink = initialLink
@@ -335,9 +336,9 @@ class CrawlerDB(Thread):
 				try:
 					with self.condition:
 						# Update links status code
-						url = delegate.url_get_by_id(link_id)
+						url = self.delegate.url_get_by_id(link_id)
 						url.status_code = page['status-code']
-						delegate.url_update(url)
+						self.delegate.url_update(url)
 
 						if page['status-code'] == 200:
 							# 1.Add Resource 2.Link URLs to (new | existing) Resources
@@ -471,6 +472,7 @@ def main():
 	noOfWorkers = args.workers
 
 
+	delegate = Delegate(strategy=Delegate.SESSION_STATEGY_THREAD_ISOLATION, session_object=session_factory)
 	site = Site(name=domain, url=theURL)
 	delegate.site_create(site)
 	crawl = Crawl(site_id=site.id)
