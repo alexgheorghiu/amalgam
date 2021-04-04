@@ -19,7 +19,7 @@ from sqlalchemy.orm import scoped_session, Session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Integer, DateTime, String, Boolean, Text, Float
 from sqlalchemy.engine import Engine
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'
@@ -30,19 +30,21 @@ SQLALCHEMY_ISOLATION_LEVEL = "AUTOCOMMIT"
 
 # DB Engine
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI, 
-                        echo=SQLALCHEMY_ECHO, pool_recycle=3600,
-                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                        **SQLALCHEMY_ENGINE_OPTIONS
-                       ) #  Connect to server
-
 # engine = create_engine(SQLALCHEMY_DATABASE_URI, 
 #                         echo=SQLALCHEMY_ECHO, 
-#                         poolclass=NullPool,
-#                         # pool_recycle=3600,
-#                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-#                     #    **SQLALCHEMY_ENGINE_OPTIONS
+#                         pool_recycle=3600,
+#                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+#                         **SQLALCHEMY_ENGINE_OPTIONS
 #                        ) #  Connect to server
+
+engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+                        echo=SQLALCHEMY_ECHO, 
+                        # poolclass=NullPool,
+                        poolclass=StaticPool,
+                        # pool_recycle=3600,
+                       isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+                    #    **SQLALCHEMY_ENGINE_OPTIONS
+                       ) #  Connect to server
 
 
 session_factory = sessionmaker(bind=engine)
@@ -68,10 +70,10 @@ class User(Base):
 _scoped_session_factory = scoped_session(session_factory)
 
 
-def single_job(job_id):
+def single_job(job_id, parent_id):
     session = _scoped_session_factory()
 
-    print("\nSingle Job is {}".format(job_id))
+    print("\nSingle Job is: {} -> {}".format(parent_id, job_id))
 
     user = User(name='User {} {}'.format(job_id, uuid.uuid4()), email='who cares {} {}'.format(job_id, uuid.uuid4()))
 
@@ -79,18 +81,19 @@ def single_job(job_id):
     session.commit()
     # session.close()
 
-    print("\nSingle Job {} done".format(job_id))
+    print("\nSingle Job: {} -> {} done".format(parent_id, job_id))
+    sleep(1)
     
 
 
 def composite_job(job_id):
     print("\nComposite Job is {}".format(job_id))
-    NO = 10
+    NO = 3
     workers = []
 
     # Create worker threads
     for i in range(NO):
-        workers.append(Thread(target=single_job, kwargs={'job_id':i}))    
+        workers.append(Thread(target=single_job, kwargs={'job_id':i, 'parent_id':job_id}))    
 
     # Start them
     for worker in workers:
@@ -103,7 +106,7 @@ def composite_job(job_id):
     print("\nComposite Job {} done".format(job_id))
 
 
-CJ_NO = 10
+CJ_NO = 5
 cj_workers = []
 
 # Create worker threads
