@@ -84,5 +84,21 @@
             "console": "integratedTerminal",            
         }
         ,
+        {
+            "name": "Test DB Pooling Threads Delegate",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.tests.test_db_pooling_threads_delegate",
+            "console": "integratedTerminal",            
+        }
+        ,
+        {
+            "name": "Test Core",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.tests.core_test",
+            "console": "integratedTerminal",            
+        }
+        ,
     ]
 }
