@@ -76,5 +76,13 @@
             "console": "integratedTerminal",            
         }
         ,
+        {
+            "name": "Test DB Pooling Threads",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.tests.test_db_pooling_threads",
+            "console": "integratedTerminal",            
+        }
+        ,
     ]
 }
