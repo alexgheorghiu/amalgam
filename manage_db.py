@@ -5,12 +5,12 @@ import sys
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import User, Site
+from amalgam.models.models import User, Site, Base
 
 
 def drop_tables():
     """Drop all tables"""
-    database.Base.metadata.drop_all(database.engine)
+    Base.metadata.drop_all(database.engine)
 
     # if database.SQLALCHEMY_DATABASE == 'sqlite':
     #     db_full_path = os.path.abspath('./amalgam.db')
@@ -27,7 +27,7 @@ def drop_tables():
 
 def create_tables():
     """Create all tables if needed"""
-    database.Base.metadata.create_all(database.engine)
+    Base.metadata.create_all(database.engine)
 
 
 def empty():

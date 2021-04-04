@@ -2,10 +2,11 @@ import datetime
 from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, DateTime, String, Boolean, Text, Float
+from sqlalchemy.ext.declarative import declarative_base
 
-from amalgam.database import Base
 from amalgam.database import SQLALCHEMY_DATABASE
 
+Base = declarative_base()
 
 class Mime(Base):
     __tablename__ = "mimes"

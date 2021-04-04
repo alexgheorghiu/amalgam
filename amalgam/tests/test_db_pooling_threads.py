@@ -16,10 +16,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import scoped_session, Session
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import Integer, DateTime, String, Boolean, Text, Float
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import NullPool, StaticPool
+from sqlalchemy.ext.declarative import declarative_base
 
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'

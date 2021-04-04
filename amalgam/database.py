@@ -40,7 +40,7 @@ engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, pool_recyc
                        **SQLALCHEMY_ENGINE_OPTIONS
                        ) #  Connect to server
 session_factory = sessionmaker(bind=engine)
-Base = declarative_base()
+
 
 if SQLALCHEMY_DATABASE == 'sqlite':
     @event.listens_for(Engine, "connect")

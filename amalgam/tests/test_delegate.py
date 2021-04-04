@@ -13,7 +13,6 @@ from amalgam.models import inside
 from amalgam.models.models import *
 from amalgam.delegate import delegate
 
-from amalgam.database import Base
 
 class TestDelegate(unittest.TestCase):
 
