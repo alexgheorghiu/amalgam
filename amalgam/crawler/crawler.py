@@ -231,8 +231,8 @@ class CrawlerDB(Thread):
 				
 					# Check if destination resource exists, and if does mark it as visited
 					try:
-						src_resource = delegate.resource_get_by_id(src_resource_id)
-						dest_resource = delegate.resource_get_by_absolute_url_and_crawl_id(url.absolute_url, src_resource.crawl_id)
+						src_resource = self.delegate.resource_get_by_id(src_resource_id)
+						dest_resource = self.delegate.resource_get_by_absolute_url_and_crawl_id(url.absolute_url, src_resource.crawl_id)
 						if dest_resource is not None:
 							url.job_status = Url.JOB_STATUS_VISITED
 							url.dst_resource_id = dest_resource.id

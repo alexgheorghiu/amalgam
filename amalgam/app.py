@@ -9,7 +9,7 @@ import threading
 
 from amalgam import database
 from amalgam.delegate import delegate
-from amalgam.models.models import Url, Crawl, User, Site, User
+from amalgam.models.models import Url, Crawl, User, Site, User, Base
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
 
@@ -41,7 +41,7 @@ def setup_database(app):
 		pass
 
 	# Create all tables if needed
-	database.Base.metadata.create_all(database.engine)
+	Base.metadata.create_all(database.engine)
 
 	user = User(email='one@foo.com', password='one', name='one')
 	delegate.user_create(user)

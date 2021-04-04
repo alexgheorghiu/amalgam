@@ -23,7 +23,7 @@ class Delegate:
         self.strategy = strategy
         if strategy == Delegate.SESSION_STATEGY_FIXED:
             self._session = session_object
-        elif strategy == Delegate.SESSION_STATEGY_FIXED:
+        elif strategy == Delegate.SESSION_STATEGY_NEW_ON_DEMAND:
             self._session_factory = session_object
         elif strategy == Delegate.SESSION_STATEGY_THREAD_ISOLATION:
             self._session_factory = session_object
@@ -34,7 +34,7 @@ class Delegate:
     def get_session(self):
         if self.strategy == Delegate.SESSION_STATEGY_FIXED:
             return self._session
-        elif self.strategy == Delegate.SESSION_STATEGY_FIXED:
+        elif self.strategy == Delegate.SESSION_STATEGY_NEW_ON_DEMAND:
             return self._session_factory()
         elif self.strategy == Delegate.SESSION_STATEGY_THREAD_ISOLATION:
             return self._scoped_session_factory()

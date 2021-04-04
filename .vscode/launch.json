@@ -96,7 +96,7 @@
             "name": "Test Core",
             "type": "python",
             "request": "launch",
-            "module": "amalgam.tests.core_test",
+            "module": "amalgam.tests.test_core",
             "console": "integratedTerminal",            
         }
         ,
