@@ -25,23 +25,24 @@ from sqlalchemy.pool import NullPool
 SQLALCHEMY_DATABASE = 'mysql'
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam?charset=utf8mb4' # https://stackoverflow.com/questions/47419943/pymysql-warning-1366-incorrect-string-value-xf0-x9f-x98-x8d-t
 SQLALCHEMY_ECHO = False
-SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 40, 'max_overflow': 0}
+SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 5, 'max_overflow': 0}
 SQLALCHEMY_ISOLATION_LEVEL = "AUTOCOMMIT"
 
 # DB Engine
 
-# engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, pool_recycle=3600,
-#                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-#                        **SQLALCHEMY_ENGINE_OPTIONS
-#                        ) #  Connect to server
-
 engine = create_engine(SQLALCHEMY_DATABASE_URI, 
-                        echo=SQLALCHEMY_ECHO, 
-                        # poolclass=NullPool,
-                        pool_recycle=3600,
-                       isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                       **SQLALCHEMY_ENGINE_OPTIONS
+                        echo=SQLALCHEMY_ECHO, pool_recycle=3600,
+                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+                        **SQLALCHEMY_ENGINE_OPTIONS
                        ) #  Connect to server
+
+# engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+#                         echo=SQLALCHEMY_ECHO, 
+#                         poolclass=NullPool,
+#                         # pool_recycle=3600,
+#                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+#                     #    **SQLALCHEMY_ENGINE_OPTIONS
+#                        ) #  Connect to server
 
 
 session_factory = sessionmaker(bind=engine)
@@ -62,37 +63,60 @@ class User(Base):
 
 
 # Workers
-NO = 10
-workers = []
+
 
 _scoped_session_factory = scoped_session(session_factory)
 
 
-def job(job_id):
+def single_job(job_id):
     session = _scoped_session_factory()
 
-    print("Job is {}".format(job_id))
+    print("\nSingle Job is {}".format(job_id))
 
     user = User(name='User {} {}'.format(job_id, uuid.uuid4()), email='who cares {} {}'.format(job_id, uuid.uuid4()))
 
     session.add(user)
     session.commit()
-    session.close()
+    # session.close()
 
-    print("Job {} done".format(job_id))
-    sleep(10)
+    print("\nSingle Job {} done".format(job_id))
     
+
+
+def composite_job(job_id):
+    print("\nComposite Job is {}".format(job_id))
+    NO = 10
+    workers = []
+
+    # Create worker threads
+    for i in range(NO):
+        workers.append(Thread(target=single_job, kwargs={'job_id':i}))    
+
+    # Start them
+    for worker in workers:
+        worker.start()
+
+    # Join them
+    for worker in workers:
+        worker.join()
+
+    print("\nComposite Job {} done".format(job_id))
+
+
+CJ_NO = 10
+cj_workers = []
+
 # Create worker threads
-for i in range(NO):
-    workers.append(Thread(target=job, kwargs={'job_id':i}))
+for i in range(CJ_NO):
+    cj_workers.append(Thread(target=composite_job, kwargs={'job_id':i}))    
 
 # Start them
-for worker in workers:
-    worker.start()
+for cj_worker in cj_workers:
+    cj_worker.start()
 
 # Join them
-for worker in workers:
-    worker.join()
+for cj_worker in cj_workers:
+    cj_worker.join()
 
 # Allow some time to see MySQL's "show processlist;" command
 sleep(10)
