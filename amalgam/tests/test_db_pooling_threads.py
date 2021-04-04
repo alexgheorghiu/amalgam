@@ -1,12 +1,12 @@
 """
 Test to see DB connection allocation size while making call from multiple threads
+More here:
+    https://stackoverflow.com/questions/66938219/sqlalchemy-with-pooling-not-closing-database-connections
 """
 
 from time import sleep
 from threading import Thread, current_thread
-
 import uuid
-
 
 from sqlalchemy import func, or_, desc
 from sqlalchemy import event
@@ -35,11 +35,12 @@ SQLALCHEMY_ISOLATION_LEVEL = "AUTOCOMMIT"
 #                        **SQLALCHEMY_ENGINE_OPTIONS
 #                        ) #  Connect to server
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI, echo=SQLALCHEMY_ECHO, 
-                        poolclass=NullPool,
-                        # pool_recycle=3600,
+engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+                        echo=SQLALCHEMY_ECHO, 
+                        # poolclass=NullPool,
+                        pool_recycle=3600,
                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                    #    **SQLALCHEMY_ENGINE_OPTIONS
+                       **SQLALCHEMY_ENGINE_OPTIONS
                        ) #  Connect to server
 
 
@@ -57,7 +58,6 @@ class User(Base):
     name = Column(String(100), nullable=True)
     email = Column(String(100), nullable=True, unique=True)
     password = Column(String(100), nullable=True)
-    # current_site_id = Column(Integer, ForeignKey('sites.id', ondelete="SET NULL"))
     level = Column(String(100), default=LEVEL_NORMAL)
 
 
@@ -65,37 +65,36 @@ class User(Base):
 NO = 10
 workers = []
 
-def get_session():
-    _scoped_session_factory = scoped_session(session_factory)
-    return _scoped_session_factory()
-    # return session_factory()
-    
-
-def user_create(user):
-    session = get_session()
-    session.add(user)
-    session.commit()
-    # session.close()
+_scoped_session_factory = scoped_session(session_factory)
 
 
 def job(job_id):
+    session = _scoped_session_factory()
+
     print("Job is {}".format(job_id))
-    # my_session = scoped_session(a_session_factory)
-    u = User(name='User {} {}'.format(job_id, uuid.uuid4()), email='who cares {} {}'.format(job_id, uuid.uuid4()))
-    user_create(u)
+
+    user = User(name='User {} {}'.format(job_id, uuid.uuid4()), email='who cares {} {}'.format(job_id, uuid.uuid4()))
+
+    session.add(user)
+    session.commit()
+    session.close()
+
+    print("Job {} done".format(job_id))
     sleep(10)
     
-
+# Create worker threads
 for i in range(NO):
     workers.append(Thread(target=job, kwargs={'job_id':i}))
 
+# Start them
 for worker in workers:
     worker.start()
 
+# Join them
 for worker in workers:
     worker.join()
 
-
+# Allow some time to see MySQL's "show processlist;" command
 sleep(10)
 
 
