@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from amalgam.crawler.crawler import CrawlerDB
 import jsonpickle
 import threading
+import sqlalchemy
 
 from amalgam import database
 from amalgam.delegate import Delegate
@@ -301,6 +302,9 @@ def status():
 	#Graphviz dependency
 	from shutil import which
 	status.append({'key':'Graphviz present', 'value': which('dot') is not None})	
+
+	# SQLAlchemy version
+	status.append({'key':'SQLAlchemy version', 'value':sqlalchemy.__version__ })	
 	
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
