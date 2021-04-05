@@ -54,31 +54,38 @@ class Delegate:
     def crawl_get_by_id(self, id):
         session = self.get_session()
         crawl = session.query(Crawl).get(id) 
+        session.commit()
         return crawl
 
     def crawl_get_all(self):
         session = self.get_session()
         crawls = session.query(Crawl).all()
+        session.commit()
         return crawls
 
     def crawl_get_all_for_site(self, site_id):
         session = self.get_session()
-        return session.query(Crawl)\
+        crawls = session.query(Crawl)\
             .filter(Crawl.site_id==site_id)\
             .all()
+        session.commit()
+        return crawls
 
     def crawl_get_last_for_site(self, site_id):
         session = self.get_session()
-        return session.query(Crawl)\
+        crawl = session.query(Crawl)\
             .order_by(desc(Crawl.date))\
             .filter(Crawl.site_id==site_id)\
             .first()
+        session.commit()
+        return crawl
 
 
     def crawls_and_site(self):
         session = self.get_session()
         query = session.query(Crawl.id, Site.id, Site.name).join(Site)
         results = query.all()
+        session.commit()
         for r in results:
             print(r)
 
@@ -88,6 +95,7 @@ class Delegate:
     def crawl_delete_all(self):
         session = self.get_session()
         session.query(Crawl).delete()
+        session.commit()
 
     # --------------------------------------------------------------------------
 
@@ -101,6 +109,7 @@ class Delegate:
         n = session.query(func.count(Resource.id)) \
             .filter(Resource.crawl_id == crawl_id) \
             .scalar()
+        session.commit()
         return n
 
     def resource_create(self, page):
@@ -109,27 +118,35 @@ class Delegate:
     def resource_delete_all(self):
         session = self.get_session()
         session.query(Resource).delete()
+        session.commit()
 
     def resource_get_all(self):
         session = self.get_session()
-        return session.query(Resource).all()
+        resources = session.query(Resource).all()
+        session.commit()
+        return resources
 
     def resource_get_all_by_crawl(self, crawl_id):
         session = self.get_session()
-        return session.query(Resource)\
+        resource = session.query(Resource)\
             .filter(Resource.crawl_id==crawl_id)\
             .all()
+        session.commit()
+        return resource
 
     def resource_get_by_absolute_url_and_crawl_id(self, absolute_url, crawlId):
         session = self.get_session()
         resource = session.query(Resource).filter(Resource.absolute_url == absolute_url, Resource.crawl_id == crawlId).first()
+        session.commit()
         return resource
 
     def resource_get_by_id(self, resource_id):
         session = self.get_session()
-        return session.query(Resource)\
+        resource = session.query(Resource)\
             .filter(Resource.id==resource_id)\
             .first()
+        session.commit()
+        return resource
 
     def resource_is_present(self, absolute_address, crawlId):
         """Checks to see if a certain Resource is present inside a DB"""
@@ -137,6 +154,7 @@ class Delegate:
         n = session.query(func.count(Url.id))\
             .filter(Resource.absolute_url == absolute_address)\
             .filter(Resource.crawl_id == crawlId).scalar()
+        session.commit()
         return n > 0
 
     def url_create(self, url):
@@ -148,6 +166,7 @@ class Delegate:
         n = session.query(func.count(Url.id)).filter(Url.absolute_url == absolute_address) \
             .filter(Url.crawl_id == crawlId)\
             .scalar()
+        session.commit()
         return n > 0
 
     def url_update(self, url):
@@ -166,11 +185,13 @@ class Delegate:
     def url_get_all(self):
         session = self.get_session()
         urls = session.query(Url).all()
+        session.commit()
         return urls
 
     def url_get_all_by_crawl_id(self, crawl_id):
         session = self.get_session()
         urls = session.query(Url).filter(Url.crawl_id==crawl_id).all()
+        session.commit()
         return urls
 
     def url_get_first_unvisited(self, crawl_id):
@@ -180,6 +201,7 @@ class Delegate:
             .filter(Url.type==Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .first()
+        session.commit()
         return url
 
     def url_get_all_unvisited(self, crawl_id):
@@ -189,6 +211,7 @@ class Delegate:
             .filter(Url.type == Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .all()
+        session.commit()
         return urls
 
     def url_count_unvisited(self, crawl_id):
@@ -203,6 +226,7 @@ class Delegate:
         from amalgam.dbutils import literalquery
         raw = literalquery(query)
         n = query.scalar()
+        session.commit()
         return n
 
 
@@ -219,6 +243,7 @@ class Delegate:
         raw = literalquery(query)
         # print(raw)
         n = query.scalar()
+        session.commit()
         return n
 
 
@@ -237,6 +262,7 @@ class Delegate:
         raw = literalquery(query)
         # print(raw)
         n = query.scalar()
+        session.commit()
         return n
 
     def url_count_pending(self, crawl_id):
@@ -251,6 +277,7 @@ class Delegate:
         from amalgam.dbutils import literalquery
         raw = literalquery(query)
         n = query.scalar()
+        session.commit()
         return n
 
     def url_count_visited(self, crawl_id):
@@ -258,6 +285,7 @@ class Delegate:
         n = session.query(func.count(Url.id)).filter(Url.job_status == Url.JOB_STATUS_VISITED, Url.type==Url.TYPE_INTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .scalar()
+        session.commit()
         return n
 
     def url_count_external(self, crawl_id):
@@ -265,6 +293,7 @@ class Delegate:
         n = session.query(func.count(Url.id)).filter(Url.type==Url.TYPE_EXTERNAL) \
             .filter(Url.crawl_id == crawl_id) \
             .scalar()
+        session.commit()
         return n
 
     def site_create(self, site):
@@ -281,7 +310,9 @@ class Delegate:
 
     def site_get_all(self):
         session = self.get_session()
-        return session.query(Site).all()
+        sites = session.query(Site).all() 
+        session.commit()
+        return sites
 
     def site_get_by_id(self, id):
         session = self.get_session()
@@ -319,6 +350,7 @@ class Delegate:
     def user_get_all(self):
         session = self.get_session()
         users = session.query(User).all()
+        session.commit()
         return users
 
     def user_delete_all(self):
