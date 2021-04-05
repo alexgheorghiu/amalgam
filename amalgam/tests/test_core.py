@@ -75,6 +75,10 @@ def user_update(user):
     # rp = conn.execute(s)
     # result = rp.first()
     conn.close()
+
+def user_delete(user_id):
+    pass
+
 # ============================================================================================================    
 
         

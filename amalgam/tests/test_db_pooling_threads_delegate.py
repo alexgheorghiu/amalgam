@@ -20,11 +20,12 @@ from sqlalchemy.types import Integer, DateTime, String, Boolean, Text, Float
 from sqlalchemy.engine import Engine
 from sqlalchemy.pool import NullPool, StaticPool
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import scoped_session, close_all_sessions
 
 from amalgam.delegate import engine
 from amalgam.models.models import Site, User, Crawl, Url, Resource
 from amalgam.delegate import Delegate
+
 
 # MySQL
 SQLALCHEMY_DATABASE = 'mysql'
@@ -104,6 +105,13 @@ for cj_worker in cj_workers:
 # Join them
 for cj_worker in cj_workers:
     cj_worker.join()
+
+
+
+# close_all_sessions()
+
+# This will force closing of all opened connections to the DB
+engine.dispose()
 
 # Allow some time to see MySQL's "show processlist;" command
 sleep(10)

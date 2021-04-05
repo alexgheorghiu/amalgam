@@ -2,12 +2,21 @@
 {% extends "base_inner.html" %}
 {% block content %}
 <h3>Status</h3>
-<p>
-	<!-- messages -->
-	{% for info in status %}
-		<div>
-		<span class="font-weight-bold" >{{ info.key }}</span> : {{ info.value }}
-		</div>
-	{% endfor %}
-</p>
+<p/>
+
+<h4>System</h4>
+<ul>
+{% for info in status %}
+	<li><span class="font-weight-bold" >{{ info.key }}</span> : {{ info.value }}</li>
+{% endfor %}
+</ul>
+<p/>
+
+<h4>Database pool status (SQLAlchemy)</h4>
+<ul>
+	<li><span class="font-weight-bold">size</span> {{db_status['size']}}</li>
+	<li><span class="font-weight-bold">checkedin</span> {{db_status['checkedin']}}</li>
+	<li><span class="font-weight-bold">overflow</span> {{db_status['overflow']}}</li>
+	<li><span class="font-weight-bold">checkedout</span> {{db_status['checkedout']}}</li>
+</ul>
 {% endblock %}

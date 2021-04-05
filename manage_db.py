@@ -3,10 +3,11 @@ import argparse
 import sys
 # from amalgam import database
 
+from amalgam.delegate import Delegate
 from amalgam import database
-from amalgam.delegate import delegate
 from amalgam.models.models import User, Site, Base
 
+delegate = Delegate(database.get_session())
 
 def drop_tables():
     """Drop all tables"""

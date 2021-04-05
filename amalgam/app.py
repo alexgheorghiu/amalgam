@@ -8,10 +8,11 @@ import jsonpickle
 import threading
 
 from amalgam import database
-from amalgam.delegate import delegate
+from amalgam.delegate import Delegate
 from amalgam.models.models import Url, Crawl, User, Site, User, Base
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
+
 
 
 # def create_app():
@@ -34,6 +35,7 @@ def check_db(app):
 
 
 def setup_database(app):
+	delegate = Delegate(database.get_session())
 	with app.app_context():
 		# db.init_app(app)
 		# db.create_all()
@@ -75,6 +77,7 @@ def welcome():
 # Route for handling the login page logic
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+	delegate = Delegate(database.get_session())
 	error = None
 	if request.method == 'POST': 
 		email = request.form['email']
@@ -102,7 +105,7 @@ def login():
 
 @app.route('/logout')
 @login_required
-def logout():	
+def logout():		
 	session.pop('logged_in', None)
 	session.pop('user_id', None)
 	flash('You were just logged out!')
@@ -112,6 +115,7 @@ def logout():
 @app.route('/home')
 @login_required
 def home():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('home.html', sites=sites, user=user)
@@ -127,6 +131,7 @@ def sitemap():
 @app.route('/crawl')
 @login_required
 def crawl():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	site = delegate.site_get_by_id(user.current_site_id)
 	crawls = delegate.crawl_get_all_for_site(user.current_site_id)
@@ -139,6 +144,7 @@ def crawl():
 def crawl_exe():
 	global PROGRESS_TRACKER
 	global CRAWLS
+	delegate = Delegate(database.get_session())
 
 	@copy_current_request_context
 	def notify(msg):
@@ -187,6 +193,7 @@ def crawl_exe():
 @login_required
 def crawl_report():
 	global PROGRESS_TRACKER
+	delegate = Delegate(database.get_session())
 	
 	# print("\n{}: Current session tracker: {}".format(threading.current_thread().ident, session['progress_tracker']))
 	crawlId = request.args.get('id')
@@ -204,6 +211,7 @@ def crawl_report():
 @app.route('/crawl.delete', methods=['GET', 'POST'])
 @login_required
 def crawl_delete():
+	delegate = Delegate(database.get_session())
 	try:
 		id = request.args.get('id', type=int)
 		crawl = delegate.crawl_get_by_id(id)
@@ -221,7 +229,7 @@ def crawl_delete():
 @app.route('/crawl.cancel', methods=['GET', 'POST'])
 @login_required
 def crawl_cancel():
-	global CRAWLS
+	global CRAWLS	
 
 	try:
 		id = request.args.get('id', type=int)
@@ -235,6 +243,7 @@ def crawl_cancel():
 @app.route('/crawl.view_links', methods=['GET'])
 @login_required
 def crawl_view_links():
+	delegate = Delegate(database.get_session())
 	try:
 		id = request.args.get('id', type=int)
 		crawl = delegate.crawl_get_by_id(id)
@@ -250,6 +259,7 @@ def crawl_view_links():
 @app.route('/crawl.view_pages', methods=['GET'])
 @login_required
 def crawl_view_pages():
+	delegate = Delegate(database.get_session())
 	try:
 		id = request.args.get('id', type=int)
 		crawl = delegate.crawl_get_by_id(id)
@@ -272,6 +282,8 @@ def sitemap_result():
 @app.route('/status', methods=['GET', 'POST'])
 @login_required
 def status():
+	delegate = Delegate(database.get_session())
+
 	status = []
 	
 	#Home folder
@@ -292,13 +304,20 @@ def status():
 	
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
+	
+	db_status = {}
+	db_status['size'] = database.engine.pool.size()
+	db_status['checkedin'] = database.engine.pool.checkedin()
+	db_status['overflow'] = database.engine.pool.overflow()
+	db_status['checkedout'] = database.engine.pool.checkedout()
 
-	return render_template('status.html', status=status, user=user, sites=sites)
+	return render_template('status.html', status=status, user=user, sites=sites, db_status = db_status)
 
 
 @app.route('/internal_linking', methods=['GET', 'POST'])
 @login_required
 def internal_linking():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	# site = delegate.site_delete_by_id(user.current_site_id)
 	last_crawl = delegate.crawl_get_last_for_site(user.current_site_id)
@@ -333,6 +352,7 @@ def settings():
 @app.route('/personal_settings', methods=['GET', 'POST'])
 @login_required
 def personal_settings():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('personal_settings.html', user=user, sites=sites, clazz=User)
@@ -341,6 +361,7 @@ def personal_settings():
 @app.route('/personal_settings.edit', methods=['GET', 'POST'])
 @login_required
 def personal_settings_edit():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('personal_settings_edit.html', user=user, sites=sites, clazz=User)
@@ -349,6 +370,7 @@ def personal_settings_edit():
 @app.route('/personal_settings.update', methods=['GET', 'POST'])
 @login_required
 def personal_settings_update():	
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	
 	if not request.form['name']:
@@ -383,6 +405,7 @@ def personal_settings_update():
 @app.route('/sites', methods=['GET', 'POST'])
 @login_required
 def sites():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('sites.html', user=user, sites=sites)
@@ -391,6 +414,7 @@ def sites():
 @app.route('/site.delete', methods=['GET', 'POST'])
 @login_required
 def site_delete():
+	delegate = Delegate(database.get_session())
 	site_id = request.args.get('site_id', type=int)
 	# page = request.args.get('page', type=str)
 
@@ -406,6 +430,7 @@ def site_delete():
 @app.route('/site.add', methods=['GET', 'POST'])
 @login_required
 def site_add():
+	delegate = Delegate(database.get_session())
 	page = request.args.get('page', type=str)
 	user = delegate.user_get_by_id(session['user_id'])
 	page = request.form['page']
@@ -426,6 +451,7 @@ def site_add():
 @app.route('/switch_site')
 @login_required
 def switch_site():
+	delegate = Delegate(database.get_session())
 	user_id = session['user_id']
 	user = delegate.user_get_by_id(user_id)
 
@@ -450,6 +476,7 @@ def switch_site():
 @app.route('/users', methods=['GET', 'POST'])
 @login_required
 def users():
+	delegate = Delegate(database.get_session())
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	users = delegate.user_get_all()
@@ -458,6 +485,7 @@ def users():
 
 @app.route('/user.add', methods=['GET', 'POST'])
 def user_add():
+	delegate = Delegate(database.get_session())	
 	if not request.form['name']:
 		flash('No name.')
 		return redirect(url_for('users'))
@@ -488,6 +516,7 @@ def user_add():
 @app.route('/user.delete', methods=['GET', 'POST'])
 @login_required
 def user_delete():
+	delegate = Delegate(database.get_session())
 	user_id = request.args.get('user_id', type=int)
 	# page = request.args.get('page', type=str)
 
@@ -501,6 +530,7 @@ def user_delete():
 @app.route('/user.edit', methods=['GET', 'POST'])
 @login_required
 def user_edit():	
+	delegate = Delegate(database.get_session())
 	user_id = request.args.get('user_id', type=int)
 	edited_user = delegate.user_get_by_id(user_id)	
 
@@ -514,6 +544,7 @@ def user_edit():
 @app.route('/user.update', methods=['GET', 'POST'])
 @login_required
 def user_update():	
+	delegate = Delegate(database.get_session())
 	edited_user_id = request.form['edited_user_id']
 	edited_user = delegate.user_get_by_id(edited_user_id)	
 

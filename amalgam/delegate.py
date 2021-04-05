@@ -13,41 +13,18 @@ class Delegate:
         https://stackoverflow.com/questions/6297404/multi-threaded-use-of-sqlalchemy
         https://docs.sqlalchemy.org/en/14/orm/contextual.html 
     """
-    SESSION_STATEGY_FIXED = 'fixed'
-    SESSION_STATEGY_NEW_ON_DEMAND = 'on demand'
-    SESSION_STATEGY_THREAD_ISOLATION = 'on demand isolation'
 
-    strategy = None # "FIXED", "NEW_ON_DEMAND", "THREAD_ISOLATION"
+    def __init__(self, session):
+        print("Delegate constructor.")
+        self.session = session
 
-    def __init__(self, strategy = None, session_object=None):
-        self.strategy = strategy
-        if strategy == Delegate.SESSION_STATEGY_FIXED:
-            self._session = session_object
-        elif strategy == Delegate.SESSION_STATEGY_NEW_ON_DEMAND:
-            self._session_factory = session_object
-        elif strategy == Delegate.SESSION_STATEGY_THREAD_ISOLATION:
-            self._session_factory = session_object
-            self._scoped_session_factory = scoped_session(session_factory)        
-        else:
-            raise Exception('Wrong params')
+    def __del__(self):
+        print("Delegate destructor.")
+        self.session.close()
 
     def get_session(self):
-        if self.strategy == Delegate.SESSION_STATEGY_FIXED:
-            return self._session
-        elif self.strategy == Delegate.SESSION_STATEGY_NEW_ON_DEMAND:
-            return self._session_factory()
-        elif self.strategy == Delegate.SESSION_STATEGY_THREAD_ISOLATION:
-            return self._scoped_session_factory()
+        return self.session
 
-
-
-    def add_tag(self, namestr):
-        # session = self.get_session()
-        # tag_random = Tag(name=namestr)
-        # session.add_all([tag_random])
-        # session.commit()
-        # print("Tag {} added".format(namestr))
-        self._scoped_session.remove()
 
     def add_user(self, user):
         session = self.get_session()
@@ -57,7 +34,7 @@ class Delegate:
     def create(self, object):
         session = self.get_session()
         session.add(object)
-        session.commit()
+        session.commit()        
 
     def update(self, object):
         session = self.get_session()
@@ -353,8 +330,3 @@ class Delegate:
         session = self.get_session()
         session.query(User).filter(User.id == user_id).delete()
         session.commit()
-
-
-# Create and "export" Delegate
-# delegate = Delegate(strategy=Delegate.SESSION_STATEGY_FIXED, session_object=session_factory())
-delegate = Delegate(strategy=Delegate.SESSION_STATEGY_THREAD_ISOLATION, session_object=session_factory)

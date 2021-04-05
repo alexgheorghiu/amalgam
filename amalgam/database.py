@@ -18,7 +18,7 @@ from sqlalchemy import event
 SQLALCHEMY_DATABASE = 'mysql'
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://amalgam:amalgam@localhost/amalgam?charset=utf8mb4' # https://stackoverflow.com/questions/47419943/pymysql-warning-1366-incorrect-string-value-xf0-x9f-x98-x8d-t
 SQLALCHEMY_ECHO = False
-SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 10, 'max_overflow': 0}
+SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 10, 'max_overflow': 5}
 
 
 # PostgreSQL
@@ -36,15 +36,26 @@ Without this option set the data updated from a thread is not detected by anothe
 """
 
 # This does persist connnections
+# It can maintain a pool of connections alive....just in case :p https://docs.sqlalchemy.org/en/13/core/pooling.html
 engine = create_engine(SQLALCHEMY_DATABASE_URI, 
                         echo=SQLALCHEMY_ECHO, 
-                        # pool_recycle=3600,
-                        poolclass=NullPool,
+                        pool_recycle=3600,
+                        # poolclass=NullPool,
                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                    #    **SQLALCHEMY_ENGINE_OPTIONS
+                       **SQLALCHEMY_ENGINE_OPTIONS
                        )
 
 session_factory = sessionmaker(bind=engine)
+# scoped_session_factory = scoped_session(session_factory)
+
+def get_session():
+    return session_factory()
+
+
+SESSION_STATEGY_FIXED = 'fixed'
+SESSION_STATEGY_NEW_ON_DEMAND = 'on demand'
+SESSION_STATEGY_THREAD_ISOLATION = 'on demand isolation'
+
 
 
 if SQLALCHEMY_DATABASE == 'sqlite':
