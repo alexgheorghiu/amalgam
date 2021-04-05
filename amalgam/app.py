@@ -335,7 +335,7 @@ def internal_linking():
 def report_inner_links_data():
 	id = request.args.get('id', type=int)
 
-	from amalgam.tests.report_inner_links import inner_links_data
+	from amalgam.reports.report_inner_links import inner_links_data
 	data = inner_links_data(id)
 	# data = {'name':'Alex'}
 	# jdata =  jsonpickle.encode(data)

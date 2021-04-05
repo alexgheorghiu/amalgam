@@ -11,7 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
 from amalgam.models.models import *
-from amalgam.delegate import delegate
+from amalgam.delegate import Delegate
+from amalgam.database import get_session
 
 
 class TestDelegate(unittest.TestCase):
@@ -40,6 +41,8 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_site(self):
+        delegate = Delegate(get_session())
+
         # session = delegate.get_session()
 
         # Site 1
@@ -71,6 +74,8 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_crawl(self):
+        delegate = Delegate(get_session())
+
         print("test_crawl started")
         # session = delegate.get_session()
 
@@ -106,6 +111,8 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_page(self):
+        delegate = Delegate(get_session())
+
         print("test_page started")
         # Site 1
         site1 = Site()	
@@ -150,6 +157,8 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_link(self):
+        delegate = Delegate(get_session())
+
         print("test_page started")
         # Site 1
         site1 = Site()	
@@ -224,6 +233,8 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_user(self):
+        delegate = Delegate(get_session())
+
         u1 = User()
         u1.email = "one@foo.com"
         u1.password = "one"
@@ -241,6 +252,8 @@ class TestDelegate(unittest.TestCase):
 
 
     def test_threading(self):
+        delegate = Delegate(get_session())
+
         lock = threading.Lock()
         print("\n")
 

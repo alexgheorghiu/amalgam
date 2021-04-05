@@ -1,6 +1,7 @@
 from amalgam.models import inside
 from amalgam.models.models import *
-from amalgam.delegate import delegate
+from amalgam.delegate import Delegate
+from amalgam.database import get_session
 
 import jsonpickle
 
@@ -11,6 +12,8 @@ STEP  = 10
 
 
 def inner_links_data(crawl_id):
+    delegate = Delegate(get_session())
+
     """
     crawl_id - crawl id
     """
