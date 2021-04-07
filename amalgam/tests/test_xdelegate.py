@@ -10,19 +10,20 @@ now = lambda : time.time()
 from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
-from amalgam.models.models import *
+from amalgam.models.modelsx import users, User
 from amalgam.delegatex import XDelegate
-from amalgam.database import get_session
+from manage_db import empty
+
 
 
 class TestDelegate(unittest.TestCase):
 
     def setUp(self):
-        pass
+        empty()
 
 
     def tearDown(self):
-        pass
+        empty()
 
 
     # def test_inside(self):
@@ -248,7 +249,13 @@ class TestDelegate(unittest.TestCase):
         assert u1.id == u2.id, "U1's id:{}  U2's id:{} ".format(u1.id, u2.id)
 
 
+        users1 = delegate.user_get_all()
+        assert len(users1) == 1
+
         delegate.user_delete_all()
+
+        users2 = delegate.user_get_all()
+        assert len(users2) == 0
 
 
     # def test_threading(self):

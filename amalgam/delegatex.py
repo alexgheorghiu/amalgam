@@ -10,9 +10,9 @@ class XDelegate:
         print("Compiled query: %s" % ins.compile().params)
         conn = engine.connect()
         result = conn.execute(ins)        
-        user.id = result.inserted_primary_key
+        user.id = result.inserted_primary_key[0]
         conn.close()
-        return result.inserted_primary_key
+        return result.inserted_primary_key[0]
 
     def user_update(self, user):
         up = update(users).values(user.__dict__)
@@ -52,3 +52,16 @@ class XDelegate:
         result = conn.execute(del_cmd)
         conn.close()
         return True if result.rowcount >= 1 else False
+
+    def user_get_all(self):
+        _users = []
+        conn = engine.connect()
+        cmd = select([users])
+        print("Compiled query: %s" % cmd.compile().params)
+        rp = conn.execute(cmd)
+        for record in rp:
+            user = User()
+            user.load_from_rs(record)
+            _users.append(user)
+        conn.close()
+        return _users

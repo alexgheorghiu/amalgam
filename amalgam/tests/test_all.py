@@ -1,5 +1,6 @@
 import unittest
-from amalgam.tests.test_delegate import TestDelegate
+# from amalgam.tests.test_delegate import TestDelegate
+from amalgam.tests.test_xdelegate import TestDelegate
 from amalgam.tests.test_crawler import TestCrawler
 
 
