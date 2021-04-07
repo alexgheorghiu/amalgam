@@ -25,7 +25,18 @@ class XDelegate:
         return result.inserted_primary_key[0]
 
     def _update(self, table, object):
-        up = update(table).values(object.__dict__)
+        # table.primary_key.columns[0].name
+        primarykey_column = table.primary_key.columns[0] # primary key Column
+        primarykey_name = primarykey_column.name # # primary key Column's name
+
+        # Prepare the hash (without the primary key pair)
+        hash = {}
+        for k,v in object.__dict__.items():
+            if k == primarykey_name:
+                continue            
+            hash[k] = v
+
+        up = update(table).values(object.__dict__).where(primarykey_column == object.__dict__[primarykey_name])
         conn = engine.connect()
         result = conn.execute(up)
         conn.close()

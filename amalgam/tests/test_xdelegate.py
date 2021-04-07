@@ -248,15 +248,22 @@ class TestDelegate(unittest.TestCase):
         u1.password = "one"
         u1.name = "One"
         delegate.user_create(u1)
-        assert u1.id > 0 
+        assert u1.id > 0         
+        
 
         u2 = delegate.user_get_by_email_and_password(u1.email, u1.password)
         assert u1.email == u2.email 
         assert u1.password == u2.password 
         assert u1.id == u2.id, "U1's id:{}  U2's id:{} ".format(u1.id, u2.id)
 
+        u2.name = u2.name + 'x'
+        r = delegate.user_update(u2)
+        # assert r
+
         u3 = delegate.user_get_by_id(u2.id)
         assert u2.id == u3.id
+
+        assert u2.name == u3.name
 
 
         users1 = delegate.user_get_all()

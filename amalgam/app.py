@@ -9,10 +9,13 @@ import threading
 import sqlalchemy
 
 from amalgam import database
-from amalgam.delegate import Delegate
-from amalgam.models.models import Url, Crawl, User, Site, User, Base
+# from amalgam.delegate import Delegate
+# from amalgam.models.models import Url, Crawl, User, Site, User, Base
 from amalgam.progress_tracker import ProgressTracker
 # from amalgam.progress_tracker import ProgressTracker
+
+from amalgam.delegatex import XDelegate
+from amalgam.models.modelsx import User,Crawl, User, Site, User
 
 
 
@@ -78,7 +81,7 @@ def welcome():
 # Route for handling the login page logic
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	error = None
 	if request.method == 'POST': 
 		email = request.form['email']
@@ -116,7 +119,7 @@ def logout():
 @app.route('/home')
 @login_required
 def home():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('home.html', sites=sites, user=user)
@@ -132,7 +135,7 @@ def sitemap():
 @app.route('/crawl')
 @login_required
 def crawl():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])	
 	site = delegate.site_get_by_id(user.current_site_id)
 	crawls = delegate.crawl_get_all_for_site(user.current_site_id)
