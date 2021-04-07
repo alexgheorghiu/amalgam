@@ -10,7 +10,7 @@ now = lambda : time.time()
 from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
-from amalgam.models.modelsx import User, Site, Crawl
+from amalgam.models.modelsx import User, Site, Crawl, Resource
 from amalgam.delegatex import XDelegate
 from manage_db import empty
 
@@ -118,49 +118,49 @@ class TestDelegate(unittest.TestCase):
         print("test_crawl done")
 
 
-    # def test_page(self):
-    #     delegate = XDelegate()
+    def test_page(self):
+        delegate = XDelegate()
 
-    #     print("test_page started")
-    #     # Site 1
-    #     site1 = Site()	
-    #     site1.name = "Site1"
-    #     site1.url = 'http://foo.com'
-    #     delegate.site_create(site1)
+        print("test_page started")
+        # Site 1
+        site1 = Site()	
+        site1.name = "Site1"
+        site1.url = 'http://foo.com'
+        delegate.site_create(site1)
 
-    #     # Crawl
-    #     crawl = Crawl(site_id = site1.id)
-    #     delegate.crawl_create(crawl)
-    #     assert crawl.id > 0
+        # Crawl
+        crawl = Crawl(site_id = site1.id)
+        delegate.crawl_create(crawl)
+        assert crawl.id > 0
 
-    #     no_pages = delegate.resource_count_visited(crawl.id)
-    #     assert no_pages == 0, "No of pages is {}".format(no_pages)
+        no_pages = delegate.resource_count_visited(crawl.id)
+        assert no_pages == 0, "No of pages is {}".format(no_pages)
 
-    #     # Page
-    #     page = Resource()
-    #     page.crawl_id = crawl.id
-    #     page.content = "A long content " + "a" * 1024 * 1024
-    #     page.absolute_url = "https://scriptoid.com/index.php"
-    #     delegate.resource_create(page)
-    #     assert page.id > 0
+        # Page
+        page = Resource()
+        page.crawl_id = crawl.id
+        page.content = "A long content " + "a" * 1024 * 1024
+        page.absolute_url = "https://scriptoid.com/index.php"
+        delegate.resource_create(page)
+        assert page.id > 0
 
-    #     pages = delegate.resource_get_all()
-    #     assert len(pages) > 0 
+        pages = delegate.resource_get_all()
+        assert len(pages) > 0 
 
-    #     no_pages = delegate.resource_count_visited(crawl.id)
-    #     assert no_pages == 1, "No of pages is {}".format(no_pages)
+        no_pages = delegate.resource_count_visited(crawl.id)
+        assert no_pages == 1, "No of pages is {}".format(no_pages)
 
-    #     # # Test cascade delete
-    #     delegate.crawl_delete_all()        
-    #     pages = delegate.resource_get_all()
-    #     assert len(pages) == 0, "It should be {} but we found {}".format(0, len(pages))
+        # # Test cascade delete
+        delegate.crawl_delete_all()        
+        pages = delegate.resource_get_all()
+        assert len(pages) == 0, "It should be {} but we found {}".format(0, len(pages))
 
-    #     # # Clean up
-    #     delegate.resource_delete_all()
-    #     delegate.crawl_delete_all()
-    #     delegate.site_delete_all()
+        # # Clean up
+        delegate.resource_delete_all()
+        delegate.crawl_delete_all()
+        delegate.site_delete_all()
 
-    #     print("test_page done")
+        print("test_page done")
 
 
 
