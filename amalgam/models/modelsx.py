@@ -1,7 +1,7 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String
+from sqlalchemy import MetaData, Table, Column, Integer, String, ForeignKey
 from sqlalchemy import create_engine
 
-
+"""More details https://docs.sqlalchemy.org/en/14/core/metadata.html """
 metadata = MetaData()
 
 users = Table('users', metadata,
@@ -13,6 +13,13 @@ users = Table('users', metadata,
 settings = Table('settings', metadata,
               Column('key', String(100), primary_key=True),
               Column('value', String(256), nullable=True))
+
+sites = Table('sites', metadata,
+              Column('id', Integer, primary_key=True),
+              Column('name', String(100), nullable=True),
+              Column('url', String(2048), nullable=False))
+
+
 
 class Entity:
     def load_from_rs(self, rs):
@@ -35,3 +42,10 @@ class Setting(Entity):
     def __init__(self):        
         self.key = None
         self.value = None        
+
+
+class Site(Entity):
+    def __init__(self):        
+        self.id = None
+        self.name = None   
+        self.url = None   

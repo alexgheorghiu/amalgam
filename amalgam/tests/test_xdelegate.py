@@ -10,7 +10,7 @@ now = lambda : time.time()
 from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
-from amalgam.models.modelsx import users, User
+from amalgam.models.modelsx import User, Site
 from amalgam.delegatex import XDelegate
 from manage_db import empty
 
@@ -41,37 +41,37 @@ class TestDelegate(unittest.TestCase):
     #     assert inside(needle, links)
 
 
-    # def test_site(self):
-    #     delegate = XDelegate()
+    def test_site(self):
+        delegate = XDelegate()
 
-    #     # session = delegate.get_session()
+        # session = delegate.get_session()
 
-    #     # Site 1
-    #     site1 = Site()	
-    #     site1.name = "Site1"       
-    #     site1.url = 'http://foo.com' 
-    #     delegate.site_create(site1)
+        # Site 1
+        site1 = Site()	
+        site1.name = "Site1"       
+        site1.url = 'http://foo.com' 
+        delegate.site_create(site1)
         
 
-    #     siteId = site1.id
-    #     assert siteId > 0 
+        siteId = site1.id
+        assert siteId > 0 
 
-    #     # Site 2
-    #     site2 = Site()	
-    #     site2.name = "Site2"
-    #     site2.url = 'http://foo.com'
-    #     delegate.site_create(site2)
+        # Site 2
+        site2 = Site()	
+        site2.name = "Site2"
+        site2.url = 'http://foo.com'
+        delegate.site_create(site2)
 
-    #     # # User.query.all()
-    #     # f = session.query(Site).first()
-    #     # assert f.id > 0 
+        # # User.query.all()
+        # f = session.query(Site).first()
+        # assert f.id > 0 
 
-    #     sites = delegate.site_get_all()
-    #     print("No of site: {}".format(len(sites)))
-    #     assert len(sites) == 2
+        sites = delegate.site_get_all()
+        print("No of site: {}".format(len(sites)))
+        assert len(sites) == 2
 
 
-    #     delegate.site_delete_all()
+        delegate.site_delete_all()
 
 
     # def test_crawl(self):
