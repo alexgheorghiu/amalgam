@@ -1,177 +1,126 @@
 """
-An attempt to use SQLAlchemy Core instead of ORM reason being that we will need a lot of custom
-queries for reports.
+An attempt to use SQLAlchemy Core instead of ORM
+
+Here are a few reasons to use SQLAlchemy Core instead of ORM
+    * ORM has the concept of Session and unit-of-work that makes things very complicated when you want to 
+        create objects into a Thread and use them in another or when you create some objects in a method, close
+        connection and try to use them in another method (ORM will complain of not being attached to a Session)
+    * The syntax for ORM is more far away from SQL than the Core syntax.
+    * We will need a lot of custom queries for reports and this mean to load a lot of ORM objesct and then to mix
+        and match fields of those objects to generate reports. In Core you simply use SQL (in the worse case scenario)
+    * We do not use the ORM relationships too much so there is no need to navigate those relationships - which also
+        might be tricky (lazzy loading of them, etc)
 """
 
 from time import sleep
 from threading import Thread, current_thread
 import uuid
 
-from sqlalchemy.sql import select
-from sqlalchemy import MetaData, Table, Column, Integer, String, insert, delete, update
-from sqlalchemy import create_engine
+from amalgam.database import engine
 
-from amalgam.database import session_factory, engine
-
-
-metadata = MetaData()
-#
-users = Table('users', metadata,
-              Column('id', Integer, primary_key=True),
-              Column('name', String(100), nullable=True),
-              Column('email', String(100), nullable=True, unique=True),
-              Column('password', String(100), nullable=True))
-
-class User:
-    
-
-    def __init__(self):
-        # TODO: Can we add this dynamically from Table? 
-        # https://stackoverflow.com/questions/1325673/how-to-add-property-to-a-class-dynamically
-        self.id = None
-        self.name = None
-        self.email = None
-        self.password = None
-
-
-    def load_from_rs(self, rs):
-        for k,v in rs.items():
-            self.__dict__[k] = v
-
-    
-
-    
-#
-# metadata.create_all(engine)
-
-def reset_users():
-    conn = engine.connect()
-    deletion = delete(users)
-    result = conn.execute(deletion)
-    conn.close()
-    print(result)
-
-def add_user(parent_id, job_id):
-    ins = insert(users).values(name='User {} {}'.format(job_id, uuid.uuid4()), email='who cares {} {}'.format(job_id, uuid.uuid4()), password = 'test')
-    print("Compiled query: %s" % ins.compile().params)
-    conn = engine.connect()
-    result = conn.execute(ins)
-    conn.close()
-    return result.inserted_primary_key
-
-
-def add_user2(o):
-    # o = {'name': "Alex",  'email':'AEmail', 'password':'Nono no'}
-    ins = insert(users).values(o)
-    print("Compiled query: %s" % ins.compile().params)
-    conn = engine.connect()
-    result = conn.execute(ins)
-    conn.close()
-    return result.inserted_primary_key
-
-# ============================================================================================================
-def get_user_all():
-    conn = engine.connect()
-    s = select([users])
-    rp = conn.execute(s)
-    results = rp.fetchall()
-    conn.close()
-    return [dict(result) for result in results]
-
-def user_get_by_id(user_id):
-    conn = engine.connect()
-    s = select([users]).where(users.c.id == user_id)
-    rp = conn.execute(s)
-    result = rp.first()
-    conn.close()
-    return dict(result)
-
-def user_create(user):
-    conn = engine.connect()
-    # Code?
-    ins = insert(users).values(user)
-    rp = conn.execute(ins)
-    conn.close()
-
-def user_update(user):
-    conn = engine.connect()
-    # s = select([users]).where(users.c.id == user_id)
-    # rp = conn.execute(s)
-    # result = rp.first()
-    conn.close()
-
-def user_delete(user_id):
-    pass
-
-# ============================================================================================================    
-
-def one():        
-    reset_users()
-    print(engine.pool.status())
-
-    # -------------------------------------------------------------
+from amalgam.models.modelsx import User, metadata
+from amalgam.delegatex import XDelegate
 
 
 
-    def single_job(job_id, parent_id):
+def drop_tables():
+    """Drop all tables"""
+    metadata.drop_all(engine)
+
+    # if database.SQLALCHEMY_DATABASE == 'sqlite':
+    #     db_full_path = os.path.abspath('./amalgam.db')
+    #     if os.path.isfile(db_full_path):
+    #         print("Removing old database: {}".format(db_full_path))
+    #         os.remove(db_full_path)
+    #     else:
+    #         print("No database present at : {}".format(db_full_path))
+    # elif database.SQLALCHEMY_DATABASE == 'mysql':
+    #     # TODO: Add a drop all table
+    #     #  Maybe: https://stackoverflow.com/questions/11233128/how-to-clean-the-database-dropping-all-records-using-sqlalchemy
+    #     pass
+
+
+def create_tables():
+    """Create all tables if needed"""
+    metadata.create_all(engine)
+
+
+def empty():
+    """Create a clean set of tables"""
+    drop_tables()
+    create_tables()
+
+
+# def one():        
+#     reset_users()
+#     print(engine.pool.status())
+
+#     # -------------------------------------------------------------
+
+
+
+#     def single_job(job_id, parent_id):
         
-        print("\nSingle Job is: {} -> {}".format(parent_id, job_id))
+#         print("\nSingle Job is: {} -> {}".format(parent_id, job_id))
         
-        user_id = add_user(parent_id, job_id)
-        print(engine.pool.status())
+#         user_id = add_user(parent_id, job_id)
+#         print(engine.pool.status())
 
-        user = user_get_by_id(user_id)
-        print(user)
-        print(type(user['id']))
+#         user = user_get_by_id(user_id)
+#         print(user)
+#         print(type(user['id']))
 
-        user['email'] = user['email'] + ' la la la'
-        user_update(user)
+#         user['email'] = user['email'] + ' la la la'
+#         user_update(user)
     
-        print("\nSingle Job: {} -> {} done".format(parent_id, job_id))
-        sleep(1)
+#         print("\nSingle Job: {} -> {} done".format(parent_id, job_id))
+#         sleep(1)
         
 
 
-    def composite_job(job_id):
-        print("\nComposite Job is {}".format(job_id))
-        NO = 1
-        workers = []
+#     def composite_job(job_id):
+#         print("\nComposite Job is {}".format(job_id))
+#         NO = 1
+#         workers = []
 
-        # Create worker threads
-        for i in range(NO):
-            workers.append(Thread(target=single_job, kwargs={'job_id':i, 'parent_id':job_id}))    
+#         # Create worker threads
+#         for i in range(NO):
+#             workers.append(Thread(target=single_job, kwargs={'job_id':i, 'parent_id':job_id}))    
 
-        # Start them
-        for worker in workers:
-            worker.start()
+#         # Start them
+#         for worker in workers:
+#             worker.start()
 
-        # Join them
-        for worker in workers:
-            worker.join()
+#         # Join them
+#         for worker in workers:
+#             worker.join()
 
-        print("\nComposite Job {} done".format(job_id))
+#         print("\nComposite Job {} done".format(job_id))
 
 
-    CJ_NO = 1
-    cj_workers = []
+#     CJ_NO = 1
+#     cj_workers = []
 
-    # Create worker threads
-    for i in range(CJ_NO):
-        cj_workers.append(Thread(target=composite_job, kwargs={'job_id':i}))    
+#     # Create worker threads
+#     for i in range(CJ_NO):
+#         cj_workers.append(Thread(target=composite_job, kwargs={'job_id':i}))    
 
-    # Start them
-    for cj_worker in cj_workers:
-        cj_worker.start()
+#     # Start them
+#     for cj_worker in cj_workers:
+#         cj_worker.start()
 
-    # Join them
-    for cj_worker in cj_workers:
-        cj_worker.join()
+#     # Join them
+#     for cj_worker in cj_workers:
+#         cj_worker.join()
 
-    # Allow some time to see MySQL's "show processlist;" command
-    sleep(5)
+#     # Allow some time to see MySQL's "show processlist;" command
+#     sleep(5)
 
 def two():
+    empty()
+
     o = {'name': "Alex",  'email':'AEmail', 'password':'Nono no'}
+
     u = User()
     u.name = 'Zozo'
     print(vars(u))
@@ -179,7 +128,21 @@ def two():
     u.load_from_rs(o)
     print(vars(u))
 
-    add_user2(u.__dict__)
+    d = XDelegate()
+    user_id = d.user_create(u)
+
+    u.id = user_id
+    u.name = "Zozox"
+    u.email = 'zozo@test.com'
+    print(vars(u))
+    d.user_update(u)
+
+    u2 = d.user_get_by_id(u.id)
+    print(vars(u2))
+
+    rc = d.user_delete_by_id(u2.id)
+    print(rc)
+
 
 if __name__ == '__main__':
     # one()

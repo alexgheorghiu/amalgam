@@ -37,13 +37,13 @@ Without this option set the data updated from a thread is not detected by anothe
 
 # This does persist connnections
 # It can maintain a pool of connections alive....just in case :p https://docs.sqlalchemy.org/en/13/core/pooling.html
-# engine = create_engine(SQLALCHEMY_DATABASE_URI, 
-#                         echo=SQLALCHEMY_ECHO, 
-#                         pool_recycle=3600,
-#                         # poolclass=NullPool,
-#                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-#                        **SQLALCHEMY_ENGINE_OPTIONS
-#                        )
+engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+                        echo=SQLALCHEMY_ECHO, 
+                        pool_recycle=3600,
+                        # poolclass=NullPool,
+                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+                       **SQLALCHEMY_ENGINE_OPTIONS
+                       )
 
 # engine = create_engine(SQLALCHEMY_DATABASE_URI, 
 #                         echo=SQLALCHEMY_ECHO, 
@@ -53,13 +53,13 @@ Without this option set the data updated from a thread is not detected by anothe
 #                        **SQLALCHEMY_ENGINE_OPTIONS
 #                        )
 
-engine = create_engine(SQLALCHEMY_DATABASE_URI, 
-                        echo=SQLALCHEMY_ECHO, 
-                        # pool_recycle=1,
-                        poolclass=NullPool,
-                        isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                    #    **SQLALCHEMY_ENGINE_OPTIONS
-                       )
+# engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+#                         echo=SQLALCHEMY_ECHO, 
+#                         # pool_recycle=1,
+#                         poolclass=NullPool,
+#                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+#                     #    **SQLALCHEMY_ENGINE_OPTIONS
+#                        )
 
 # Different listeners for Engine events
 @event.listens_for(engine, 'checkout')
