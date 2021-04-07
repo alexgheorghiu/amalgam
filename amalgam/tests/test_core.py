@@ -23,8 +23,22 @@ users = Table('users', metadata,
               Column('password', String(100), nullable=True))
 
 class User:
+    
+
+    def __init__(self):
+        # TODO: Can we add this dynamically from Table? 
+        # https://stackoverflow.com/questions/1325673/how-to-add-property-to-a-class-dynamically
+        self.id = None
+        self.name = None
+        self.email = None
+        self.password = None
+
+
     def load_from_rs(self, rs):
-        pass
+        for k,v in rs.items():
+            self.__dict__[k] = v
+
+    
 
     
 #
@@ -39,6 +53,16 @@ def reset_users():
 
 def add_user(parent_id, job_id):
     ins = insert(users).values(name='User {} {}'.format(job_id, uuid.uuid4()), email='who cares {} {}'.format(job_id, uuid.uuid4()), password = 'test')
+    print("Compiled query: %s" % ins.compile().params)
+    conn = engine.connect()
+    result = conn.execute(ins)
+    conn.close()
+    return result.inserted_primary_key
+
+
+def add_user2(o):
+    # o = {'name': "Alex",  'email':'AEmail', 'password':'Nono no'}
+    ins = insert(users).values(o)
     print("Compiled query: %s" % ins.compile().params)
     conn = engine.connect()
     result = conn.execute(ins)
@@ -81,67 +105,82 @@ def user_delete(user_id):
 
 # ============================================================================================================    
 
-        
-reset_users()
-print(engine.pool.status())
-
-# -------------------------------------------------------------
-
-
-
-def single_job(job_id, parent_id):
-    
-    print("\nSingle Job is: {} -> {}".format(parent_id, job_id))
-    
-    user_id = add_user(parent_id, job_id)
+def one():        
+    reset_users()
     print(engine.pool.status())
 
-    user = user_get_by_id(user_id)
-    print(user)
-    print(type(user['id']))
+    # -------------------------------------------------------------
 
-    user['email'] = user['email'] + ' la la la'
-    user_update(user)
- 
-    print("\nSingle Job: {} -> {} done".format(parent_id, job_id))
-    sleep(1)
+
+
+    def single_job(job_id, parent_id):
+        
+        print("\nSingle Job is: {} -> {}".format(parent_id, job_id))
+        
+        user_id = add_user(parent_id, job_id)
+        print(engine.pool.status())
+
+        user = user_get_by_id(user_id)
+        print(user)
+        print(type(user['id']))
+
+        user['email'] = user['email'] + ' la la la'
+        user_update(user)
     
+        print("\nSingle Job: {} -> {} done".format(parent_id, job_id))
+        sleep(1)
+        
 
 
-def composite_job(job_id):
-    print("\nComposite Job is {}".format(job_id))
-    NO = 3
-    workers = []
+    def composite_job(job_id):
+        print("\nComposite Job is {}".format(job_id))
+        NO = 1
+        workers = []
+
+        # Create worker threads
+        for i in range(NO):
+            workers.append(Thread(target=single_job, kwargs={'job_id':i, 'parent_id':job_id}))    
+
+        # Start them
+        for worker in workers:
+            worker.start()
+
+        # Join them
+        for worker in workers:
+            worker.join()
+
+        print("\nComposite Job {} done".format(job_id))
+
+
+    CJ_NO = 1
+    cj_workers = []
 
     # Create worker threads
-    for i in range(NO):
-        workers.append(Thread(target=single_job, kwargs={'job_id':i, 'parent_id':job_id}))    
+    for i in range(CJ_NO):
+        cj_workers.append(Thread(target=composite_job, kwargs={'job_id':i}))    
 
     # Start them
-    for worker in workers:
-        worker.start()
+    for cj_worker in cj_workers:
+        cj_worker.start()
 
     # Join them
-    for worker in workers:
-        worker.join()
+    for cj_worker in cj_workers:
+        cj_worker.join()
 
-    print("\nComposite Job {} done".format(job_id))
+    # Allow some time to see MySQL's "show processlist;" command
+    sleep(5)
 
+def two():
+    o = {'name': "Alex",  'email':'AEmail', 'password':'Nono no'}
+    u = User()
+    u.name = 'Zozo'
+    print(vars(u))
 
-CJ_NO = 3
-cj_workers = []
+    u.load_from_rs(o)
+    print(vars(u))
 
-# Create worker threads
-for i in range(CJ_NO):
-    cj_workers.append(Thread(target=composite_job, kwargs={'job_id':i}))    
+    add_user2(u.__dict__)
 
-# Start them
-for cj_worker in cj_workers:
-    cj_worker.start()
-
-# Join them
-for cj_worker in cj_workers:
-    cj_worker.join()
-
-# Allow some time to see MySQL's "show processlist;" command
-sleep(5)
+if __name__ == '__main__':
+    # one()
+    two()

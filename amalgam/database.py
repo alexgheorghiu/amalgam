@@ -37,13 +37,56 @@ Without this option set the data updated from a thread is not detected by anothe
 
 # This does persist connnections
 # It can maintain a pool of connections alive....just in case :p https://docs.sqlalchemy.org/en/13/core/pooling.html
+# engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+#                         echo=SQLALCHEMY_ECHO, 
+#                         pool_recycle=3600,
+#                         # poolclass=NullPool,
+#                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+#                        **SQLALCHEMY_ENGINE_OPTIONS
+#                        )
+
+# engine = create_engine(SQLALCHEMY_DATABASE_URI, 
+#                         echo=SQLALCHEMY_ECHO, 
+#                         pool_recycle=1,
+#                         # poolclass=NullPool,
+#                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
+#                        **SQLALCHEMY_ENGINE_OPTIONS
+#                        )
+
 engine = create_engine(SQLALCHEMY_DATABASE_URI, 
                         echo=SQLALCHEMY_ECHO, 
-                        pool_recycle=3600,
-                        # poolclass=NullPool,
+                        # pool_recycle=1,
+                        poolclass=NullPool,
                         isolation_level= SQLALCHEMY_ISOLATION_LEVEL,
-                       **SQLALCHEMY_ENGINE_OPTIONS
+                    #    **SQLALCHEMY_ENGINE_OPTIONS
                        )
+
+# Different listeners for Engine events
+@event.listens_for(engine, 'checkout')
+def my_on_checkout(dbapi_conn, connection_rec, connection_proxy):
+    """Called when a connection is retrieved from the Pool."""
+    print("Engine checkout connection")
+
+@event.listens_for(engine, 'checkin')
+def my_on_checkin(dbapi_conn, connection_rec):
+    """Called when a connection returns to the pool."""
+    print("Engine checkin connection")
+
+@event.listens_for(engine, 'close')
+def receive_close(dbapi_connection, connection_record):
+    """Called when a DBAPI connection is closed."""
+    print("Engine connection closed")
+
+@event.listens_for(engine, 'close_detached')
+def receive_close_detached(dbapi_connection):
+    "Called when a detached DBAPI connection is closed."
+    print("Engine detached connection closed")
+
+@event.listens_for(engine, 'connect')
+def receive_connect(dbapi_connection, connection_record):
+    """Called at the moment a particular DBAPI connection is first created for a given Pool."""
+    print("Engine connection created")
+
 
 session_factory = sessionmaker(bind=engine)
 # scoped_session_factory = scoped_session(session_factory)
