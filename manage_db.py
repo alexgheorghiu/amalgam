@@ -1,15 +1,13 @@
 import os
 import argparse
 import sys
-# from amalgam import database
 
-from amalgam.delegate import Delegate
+from amalgam.delegatex import XDelegate
 from amalgam import database
-# from amalgam.models.models import User, Site, Base
 from amalgam.models.modelsx import User, Site, metadata
 
 
-delegate = Delegate(database.get_session())
+delegate = XDelegate()
 
 def drop_tables():
     """Drop all tables"""
@@ -39,24 +37,25 @@ def empty():
     create_tables()
 
 
-# def mock():
-#     """Creates a pre-populated DB"""
-#     empty()
-#     user = User(email='user@test.com', password='user', name='User', level=User.LEVEL_NORMAL)
-#     delegate.user_create(user)
-#     print("User is [{}]".format(user.name))
+def mock():
+    """Creates a pre-populated DB"""
+    empty()    
 
-#     user = User(email='admin@test.com', password='admin', name='Admin', level=User.LEVEL_ADMIN)
-#     delegate.user_create(user)
-#     print("User is [{}]".format(user.name))
+    user = User(email='user@test.com', password='user', name='User', level=User.LEVEL_NORMAL)
+    delegate.user_create(user)
+    print("User is [{}]".format(user.name))
 
-#     site = Site(name='One', url='http://one.amalgam.link/a.html')
-#     delegate.site_create(site)
-#     print("Site is [{}{}]".format(site.name, site.id))
+    user = User(email='admin@test.com', password='admin', name='Admin', level=User.LEVEL_ADMIN)
+    delegate.user_create(user)
+    print("User is [{}]".format(user.name))
 
-#     site = Site(name='Two', url='http://two.amalgam.link/a.html')
-#     delegate.site_create(site)
-#     print("Site is [{}{}]".format(site.name, site.id))
+    site = Site(name='One', url='http://one.amalgam.link/a.html')
+    delegate.site_create(site)
+    print("Site is [{}{}]".format(site.name, site.id))
+
+    site = Site(name='Two', url='http://two.amalgam.link/a.html')
+    delegate.site_create(site)
+    print("Site is [{}{}]".format(site.name, site.id))
 
 
 if __name__ == '__main__':
@@ -72,8 +71,8 @@ if __name__ == '__main__':
 
     if action == 'empty':
         empty()
-    # elif action == 'mock':
-    #     mock()
+    elif action == 'mock':
+        mock()
 
 
 

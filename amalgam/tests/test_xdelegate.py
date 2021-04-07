@@ -92,6 +92,9 @@ class TestDelegate(unittest.TestCase):
         delegate.crawl_create(crawl)
         assert crawl.id > 0
 
+        # FIXME: Lame :)
+        time.sleep(1)
+
         crawl2 = Crawl(site_id = site1.id)
         delegate.crawl_create(crawl2)
         assert crawl2.id > 0

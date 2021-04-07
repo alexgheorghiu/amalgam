@@ -5,12 +5,15 @@ from sqlalchemy import create_engine
 from amalgam.database import SQLALCHEMY_DATABASE
 
 class Entity:
+    def __init__(self, **kwargs):
+        for k,v in kwargs.items():
+            self.__dict__[k] = v
+
     def load_from_rs(self, rs):
         for k,v in rs.items():
             if k not in self.__dict__:
                 raise Exception("Property {} not present in object.".format(k))
             self.__dict__[k] = v
-
 
 
 class Mime(Entity):
@@ -23,13 +26,18 @@ class User(Entity):
     LEVEL_NORMAL = 'normal'
     LEVEL_ADMIN = 'admin'
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         # TODO: Can we add this dynamically from Table? 
         # https://stackoverflow.com/questions/1325673/how-to-add-property-to-a-class-dynamically
         self.id = None
         self.name = None
         self.email = None
         self.password = None
+        self.current_site_id = None
+        self.level = None
+
+        super().__init__(**kwargs)
+        # super(Entity, self).__init__(kwargs)        
 
 
 class Setting(Entity):
@@ -39,10 +47,11 @@ class Setting(Entity):
 
 
 class Site(Entity):
-    def __init__(self):        
+    def __init__(self, **kwargs):        
         self.id = None
         self.name = None   
         self.url = None   
+        super().__init__(**kwargs)
 
 
 class Crawl(Entity):
@@ -103,7 +112,9 @@ users = Table('users', metadata,
               Column('id', Integer, primary_key=True),
               Column('name', String(100), nullable=True),
               Column('email', String(100), nullable=True, unique=True),
-              Column('password', String(100), nullable=True))
+              Column('password', String(100), nullable=True),
+              Column('current_site_id', Integer, ForeignKey('sites.id', ondelete="SET NULL")),
+              Column('level', String(100), default=User.LEVEL_NORMAL))
 
 settings = Table('settings', metadata,
               Column('key', String(100), primary_key=True),
