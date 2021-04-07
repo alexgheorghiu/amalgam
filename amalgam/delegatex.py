@@ -1,12 +1,23 @@
 from sqlalchemy.sql import select, update, insert, delete, update
 from sqlalchemy import func, or_, desc
 
-from amalgam.database import engine
+from amalgam.database import engine, SQLALCHEMY_DATABASE
 from amalgam.models.modelsx import User, users, Site, sites, Crawl, crawls
 
 class XDelegate:
-    def _create(self, table, object):
-        ins = insert(table).values(object.__dict__)
+    def _create(self, table, object):                
+
+        hash = object.__dict__
+        if SQLALCHEMY_DATABASE == 'postgresql': # Just skip ID for PostgreSQL (as it complains)
+            hash = {}
+            for k,v in object.__dict__.items():
+                if k == 'id':
+                    continue
+                
+                hash[k] = v
+        
+        # ins = insert(table).values(object.__dict__)
+        ins = insert(table).values(hash)
         conn = engine.connect()
         result = conn.execute(ins)        
         object.id = result.inserted_primary_key[0]
