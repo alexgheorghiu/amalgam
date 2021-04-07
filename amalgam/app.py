@@ -286,7 +286,7 @@ def sitemap_result():
 @app.route('/status', methods=['GET', 'POST'])
 @login_required
 def status():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 
 	status = []
 	
@@ -359,7 +359,7 @@ def settings():
 @app.route('/personal_settings', methods=['GET', 'POST'])
 @login_required
 def personal_settings():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('personal_settings.html', user=user, sites=sites, clazz=User)
@@ -368,7 +368,7 @@ def personal_settings():
 @app.route('/personal_settings.edit', methods=['GET', 'POST'])
 @login_required
 def personal_settings_edit():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('personal_settings_edit.html', user=user, sites=sites, clazz=User)
@@ -377,7 +377,7 @@ def personal_settings_edit():
 @app.route('/personal_settings.update', methods=['GET', 'POST'])
 @login_required
 def personal_settings_update():	
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])	
 	
 	if not request.form['name']:
@@ -412,7 +412,7 @@ def personal_settings_update():
 @app.route('/sites', methods=['GET', 'POST'])
 @login_required
 def sites():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	return render_template('sites.html', user=user, sites=sites)
@@ -421,7 +421,7 @@ def sites():
 @app.route('/site.delete', methods=['GET', 'POST'])
 @login_required
 def site_delete():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	site_id = request.args.get('site_id', type=int)
 	# page = request.args.get('page', type=str)
 
@@ -437,7 +437,7 @@ def site_delete():
 @app.route('/site.add', methods=['GET', 'POST'])
 @login_required
 def site_add():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	page = request.args.get('page', type=str)
 	user = delegate.user_get_by_id(session['user_id'])
 	page = request.form['page']
@@ -458,7 +458,7 @@ def site_add():
 @app.route('/switch_site')
 @login_required
 def switch_site():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user_id = session['user_id']
 	user = delegate.user_get_by_id(user_id)
 
@@ -483,7 +483,7 @@ def switch_site():
 @app.route('/users', methods=['GET', 'POST'])
 @login_required
 def users():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user = delegate.user_get_by_id(session['user_id'])	
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	users = delegate.user_get_all()
@@ -492,7 +492,7 @@ def users():
 
 @app.route('/user.add', methods=['GET', 'POST'])
 def user_add():
-	delegate = Delegate(database.get_session())	
+	delegate = XDelegate()	
 	if not request.form['name']:
 		flash('No name.')
 		return redirect(url_for('users'))
@@ -523,7 +523,7 @@ def user_add():
 @app.route('/user.delete', methods=['GET', 'POST'])
 @login_required
 def user_delete():
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user_id = request.args.get('user_id', type=int)
 	# page = request.args.get('page', type=str)
 
@@ -537,7 +537,7 @@ def user_delete():
 @app.route('/user.edit', methods=['GET', 'POST'])
 @login_required
 def user_edit():	
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	user_id = request.args.get('user_id', type=int)
 	edited_user = delegate.user_get_by_id(user_id)	
 
@@ -551,7 +551,7 @@ def user_edit():
 @app.route('/user.update', methods=['GET', 'POST'])
 @login_required
 def user_update():	
-	delegate = Delegate(database.get_session())
+	delegate = XDelegate()
 	edited_user_id = request.form['edited_user_id']
 	edited_user = delegate.user_get_by_id(edited_user_id)	
 
