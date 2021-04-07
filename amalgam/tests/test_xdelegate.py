@@ -10,7 +10,7 @@ now = lambda : time.time()
 from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
-from amalgam.models.modelsx import User, Site
+from amalgam.models.modelsx import User, Site, Crawl
 from amalgam.delegatex import XDelegate
 from manage_db import empty
 
@@ -74,41 +74,45 @@ class TestDelegate(unittest.TestCase):
         delegate.site_delete_all()
 
 
-    # def test_crawl(self):
-    #     delegate = XDelegate()
+    def test_crawl(self):
+        delegate = XDelegate()
 
-    #     print("test_crawl started")
-    #     # session = delegate.get_session()
+        print("test_crawl started")
+        # session = delegate.get_session()
 
-    #     # Site 1
-    #     site1 = Site()	
-    #     site1.name = "Site1"      
-    #     site1.url = 'http://foo.com'  
-    #     delegate.site_create(site1)
-
-
-    #     # Crawl
-    #     crawl = Crawl(site_id = site1.id)
-    #     delegate.crawl_create(crawl)
-    #     assert crawl.id > 0
+        # Site 1
+        site1 = Site()	
+        site1.name = "Site1"      
+        site1.url = 'http://foo.com'  
+        delegate.site_create(site1)
 
 
-    #     # Test cascade delete
-    #     assert len(site1.crawls) == 1
+        # Crawl
+        crawl = Crawl(site_id = site1.id)
+        delegate.crawl_create(crawl)
+        assert crawl.id > 0
 
-    #     delegate.site_delete(site1)
+        crawl2 = Crawl(site_id = site1.id)
+        delegate.crawl_create(crawl2)
+        assert crawl2.id > 0
 
-    #     sites = delegate.site_get_all()
-    #     print("No of site: {}".format(len(sites)))
-    #     assert len(sites) == 0
 
-    #     crawls = delegate.crawl_get_all()
-    #     assert len(crawls) == 0
+        sites = delegate.site_get_all()
+        print("No of site: {}".format(len(sites)))
+        assert len(sites) == 1
 
+        crawls = delegate.crawl_get_all()
+        assert len(crawls) == 2
+
+        crawls2 = delegate.crawl_get_all_for_site(site1.id)
+        assert len(crawls) == 2
+
+        last_crawl =  delegate.crawl_get_last_for_site(site1.id)
+        assert last_crawl.id == crawl2.id, "Last crawl id was {} when it should be {}".format(last_crawl.id, crawl2.id)
         
-    #     delegate.crawl_delete_all()        
-    #     delegate.site_delete_all()
-    #     print("test_crawl done")
+        # delegate.crawl_delete_all()        
+        delegate.site_delete_all()
+        print("test_crawl done")
 
 
     # def test_page(self):
@@ -248,9 +252,18 @@ class TestDelegate(unittest.TestCase):
         assert u1.password == u2.password 
         assert u1.id == u2.id, "U1's id:{}  U2's id:{} ".format(u1.id, u2.id)
 
+        u3 = delegate.user_get_by_id(u2.id)
+        assert u2.id == u3.id
+
 
         users1 = delegate.user_get_all()
         assert len(users1) == 1
+
+        r = delegate.user_delete_by_id(u1.id)
+        assert r
+
+        users1 = delegate.user_get_all()
+        assert len(users1) == 0
 
         delegate.user_delete_all()
 

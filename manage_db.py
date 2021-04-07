@@ -5,13 +5,15 @@ import sys
 
 from amalgam.delegate import Delegate
 from amalgam import database
-from amalgam.models.models import User, Site, Base
+# from amalgam.models.models import User, Site, Base
+from amalgam.models.modelsx import User, Site, metadata
+
 
 delegate = Delegate(database.get_session())
 
 def drop_tables():
     """Drop all tables"""
-    Base.metadata.drop_all(database.engine)
+    metadata.drop_all(database.engine)
 
     # if database.SQLALCHEMY_DATABASE == 'sqlite':
     #     db_full_path = os.path.abspath('./amalgam.db')
@@ -28,7 +30,7 @@ def drop_tables():
 
 def create_tables():
     """Create all tables if needed"""
-    Base.metadata.create_all(database.engine)
+    metadata.create_all(database.engine)
 
 
 def empty():
@@ -37,24 +39,24 @@ def empty():
     create_tables()
 
 
-def mock():
-    """Creates a pre-populated DB"""
-    empty()
-    user = User(email='user@test.com', password='user', name='User', level=User.LEVEL_NORMAL)
-    delegate.user_create(user)
-    print("User is [{}]".format(user.name))
+# def mock():
+#     """Creates a pre-populated DB"""
+#     empty()
+#     user = User(email='user@test.com', password='user', name='User', level=User.LEVEL_NORMAL)
+#     delegate.user_create(user)
+#     print("User is [{}]".format(user.name))
 
-    user = User(email='admin@test.com', password='admin', name='Admin', level=User.LEVEL_ADMIN)
-    delegate.user_create(user)
-    print("User is [{}]".format(user.name))
+#     user = User(email='admin@test.com', password='admin', name='Admin', level=User.LEVEL_ADMIN)
+#     delegate.user_create(user)
+#     print("User is [{}]".format(user.name))
 
-    site = Site(name='One', url='http://one.amalgam.link/a.html')
-    delegate.site_create(site)
-    print("Site is [{}{}]".format(site.name, site.id))
+#     site = Site(name='One', url='http://one.amalgam.link/a.html')
+#     delegate.site_create(site)
+#     print("Site is [{}{}]".format(site.name, site.id))
 
-    site = Site(name='Two', url='http://two.amalgam.link/a.html')
-    delegate.site_create(site)
-    print("Site is [{}{}]".format(site.name, site.id))
+#     site = Site(name='Two', url='http://two.amalgam.link/a.html')
+#     delegate.site_create(site)
+#     print("Site is [{}{}]".format(site.name, site.id))
 
 
 if __name__ == '__main__':
@@ -70,8 +72,8 @@ if __name__ == '__main__':
 
     if action == 'empty':
         empty()
-    elif action == 'mock':
-        mock()
+    # elif action == 'mock':
+    #     mock()
 
 
 
