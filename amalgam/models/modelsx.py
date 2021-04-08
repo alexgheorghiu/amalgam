@@ -79,11 +79,11 @@ class Url(Entity):
         self.absolute_url = None
         self.text = None
         self.raw_content = None
-        self.created_on = None        
+        self.created_on = datetime.datetime.utcnow()        
         self.redirects = None
         self.type = None
         self.status_code = None
-        self.job_status = None
+        self.job_status = Url.JOB_STATUS_NOT_VISITED
         self.src_resource_id = None
         self.dst_resource_id = None
         self.crawl_id = None

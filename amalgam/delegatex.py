@@ -2,7 +2,7 @@ from sqlalchemy.sql import select, update, insert, delete, update
 from sqlalchemy import func, or_, desc
 
 from amalgam.database import engine, SQLALCHEMY_DATABASE
-from amalgam.models.modelsx import User, users, Site, sites, Crawl, crawls, resources, Resource
+from amalgam.models.modelsx import User, users, Site, sites, Crawl, crawls, resources, Resource, urls, Url
 
 class XDelegate:
     def _create(self, table, object):                
@@ -165,13 +165,12 @@ class XDelegate:
         cmd = select([resources]).where(resources.c.crawl_id == crawlId, resources.c.absolute_url == absolute_url)
         #.order_by(desc(crawls.c.date))
         record = conn.execute(cmd).first()        
-        if record is None:
-            return None
-        else:
+        e = None
+        if record is not None:
             e = Resource()
             e.load_from_rs(record) 
-            conn.close()
-            return e
+        conn.close()
+        return e
 
 
     def resource_get_by_id(self, resource_id):
@@ -222,133 +221,173 @@ class XDelegate:
         return True if result.rowcount >= 1 else False
 
 
-    # def url_create(self, url):
-    #     return self._create(urls, url)
+    def url_create(self, url):
+        return self._create(urls, url)
 
-    # def url_is_present(self, absolute_address, crawlId):
-    #     """Checks to see if a certain absolute address is present inside a DB"""
-    #     session = self.get_session()
-    #     n = session.query(func.count(Url.id)).filter(Url.absolute_url == absolute_address) \
-    #         .filter(Url.crawl_id == crawlId)\
-    #         .scalar()
-    #     return n > 0
+    def url_is_present(self, absolute_address, crawlId):
+        """Checks to see if a certain absolute address is present inside a DB"""
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            urls.c.absolute_url == absolute_address, 
+            urls.c.crawl_id == crawlId,
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n > 0
 
-    # def url_update(self, url):
-    #     self.update(url)
+    def url_update(self, url):
+        self._update(urls, url)
 
-    # def url_get_by_id(self, id):
-    #     session = self.get_session()
-    #     crawl = session.query(Url).get(id)
-    #     return crawl
+    def url_get_by_id(self, id):
+        return self._get_by_id(urls, Url, id)
 
-    # def url_delete_all(self):
-    #     session = self.get_session()
-    #     session.query(Url).delete()
-    #     session.commit()
+    def url_delete_all(self):
+        self._delete_all(urls)
 
-    # def url_get_all(self):
-    #     session = self.get_session()
-    #     urls = session.query(Url).all()
-    #     return urls
+    def url_delete_by_id(self, id):
+        return self._delete_by_id(urls, id)
 
-    # def url_get_all_by_crawl_id(self, crawl_id):
-    #     session = self.get_session()
-    #     urls = session.query(Url).filter(Url.crawl_id==crawl_id).all()
-    #     return urls
+    def url_get_all(self):
+        return self._get_all(urls, Url)
 
-    # def url_get_first_unvisited(self, crawl_id):
-    #     session = self.get_session()
-    #     url = session.query(Url)\
-    #         .filter(Url.job_status==Url.JOB_STATUS_NOT_VISITED)\
-    #         .filter(Url.type==Url.TYPE_INTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id) \
-    #         .first()
-    #     return url
-
-    # def url_get_all_unvisited(self, crawl_id):
-    #     session = self.get_session()
-    #     urls = session.query(Url) \
-    #         .filter(Url.job_status == Url.JOB_STATUS_NOT_VISITED) \
-    #         .filter(Url.type == Url.TYPE_INTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id) \
-    #         .all()
-    #     return urls
-
-    # def url_count_unvisited(self, crawl_id):
-    #     """Count unvisited and internal links"""
-
-    #     session = self.get_session()
-    #     query = session.query(func.count(Url.id))\
-    #         .filter(Url.job_status == Url.JOB_STATUS_NOT_VISITED)\
-    #         .filter(Url.type == Url.TYPE_INTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id)
-    #     # raw = query.compile(engine)
-    #     from amalgam.dbutils import literalquery
-    #     raw = literalquery(query)
-    #     n = query.scalar()
-    #     return n
+    def url_get_all_by_crawl_id(self, crawl_id):
+        entities = []
+        conn = engine.connect()
+        cmd = select([urls]).where(urls.c.crawl_id == crawl_id)
+        #.order_by(desc(crawls.c.date))
+        rp = conn.execute(cmd)
+        for record in rp:
+            e = Url()
+            e.load_from_rs(record) 
+            entities.append(e)
+        conn.close()
+        return entities
 
 
-    # def url_count_incoming_for_resource(self, resource_id):
-    #     """Counts no of urls that point to page from a different page"""
+    def url_get_first_unvisited(self, crawl_id):
+        conn = engine.connect()
+        cmd = select([urls]).where(
+            urls.c.job_status == Url.JOB_STATUS_NOT_VISITED, 
+            urls.c.type == Url.TYPE_INTERNAL,
+            urls.c.crawl_id == crawl_id,
+            )
+        #.order_by(desc(crawls.c.date))
+        record = conn.execute(cmd).first()        
+        e = None
+        if record is not None:
+            e = Url()
+            e.load_from_rs(record) 
 
-    #     session = self.get_session()
-    #     query = session.query(func.count(Url.id))\
-    #         .filter(Url.src_resource_id != None) \
-    #         .filter(Url.dst_resource_id == resource_id) \
-    #         .filter(Url.type == Url.TYPE_INTERNAL) \
-    #     # raw = query.compile(engine)
-    #     from amalgam.dbutils import literalquery
-    #     raw = literalquery(query)
-    #     # print(raw)
-    #     n = query.scalar()
-    #     return n
+        conn.close()
+        return e
 
 
-    # def url_count_internal_full(self, crawl_id):
-    #     """Counts no of internal urls that have both source and destingation resources"""
+    def url_get_all_unvisited(self, crawl_id):
+        entities = []
+        conn = engine.connect()
+        cmd = select([urls]).where(
+            urls.c.job_status == Url.JOB_STATUS_NOT_VISITED, 
+            urls.c.type == Url.TYPE_INTERNAL,
+            urls.c.crawl_id == crawl_id,
+            )
+        #.order_by(desc(crawls.c.date))
+        rp = conn.execute(cmd)
+        for record in rp:
+            e = Url()
+            e.load_from_rs(record) 
+            entities.append(e)
+        conn.close()
+        return entities
 
-    #     session = self.get_session()
-    #     query = session.query(func.count(Url.id))\
-    #         .filter(Url.src_resource_id != None) \
-    #         .filter(Url.dst_resource_id != None) \
-    #         .filter(Url.type == Url.TYPE_INTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id)
-        
-    #     # raw = query.compile(engine)
-    #     from amalgam.dbutils import literalquery
-    #     raw = literalquery(query)
-    #     # print(raw)
-    #     n = query.scalar()
-    #     return n
 
-    # def url_count_pending(self, crawl_id):
-    #     """Count unvisited and in_progress and internal links"""
+    def url_count_unvisited(self, crawl_id):
+        """Count unvisited and internal links"""
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            urls.c.job_status == Url.JOB_STATUS_NOT_VISITED, 
+            urls.c.type == Url.TYPE_INTERNAL,
+            urls.c.crawl_id == crawl_id,
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n
 
-    #     session = self.get_session()
-    #     query = session.query(func.count(Url.id))\
-    #         .filter(or_(Url.job_status == Url.JOB_STATUS_NOT_VISITED, Url.job_status == Url.JOB_STATUS_IN_PROGRESS))\
-    #         .filter(Url.type == Url.TYPE_INTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id)
-    #     # raw = query.compile(engine)
-    #     from amalgam.dbutils import literalquery
-    #     raw = literalquery(query)
-    #     n = query.scalar()
-    #     return n
 
-    # def url_count_visited(self, crawl_id):
-    #     session = self.get_session()
-    #     n = session.query(func.count(Url.id)).filter(Url.job_status == Url.JOB_STATUS_VISITED, Url.type==Url.TYPE_INTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id) \
-    #         .scalar()
-    #     return n
+    def url_count_incoming_for_resource(self, resource_id):
+        """Counts no of urls that point to page from a different page"""
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            urls.c.src_resource_id != None, 
+            urls.c.dst_resource_id == resource_id,            
+            urls.c.type == Url.TYPE_INTERNAL
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n
 
-    # def url_count_external(self, crawl_id):
-    #     session = self.get_session()
-    #     n = session.query(func.count(Url.id)).filter(Url.type==Url.TYPE_EXTERNAL) \
-    #         .filter(Url.crawl_id == crawl_id) \
-    #         .scalar()
-    #     return n
+
+    def url_count_internal_full(self, crawl_id):
+        """Counts no of internal urls that have both source and destingation resources"""
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            urls.c.src_resource_id != None, 
+            urls.c.dst_resource_id != None,            
+            urls.c.type == Url.TYPE_INTERNAL,
+            urls.c.crawl_id == crawl_id
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n
+
+
+    def url_count_pending(self, crawl_id):
+        """Count unvisited and in_progress and internal links"""
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            or_(urls.c.job_status == Url.JOB_STATUS_NOT_VISITED, urls.c.job_status == Url.JOB_STATUS_IN_PROGRESS),
+            urls.c.type == Url.TYPE_INTERNAL,
+            urls.c.crawl_id == crawl_id
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n
+
+
+    def url_count_visited(self, crawl_id):
+        """Count unvisited and internal links"""
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            urls.c.job_status == Url.JOB_STATUS_VISITED, 
+            urls.c.type == Url.TYPE_INTERNAL,
+            urls.c.crawl_id == crawl_id,
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n
+
+    def url_count_external(self, crawl_id):
+        # session = self.get_session()
+        # n = session.query(func.count(Url.id)).filter(Url.type==Url.TYPE_EXTERNAL) \
+        #     .filter(Url.crawl_id == crawl_id) \
+        #     .scalar()
+        # return n
+
+        conn = engine.connect()
+        cmd = select([func.count(urls.c.id)]).where(
+            urls.c.type == Url.TYPE_EXTERNAL,
+            urls.c.crawl_id == crawl_id,
+        )
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n
+
 
     def user_create(self, user):
         return self._create(users, user)

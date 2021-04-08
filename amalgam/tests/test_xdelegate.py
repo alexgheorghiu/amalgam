@@ -9,7 +9,7 @@ now = lambda : time.time()
 from flask_sqlalchemy import SQLAlchemy
 
 from amalgam.models import inside
-from amalgam.models.modelsx import User, Site, Crawl, Resource
+from amalgam.models.modelsx import User, Site, Crawl, Resource, Url
 from amalgam.delegatex import XDelegate
 from manage_db import empty
 
@@ -187,80 +187,177 @@ class TestDelegate(unittest.TestCase):
 
 
 
-    # def test_link(self):
-    #     delegate = XDelegate()
+    def test_link(self):
+        delegate = XDelegate()
 
-    #     print("test_page started")
-    #     # Site 1
-    #     site1 = Site()	
-    #     site1.name = "Site1" 
-    #     site1.url = 'http://foo.com'       
-    #     delegate.site_create(site1)
+        print("test_page started")
+        # Site 1
+        site1 = Site()	
+        site1.name = "Site1" 
+        site1.url = 'http://foo.com'       
+        delegate.site_create(site1)
 
-    #     # Crawl
-    #     crawl = Crawl(site_id = site1.id)
-    #     delegate.crawl_create(crawl)
-    #     assert crawl.id > 0
+        # Crawl
+        crawl = Crawl(site_id = site1.id)
+        delegate.crawl_create(crawl)
+        assert crawl.id > 0
         
-    #     # Page
-    #     page = Resource()
-    #     page.crawl_id = crawl.id
-    #     page.content = "Ala bala portocala"
-    #     page.absolute_url = "https://scriptoid.com/index.php"
-    #     delegate.resource_create(page)        
+        # Page
+        page = Resource()
+        page.crawl_id = crawl.id
+        page.content = "Ala bala portocala"
+        page.absolute_url = "https://scriptoid.com/index.php"
+        delegate.resource_create(page)        
 
-    #     # Link
-    #     url = Url()
-    #     url.src_resource_id = page.id
-    #     url.url = '/team'
-    #     url.absolute_url = 'https://scriptoid.com/team'
-    #     url.type = Url.TYPE_INTERNAL
-    #     url.crawl_id = crawl.id
-    #     url.job_status = Url.JOB_STATUS_IN_PROGRESS
-    #     delegate.url_create(url)
+        # Link
+        
+        # Test url_is_present()
+        p1 = delegate.url_is_present('https://scriptoid.com/index.php', crawl.id)
+        assert not p1
 
-    #     url = Url()
-    #     url.src_resource_id = page.id
-    #     url.url = '/contact'
-    #     url.absolute_url = 'https://scriptoid.com/index.php'
-    #     url.type = Url.TYPE_INTERNAL
-    #     url.crawl_id = crawl.id
-    #     delegate.url_create(url)
-    #     assert url.id > 0
+        # Test url_count_unvisited()
+        n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
+        assert n1 == 0, 'n1 is {}'.format(n1)
 
-    #     # Test first unvisited link
-    #     l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
-    #     assert l1.id == url.id, 'L1 is {}'.format(l1)
+        # Test url_get_all_by_crawl_id()
+        crawl_urls = delegate.url_get_all_by_crawl_id(crawl.id)
+        assert len(crawl_urls) == 0
 
-    #     n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
-    #     assert n1 == 1, 'n1 is {}'.format(n1)
+        # Test url_count_incoming_for_resource()
+        uc1 = delegate.url_count_incoming_for_resource(page.id)
+        assert uc1 == 0
 
-    #     n2 = delegate.url_count_visited(crawl_id=crawl.id)
-    #     assert n2 == 0, 'Actually n2 is {}'.format(n2)
+        # Test url_count_internal_full()
+        cif = delegate.url_count_internal_full(crawl.id)
+        assert cif == 0
 
-    #     url.job_status = Url.JOB_STATUS_VISITED
-    #     delegate.url_update(url)
-    #     l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
-    #     assert l1 is None, 'L1 is {}'.format(l1)
+        url1 = Url()
+        url1.src_resource_id = page.id
+        url1.url = '/team'
+        url1.absolute_url = 'https://scriptoid.com/team'
+        url1.type = Url.TYPE_INTERNAL
+        url1.crawl_id = crawl.id
+        url1.job_status = Url.JOB_STATUS_IN_PROGRESS
+        lid1 = delegate.url_create(url1)
+        assert url1.id > 0
+        assert lid1 == url1.id
 
-    #     n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
-    #     assert n1 == 0, 'n1 is {}'.format(n1)
+        url2 = Url()
+        url2.src_resource_id = page.id
+        url2.dst_resource_id = page.id
+        url2.url = '/contact'
+        url2.absolute_url = 'https://scriptoid.com/index.php'
+        url2.type = Url.TYPE_INTERNAL
+        url2.crawl_id = crawl.id
+        delegate.url_create(url2)
+        assert url2.id > 0
 
-    #     n2 = delegate.url_count_visited(crawl_id=crawl.id)
-    #     assert n2 == 1, 'n2 is {}'.format(n2)
+        url3 = Url()
+        url3.dst_resource_id = page.id
+        url3.url = '/jobs'
+        url3.absolute_url = 'https://scriptoid.com/jobs.php'
+        url3.type = Url.TYPE_INTERNAL
+        url3.crawl_id = crawl.id
+        delegate.url_create(url3)
+        assert url3.id > 0
+        
+        # Test url_count_incoming_for_resource()
+        uc1 = delegate.url_count_incoming_for_resource(page.id)
+        assert uc1 == 1
 
-    #     # Test a cascade delete from parent Page to Link
-    #     delegate.resource_delete_all()
-    #     links = delegate.url_get_all()
-    #     assert len(links) == 0, "When actually there are {}".format(len(links))
+        # Test url_get_by_id()
+        u1 = delegate.url_get_by_id(url1.id)
+        assert u1.id == url1.id
 
-    #     # Clean up
-    #     # delegate.link_delete_all()
-    #     delegate.resource_delete_all()
-    #     delegate.crawl_delete_all()
-    #     delegate.site_delete_all()
+        # Test url_is_present()
+        p1 = delegate.url_is_present('https://scriptoid.com/index.php', crawl.id)
+        assert p1
 
-    #     print("test_page done")   
+        # Test url_get_all_by_crawl_id()
+        crawl_urls = delegate.url_get_all_by_crawl_id(crawl.id)
+        assert len(crawl_urls) == 3
+
+
+        # Test first unvisited link
+        l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
+        assert l1.id == url2.id, 'l1.id = {} and url.id = {}'.format(l1.id, url2.id)
+
+        # Test url_get_all_unvisited()
+        unvisited1 = delegate.url_get_all_unvisited(crawl.id)
+        assert len(unvisited1) == 2
+
+        # Test url_count_unvisited()
+        n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
+        assert n1 == 2, 'n1 is {}'.format(n1)
+
+        n2 = delegate.url_count_visited(crawl_id=crawl.id)
+        assert n2 == 0, 'Actually n2 is {}'.format(n2)
+
+        url1.job_status = Url.JOB_STATUS_VISITED
+        delegate.url_update(url1)        
+        l1 = delegate.url_get_first_unvisited(crawl_id=crawl.id)
+        assert l1.id == url2.id
+
+        n1 = delegate.url_count_unvisited(crawl_id=crawl.id)
+        assert n1 == 2, 'n1 is {}'.format(n1)
+
+        n2 = delegate.url_count_visited(crawl_id=crawl.id)
+        assert n2 == 1, 'n2 is {}'.format(n2)
+
+        # Test url_count_internal_full()
+        cif = delegate.url_count_internal_full(crawl.id)
+        assert cif == 1
+
+        # Test url_count_pending()
+        ucp = delegate.url_count_pending(crawl.id)
+        assert ucp == 2
+
+        # Test url_delete_all()
+        delegate.url_delete_all()
+        links = delegate.url_get_all()
+        assert len(links) == 0, "When actually there are {}".format(len(links))
+
+        # Test url_count_external()
+        uce = delegate.url_count_external(crawl.id)
+        assert uce == 0
+
+        url4 = Url()
+        url4.dst_resource_id = page.id
+        url4.url = '/jobs'
+        url4.absolute_url = 'https://scriptoid.com/jobs.php'
+        url4.type = Url.TYPE_EXTERNAL
+        url4.crawl_id = crawl.id
+        delegate.url_create(url4)
+        assert url4.id > 0
+
+        uce = delegate.url_count_external(crawl.id)
+        assert uce == 1
+
+        assert delegate.url_delete_by_id(url4.id)
+
+
+        # Test a cascade delete from parent Page resource_delete_all() to Link
+        url = Url()
+        url.src_resource_id = page.id
+        url.url = '/contact'
+        url.absolute_url = 'https://scriptoid.com/index.php'
+        url.type = Url.TYPE_INTERNAL
+        url.crawl_id = crawl.id
+        delegate.url_create(url)
+        assert url.id > 0
+
+        delegate.resource_delete_all()
+        links = delegate.url_get_all()
+        assert len(links) == 0, "When actually there are {}".format(len(links))
+        
+
+        # Clean up
+        # delegate.link_delete_all()
+        delegate.resource_delete_all()
+        delegate.crawl_delete_all()
+        delegate.site_delete_all()
+
+        print("test_page done")   
 
 
     def test_user(self):
