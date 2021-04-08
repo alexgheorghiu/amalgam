@@ -4,7 +4,7 @@ from sqlalchemy import func, or_, desc
 from amalgam.database import session_factory, engine
 from amalgam.models.models import Site, User, Crawl, Url, Resource
 
-
+@DeprecationWarning
 class Delegate:
     """ 
     Single interface point to the DB

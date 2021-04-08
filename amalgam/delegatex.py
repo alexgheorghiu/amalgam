@@ -106,8 +106,10 @@ class XDelegate:
         conn = engine.connect()
         cmd = select([crawls]).where(crawls.c.site_id == site_id).order_by(desc(crawls.c.date))
         record = conn.execute(cmd).first()
-        e = Crawl()
-        e.load_from_rs(record)
+        e = None
+        if not record == None:
+            e = Crawl()
+            e.load_from_rs(record)
         conn.close()
         return e
 
