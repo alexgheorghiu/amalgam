@@ -45,9 +45,9 @@ class XDelegate:
         conn = engine.connect()
         s = select([table]).where(table.c.id == id)
         rp = conn.execute(s)
-        result = rp.first()        
+        record = rp.first()        
         o = class_name()
-        o.load_from_rs(result)
+        o.load_from_rs(record)
         conn.close()
         return o
 
@@ -146,30 +146,48 @@ class XDelegate:
     def resource_get_all(self):
         return self._get_all(resources, Resource)
 
-    # def resource_get_all_by_crawl(self, crawl_id):
-    #     session = self.get_session()
-    #     return session.query(Resource)\
-    #         .filter(Resource.crawl_id==crawl_id)\
-    #         .all()
+    def resource_get_all_by_crawl(self, crawl_id):
+        entities = []
+        conn = engine.connect()
+        cmd = select([resources]).where(resources.c.crawl_id == crawl_id)
+        #.order_by(desc(crawls.c.date))
+        rp = conn.execute(cmd)
+        for record in rp:
+            e = Resource()
+            e.load_from_rs(record) 
+            entities.append(e)
+        conn.close()
+        return entities
 
-    # def resource_get_by_absolute_url_and_crawl_id(self, absolute_url, crawlId):
-    #     session = self.get_session()
-    #     resource = session.query(Resource).filter(Resource.absolute_url == absolute_url, Resource.crawl_id == crawlId).first()
-    #     return resource
 
-    # def resource_get_by_id(self, resource_id):
-    #     session = self.get_session()
-    #     return session.query(Resource)\
-    #         .filter(Resource.id==resource_id)\
-    #         .first()
+    def resource_get_by_absolute_url_and_crawl_id(self, absolute_url, crawlId):        
+        conn = engine.connect()
+        cmd = select([resources]).where(resources.c.crawl_id == crawlId, resources.c.absolute_url == absolute_url)
+        #.order_by(desc(crawls.c.date))
+        record = conn.execute(cmd).first()        
+        if record is None:
+            return None
+        else:
+            e = Resource()
+            e.load_from_rs(record) 
+            conn.close()
+            return e
 
-    # def resource_is_present(self, absolute_address, crawlId):
-    #     """Checks to see if a certain Resource is present inside a DB"""
-    #     session = self.get_session()
-    #     n = session.query(func.count(Url.id))\
-    #         .filter(Resource.absolute_url == absolute_address)\
-    #         .filter(Resource.crawl_id == crawlId).scalar()
-    #     return n > 0        
+
+    def resource_get_by_id(self, resource_id):
+        return self._get_by_id(resources, Resource, resource_id)
+
+
+    def resource_is_present(self, absolute_address, crawlId):
+        """Checks to see if a certain Resource is present inside a DB"""
+        conn = engine.connect()
+        cmd = select([func.count(resources.c.id)]).where(
+                        resources.c.absolute_url == absolute_address,
+                        resources.c.crawl_id == crawlId)
+        record = conn.execute(cmd).first()
+        n = record.count_1
+        conn.close()
+        return n > 0      
 
 
     def site_create(self, site):

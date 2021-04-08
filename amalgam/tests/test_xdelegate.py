@@ -1,8 +1,7 @@
 import unittest
 import sys
 import threading
-import time
-import time
+import time, datetime
 
 now = lambda : time.time()
 # ms = time.time()*1000.0
@@ -86,19 +85,18 @@ class TestDelegate(unittest.TestCase):
         site1.url = 'http://foo.com'  
         delegate.site_create(site1)
 
-
         # Crawl
         crawl = Crawl(site_id = site1.id)
         delegate.crawl_create(crawl)
         assert crawl.id > 0
 
-        # FIXME: Lame :)
-        time.sleep(1)
+        # Create a datetime 2 minutes in the past
+        delta = datetime.timedelta(minutes=-2)
+        t2 = crawl.date - delta        
 
-        crawl2 = Crawl(site_id = site1.id)
+        crawl2 = Crawl(site_id = site1.id, date=t2)
         delegate.crawl_create(crawl2)
         assert crawl2.id > 0
-
 
         sites = delegate.site_get_all()
         print("No of site: {}".format(len(sites)))
@@ -135,8 +133,19 @@ class TestDelegate(unittest.TestCase):
 
         no_pages = delegate.resource_count_visited(crawl.id)
         assert no_pages == 0, "No of pages is {}".format(no_pages)
-
+        
         # Page
+        craw_resources = delegate.resource_get_all_by_crawl(crawl.id)
+        assert len(craw_resources) == 0
+
+        # test resource_get_by_absolute_url_and_crawl_id()
+        r1 = delegate.resource_get_by_absolute_url_and_crawl_id("no such url :p", crawl.id)
+        assert r1 == None
+
+        # test resource_is_present()
+        present = delegate.resource_is_present('no such url :p', crawl.id)
+        assert not present
+
         page = Resource()
         page.crawl_id = crawl.id
         page.content = "A long content " + "a" * 1024 * 1024
@@ -144,11 +153,25 @@ class TestDelegate(unittest.TestCase):
         delegate.resource_create(page)
         assert page.id > 0
 
+        # test resource_get_by_id()
+        r2 = delegate.resource_get_by_id(page.id)
+        assert r2.id == page.id
+
+        # test resource_is_present()
+        present = delegate.resource_is_present(page.absolute_url, crawl.id)
+        assert present
+
         pages = delegate.resource_get_all()
         assert len(pages) > 0 
 
         no_pages = delegate.resource_count_visited(crawl.id)
         assert no_pages == 1, "No of pages is {}".format(no_pages)
+
+        craw_resources = delegate.resource_get_all_by_crawl(crawl.id)
+        assert len(craw_resources) > 0
+
+        r1 = delegate.resource_get_by_absolute_url_and_crawl_id(page.absolute_url, crawl.id)
+        assert r1.id == page.id
 
         # # Test cascade delete
         delegate.crawl_delete_all()        
