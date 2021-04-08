@@ -17,9 +17,10 @@ class Entity:
 
 
 class Mime(Entity):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.id = None
         self.mime = None
+        super().__init__(**kwargs)
 
 
 class User(Entity):    
@@ -35,15 +36,14 @@ class User(Entity):
         self.password = None
         self.current_site_id = None
         self.level = None
-
         super().__init__(**kwargs)
-        # super(Entity, self).__init__(kwargs)        
 
 
 class Setting(Entity):
-    def __init__(self):        
+    def __init__(self, **kwargs):        
         self.key = None
         self.value = None        
+        super().__init__(**kwargs)
 
 
 class Site(Entity):
@@ -60,9 +60,7 @@ class Crawl(Entity):
         self.date = datetime.datetime.utcnow()
         self.note = None
         self.site_id = None
-
-        for k,v in kwargs.items():
-            self.__dict__[k] = v
+        super().__init__(**kwargs)
 
 
 class Url(Entity):
@@ -73,7 +71,7 @@ class Url(Entity):
     JOB_STATUS_IN_PROGRESS = "in progress"
     JOB_STATUS_VISITED = "visited"
 
-    def __init__(self):        
+    def __init__(self, **kwargs):        
         self.id = None
         self.url = None        
         self.absolute_url = None
@@ -87,11 +85,12 @@ class Url(Entity):
         self.src_resource_id = None
         self.dst_resource_id = None
         self.crawl_id = None
+        super().__init__(**kwargs)
 
 
 
 class Resource(Entity):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.id = None
         self.absolute_url = None
         self.created_on = None
@@ -99,6 +98,8 @@ class Resource(Entity):
         self.elapsed = None
         self.mime_id = None
         self.crawl_id = None
+        super().__init__(**kwargs)
+        
 
 
 """More details https://docs.sqlalchemy.org/en/14/core/metadata.html """

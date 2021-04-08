@@ -16,9 +16,9 @@ from threading import Thread, Condition, currentThread, Lock, RLock
 import csv
 import uuid
 
-from amalgam.models.models import Crawl, Url, Resource, Site
+from amalgam.models.modelsx import Crawl, Url, Resource, Site
 from amalgam.models import inside
-from amalgam.delegate import Delegate
+from amalgam.delegatex import XDelegate as Delegate
 from amalgam.database import session_factory, get_session
 
 
@@ -120,7 +120,7 @@ class CrawlerDB(Thread):
 		self.running = True
 		self.paused = False
 		self.condition = RLock()
-		self.delegate = Delegate(get_session())
+		self.delegate = Delegate()
 		self.listeners = []  # A list of listeners that want to listen to messages (ex: progress) from Crawler
 		self.id = id
 		self.initialLink = initialLink
@@ -132,8 +132,8 @@ class CrawlerDB(Thread):
 		except Exception as ex:
 			logging.error("Exception {}".format(ex))
 
-	def __del__(self):
-		self.delegate.get_session().close()
+	# def __del__(self):
+	# 	self.delegate.get_session().close()
 
 	def add_initial_url(self, address):
 		logger.info("Add initial URL")
@@ -300,7 +300,7 @@ class CrawlerDB(Thread):
 		# Join them
 		self._join_all_workers()
 
-		self.delegate.get_session().close()
+		# self.delegate.get_session().close()
 
 		msg = {
 			"status": "done",
@@ -382,7 +382,7 @@ class CrawlerDB(Thread):
 			logger.debug("[%s] cycle ended." % (currentThread().getName()))
 		else:
 			logger.debug("[%s] is shutting down." % (currentThread().getName()))
-			self.delegate.get_session().close()
+			# self.delegate.get_session().close()
 
 
 	def stop(self):
@@ -475,7 +475,7 @@ def main():
 	noOfWorkers = args.workers
 
 
-	delegate = Delegate(get_session())
+	delegate = Delegate()
 	site = Site(name=domain, url=theURL)
 	delegate.site_create(site)
 	crawl = Crawl(site_id=site.id)
