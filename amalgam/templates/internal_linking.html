@@ -48,7 +48,7 @@
 
 {% endblock %}
 
-    {% block content %}
+{% block content %}
 
     <h4>Report Inner Links</h4>
 
@@ -127,13 +127,45 @@
                             labelString: 'Percent of total links'
                         }
                     }]
-                }
+                },
+                onClick : handleClick
             }
         });
+
+        /**
+         * More documentation about selecting the proper bar
+         * https://stackoverflow.com/questions/37122484/chart-js-bar-chart-click-events
+         * https://salesforce.stackexchange.com/questions/310263/how-can-i-handle-click-events-from-chart-js-in-lighning-components
+         * https://codepen.io/jordanwillis/pen/bqvLNx
+        */
+        function handleClick(evt){
+            var elements = myChart.getElementAtEvent(evt);
+            if(elements.length > 0){ //make sure we are on a bar (and not somewhere inside the canvas)
+                var selectedBar = elements[0]._index;
+                console.log("Selected Bar is " + selectedBar)
+                showLinks(selectedBar);
+            }
+        }
+
+        function showLinks(selectedBar){
+            var links = document.getElementById('links');
+            links.innerHTML = 'Links for bar ' + selectedBar;
+            //TODO: Add more code to handle it
+            //
+            //
+        }
     </script>
 <!--    <div>-->
 <!--        <button onclick="update_chart()">Update</button>-->
 <!--    </div>-->
 
+    <div class="row">
+        <div class="col-12">
+            <div id="links">
+
+            </div>
+        </div>
+    </div>
+    
 
 {% endblock %}
