@@ -142,6 +142,10 @@
                 var selectedBar = elements[0]._index;
                 console.log("Selected Bar is " + selectedBar)
 
+                //reset links
+                reset_links();
+
+                //get new data
                 var url = "./report_inner_links_bar_data?crawl_id=" + crawlId + "&bar_no="  + selectedBar;                 
                 $.get(url,
                     function(data, status){
@@ -152,44 +156,138 @@
             }
         }
 
-        function showLinks(selectedBar, data){
+        function showLinks(selectedBar, data){            
             var links = document.getElementById('links');
 
-            links.innerHTML = '';
+            links.innerHTML = '<p/>';
             // links.innerHTML = 'Links for bar ' + selectedBar + '<br/>Data:' + data;
 
-            var table = document.createElement('table');
+            var title = document.createElement('h5');
+            title.innerHTML = 'Pages that got '+(selectedBar*10)+'-'+((selectedBar+1)*10)+'%' + ' of total links'
+            links.appendChild(title);
 
-            var header = document.createElement('th')
+            var table = document.createElement('table');
+            table.setAttribute('class', 'table');
+
+            // Header
+            var header = document.createElement('tr')            
             var col = document.createElement('td')
-            col.innerHTML = 'Pages'
+            col.innerHTML = 'No'
             header.appendChild(col)
+
+            var col = document.createElement('td')
+            col.innerHTML = 'URL'
+            header.appendChild(col)
+            
             table.appendChild(header)
 
+            // Rows
             for(var i=0;i<data.length; i++){                
                 var line = data[i];
                 var row = document.createElement('tr')
+
+                var col_no = document.createElement('td')
+                col_no.innerHTML = i+1;
+                row.appendChild(col_no)
+
                 var col = document.createElement('td')
                 col.innerHTML = line['absolute_url']
                 row.appendChild(col)
+
+                row.onclick = function(resource_id, url){
+                    return function(){
+                        show_sublinks(resource_id, url);
+                    }
+                }(line['id'], line['absolute_url']);
+
                 table.appendChild(row)
-                // links.innerHTML += line
             }
 
             links.appendChild(table)
-            //TODO: Add more code to handle it
-            //
-            //
         }
+
+        function show_sublinks(resource_id, url){
+            console.info("show_sublinks " + resource_id)
+            
+            var _url = "./report_inner_incomming_urls?resource_id=" + resource_id;                 
+            $.get(_url,
+                function(data, status){
+                    // alert("Data: " + data + "\nStatus: " + status);
+                    populate_sublinks(eval(data), url);
+                }
+            );
+        }
+
+        /**Populates sublinks section*/
+        function populate_sublinks(data, url){
+            var links = document.getElementById('sublinks');
+            links.innerHTML = '<p/>';
+
+            var title = document.createElement('h5');
+            title.innerHTML = 'Pages that link to ' + url
+            links.appendChild(title);
+
+            // Table
+            var table = document.createElement('table');
+            table.setAttribute('class', 'table');
+
+            // Header
+            var header = document.createElement('tr')            
+            var col = document.createElement('td')
+            col.innerHTML = 'No'
+            header.appendChild(col)
+
+            var col = document.createElement('td')
+            col.innerHTML = 'URL'
+            header.appendChild(col)
+            
+            table.appendChild(header)
+
+            // Rows
+            for(var i=0;i<data.length; i++){                
+                var line = data[i];
+                var row = document.createElement('tr')
+
+                var col_no = document.createElement('td')
+                col_no.innerHTML = i+1;
+                row.appendChild(col_no)
+
+                var col = document.createElement('td')
+                col.innerHTML = line['absolute_url']
+                row.appendChild(col)
+
+                table.appendChild(row)
+            }
+
+            links.appendChild(table)
+        }
+
+
+        function reset_links(){
+            var links = document.getElementById('sublinks');
+            links.innerHTML = '<p/>';
+
+            reset_sublinks()
+        }
+
+
+        function reset_sublinks(){
+            var links = document.getElementById('sublinks');
+            links.innerHTML = '<p/>';
+        }
+
     </script>
 <!--    <div>-->
 <!--        <button onclick="update_chart()">Update</button>-->
 <!--    </div>-->
 
     <div class="row">
-        <div class="col-12">
+        <div class="col-6">
             <div id="links">
-
+            </div>
+        </div>
+        <div class="col-6">
+            <div id="sublinks">
             </div>
         </div>
     </div>

@@ -364,6 +364,14 @@ def report_inner_links_bar_data():
 	return jdata
 
 
+@app.route('/report_inner_incomming_urls', methods=['GET'])
+@login_required
+def report_inner_incomming_urls():
+	resource_id = request.args.get('resource_id', type=int)
+	delegate = Delegate()
+	pages = delegate.resource_get_all_incoming_for_resource(resource_id)	
+	jdata =  jsonpickle.encode(pages)	
+	return jdata
 
 
 @app.route('/settings', methods=['GET', 'POST'])

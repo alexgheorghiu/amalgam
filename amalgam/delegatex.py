@@ -1,4 +1,4 @@
-from sqlalchemy.sql import select, update, insert, delete, update
+from sqlalchemy.sql import select, update, insert, delete, update, join
 from sqlalchemy import func, or_, desc
 
 from amalgam.database import engine, SQLALCHEMY_DATABASE
@@ -153,6 +153,22 @@ class XDelegate:
         conn = engine.connect()
         cmd = select([resources]).where(resources.c.crawl_id == crawl_id)
         #.order_by(desc(crawls.c.date))
+        rp = conn.execute(cmd)
+        for record in rp:
+            e = Resource()
+            e.load_from_rs(record) 
+            entities.append(e)
+        conn.close()
+        return entities
+
+
+    def resource_get_all_incoming_for_resource(self, resource_id):
+        """Get all resoources that point, through urls, to this resource
+            (Simply put find all pages that give a link to this page)
+        """
+        entities = []
+        conn = engine.connect()
+        cmd = select([resources]).select_from(resources.join(urls, resources.c.id == urls.c.src_resource_id)).where(urls.c.dst_resource_id == resource_id)
         rp = conn.execute(cmd)
         for record in rp:
             e = Resource()
