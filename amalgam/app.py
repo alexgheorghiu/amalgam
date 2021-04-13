@@ -350,6 +350,22 @@ def report_inner_links_data():
 	return jsonify(data)
 
 
+@app.route('/report_inner_links_bar_data', methods=['GET'])
+@login_required
+def report_inner_links_bar_data():
+	crawl_id = request.args.get('crawl_id', type=int)
+	bar_no = request.args.get('bar_no', type=int)
+
+	from amalgam.reports.report_inner_links import bar_data
+	data = bar_data(crawl_id, bar_no)
+	# data = {'name':'Alex'}
+	jdata =  jsonpickle.encode(data)
+	
+	return jdata
+
+
+
+
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():

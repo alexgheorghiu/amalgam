@@ -7,8 +7,35 @@ import jsonpickle
 
 # Note: full link = (starting from a valid page to the next one)
 
+STEP  = 10 # No of bar intervals
 
-STEP  = 10
+def no_2_interval(bar_no):
+    """Converts a bar_no to an interval"""
+    return (bar_no*10, (bar_no+1)*10)
+
+
+def bar_data(crawl_id, bar_no):
+    delegate = Delegate()
+
+    # Find the total number of internal full links = T
+    no_total = delegate.url_count_internal_full(crawl_id)
+
+    # Select all pages
+    pages = delegate.resource_get_all_by_crawl(crawl_id)
+
+    (lower, upper) = no_2_interval(bar_no)
+    selected_pages = []
+    for page in pages:
+        no = delegate.url_count_incoming_for_resource(page.id)        
+        percent = no * 100 / no_total
+        if upper == 100:
+            if lower <= percent and percent <= upper:
+                selected_pages.append(page)
+        else:
+            if lower <= percent and percent < upper:
+                selected_pages.append(page)
+    
+    return selected_pages
 
 
 def inner_links_data(crawl_id):

@@ -7,8 +7,6 @@
     <script type="text/javascript">
         let crawlId = {{ last_crawl_id }};
 
-
-
         function loadData(){
             $.ajax({
                 type: "GET",
@@ -143,13 +141,42 @@
             if(elements.length > 0){ //make sure we are on a bar (and not somewhere inside the canvas)
                 var selectedBar = elements[0]._index;
                 console.log("Selected Bar is " + selectedBar)
-                showLinks(selectedBar);
+
+                var url = "./report_inner_links_bar_data?crawl_id=" + crawlId + "&bar_no="  + selectedBar;                 
+                $.get(url,
+                    function(data, status){
+                        // alert("Data: " + data + "\nStatus: " + status);
+                        showLinks(selectedBar,eval(data));
+                    }
+                );
             }
         }
 
-        function showLinks(selectedBar){
+        function showLinks(selectedBar, data){
             var links = document.getElementById('links');
-            links.innerHTML = 'Links for bar ' + selectedBar;
+
+            links.innerHTML = '';
+            // links.innerHTML = 'Links for bar ' + selectedBar + '<br/>Data:' + data;
+
+            var table = document.createElement('table');
+
+            var header = document.createElement('th')
+            var col = document.createElement('td')
+            col.innerHTML = 'Pages'
+            header.appendChild(col)
+            table.appendChild(header)
+
+            for(var i=0;i<data.length; i++){                
+                var line = data[i];
+                var row = document.createElement('tr')
+                var col = document.createElement('td')
+                col.innerHTML = line['absolute_url']
+                row.appendChild(col)
+                table.appendChild(row)
+                // links.innerHTML += line
+            }
+
+            links.appendChild(table)
             //TODO: Add more code to handle it
             //
             //
