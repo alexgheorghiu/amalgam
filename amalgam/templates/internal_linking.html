@@ -172,11 +172,19 @@
             // Header
             var header = document.createElement('tr')            
             var col = document.createElement('td')
-            col.innerHTML = 'No'
-            header.appendChild(col)
 
+            // No
+            col.innerHTML = 'No'
+            header.appendChild(col)            
+
+            //URL
             var col = document.createElement('td')
             col.innerHTML = 'URL'
+            header.appendChild(col)
+
+            //Inbound links
+            col = document.createElement('td')
+            col.innerHTML = 'No Inbound links'
             header.appendChild(col)
             
             table.appendChild(header)
@@ -184,21 +192,29 @@
             // Rows
             for(var i=0;i<data.length; i++){                
                 var line = data[i];
+                var page = line.page
+                var no = line.no
                 var row = document.createElement('tr')
 
                 var col_no = document.createElement('td')
                 col_no.innerHTML = i+1;
                 row.appendChild(col_no)
 
+                //page
                 var col = document.createElement('td')
-                col.innerHTML = line['absolute_url']
+                col.innerHTML = page['absolute_url']
+                row.appendChild(col)
+
+                //no inbound links
+                var col = document.createElement('td')
+                col.innerHTML = no
                 row.appendChild(col)
 
                 row.onclick = function(resource_id, url){
                     return function(){
                         show_sublinks(resource_id, url);
                     }
-                }(line['id'], line['absolute_url']);
+                }(page['id'], page['absolute_url']);
 
                 table.appendChild(row)
             }

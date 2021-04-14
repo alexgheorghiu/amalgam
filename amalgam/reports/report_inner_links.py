@@ -15,6 +15,7 @@ def no_2_interval(bar_no):
 
 
 def bar_data(crawl_id, bar_no):
+    """Returns the pages for a bar (interval) inside a crawl"""
     delegate = Delegate()
 
     # Find the total number of internal full links = T
@@ -30,10 +31,10 @@ def bar_data(crawl_id, bar_no):
         percent = no * 100 / no_total
         if upper == 100:
             if lower <= percent and percent <= upper:
-                selected_pages.append(page)
+                selected_pages.append({'page': page, 'no' : no})
         else:
             if lower <= percent and percent < upper:
-                selected_pages.append(page)
+                selected_pages.append({'page': page, 'no' : no})
     
     return selected_pages
 
