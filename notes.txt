@@ -1,3 +1,6 @@
+Links
+======
+
 Nice JS tree for sitemaps
 	https://observablehq.com/@d3/force-directed-tree
 	https://observablehq.com/@d3/collapsible-tree
@@ -32,9 +35,13 @@ Articles
 	https://pythonawesome.com/a-versatile-web-crawler-built-using-modern-tools-and-concurrency/
 		https://github.com/cocrawler/cocrawler a versatile web crawler built using modern tools and concurrency.
 
-
 	https://pythonawesome.com/realtime-web-apps-and-dashboards-for-python/
-
 
 	Internal Link Analysis with Python
 		https://www.briggsby.com/internal-link-analysis-with-python
+
+	Why people ditched SQLAlchemy ORM in favor of Core
+		https://tech.wayfair.com/2017/03/orm-bankruptcy-why-we-ditched-our-orm/
+
+	Automatically Find SEO Interlinking Opportunities with Python
+		https://importsem.com/automatically-find-seo-interlinking-opportunities-with-python/
