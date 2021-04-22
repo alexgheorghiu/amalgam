@@ -1,8 +1,13 @@
 FROM ubuntu:20.04
+
+# Setup up OS
 RUN apt-get -y update
 RUN apt-get install -y python3
 RUN apt-get install -y python3-pip
 RUN apt-get install -y libpq-dev
+
+# Setup application
+ENV SQLALCHEMY_DATABASE=sqlite
 WORKDIR /app
 COPY amalgam amalgam
 COPY requirements.txt requirements.txt
