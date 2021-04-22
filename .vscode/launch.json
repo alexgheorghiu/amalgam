@@ -12,7 +12,10 @@
             "type": "python",
             "request": "launch",
             "module": "amalgam.app",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "env": {
+                "AMALGAM_SQLALCHEMY_DATABASE": "mysql"
+            }
         }, 
 
         {
