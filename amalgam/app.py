@@ -1,22 +1,21 @@
-# import the Flask class from the flask module
 from flask import Flask, render_template, redirect, url_for, request, session, flash, jsonify, copy_current_request_context
 from functools import wraps
 import os
-# from flask_sqlalchemy import SQLAlchemy
 from amalgam.crawler.crawler import CrawlerDB
 import jsonpickle
 import threading
+import logging
 import sqlalchemy
 
 from amalgam import database
-# from amalgam.delegate import Delegate
-# from amalgam.models.models import Url, Crawl, User, Site, User, Base
 from amalgam.progress_tracker import ProgressTracker
-# from amalgam.progress_tracker import ProgressTracker
+from amalgam.config import setup_logging
 
 from amalgam.delegatex import XDelegate as Delegate
 from amalgam.models.modelsx import User,Crawl, User, Site, User
 
+
+log = logging.getLogger(__name__)
 
 
 # def create_app():
@@ -81,6 +80,7 @@ def welcome():
 # Route for handling the login page logic
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+	log.info("Logging in")
 	delegate = Delegate()
 	error = None
 	if request.method == 'POST': 
@@ -611,6 +611,7 @@ def user_update():
 
 # start the server with the 'run()' method
 if __name__ == '__main__':
+	setup_logging()
 	# app = create_app()
 	# if not os.path.isfile('./amalgam.db'):
 	# 	setup_database(app)

@@ -16,20 +16,14 @@ from threading import Thread, Condition, currentThread, Lock, RLock
 import csv
 import uuid
 
+from amalgam.config import setup_logging
 from amalgam.models.modelsx import Crawl, Url, Resource, Site
 from amalgam.models import inside
 from amalgam.delegatex import XDelegate as Delegate
 from amalgam.database import session_factory, get_session
 
+logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename='crawler.log', level=logging.INFO)
-logger = logging.getLogger("crawler")
-logger.setLevel(logging.DEBUG)
-
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-logger.addHandler(ch)
 
 def to_absolute_url(parent_page_link, link):
 	"""Converts a link to absolute"""
@@ -509,4 +503,5 @@ def main():
 
 
 if __name__ == "__main__":
+	setup_logging()
 	main()
