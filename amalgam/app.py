@@ -2,7 +2,7 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash, jsonify, copy_current_request_context
 from functools import wraps
 import os
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 from amalgam.crawler.crawler import CrawlerDB
 import jsonpickle
 import threading
@@ -615,4 +615,4 @@ if __name__ == '__main__':
 	# if not os.path.isfile('./amalgam.db'):
 	# 	setup_database(app)
 	
-	app.run() # To run it a on certain port use: app.run(host='0.0.0.0', port=80)
+	app.run(host='0.0.0.0') # To run it a on certain port use: app.run(host='0.0.0.0', port=80)
