@@ -10,6 +10,7 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 * [How to play with database](#how-to-play-with-database)
 * [How to run tests](#how-to-run-tests)
 * [How to run it](#how-to-run-it)  
+	* How to run it ( [Docker](#how-to-run-it-docker) )
 	* How to run it ( [XUbuntu 20](#how-to-run-it-xubuntu-20) )
 	* How to run it ( [Windows 10](#how-to-run-it-windows-10) )
 
@@ -59,6 +60,35 @@ python manage_db.py -a mock
 
 
 ## How to run it ##
+
+## How to run it (Docker)
+
+### Step 1: Install Docker
+
+Go on [Docker's download page](https://docs.docker.com/desktop/#download-and-install) and install Docker
+
+### Step 2: Run the app
+
+```sh
+docker run -it -p 5000:5000 scriptoid/amalgam:0.1
+```
+**Note 1** : Port 5000 of your PC should be available
+
+**Note 2** : If you want to run it on a different port use the following command:
+
+```sh
+docker run -it -p <Your Port>:5000 scriptoid/amalgam:0.1
+```
+
+replacing 'Your Port' with a free port at your desire.
+
+### Step 3: Use the application
+
+Just open a browser and access [http://localhost:5000](http://localhost:5000)
+
+### Step 4: Stop the application
+
+Simply go to console application launched by Docker and press Ctrl-C.
 
 
 ### How to run it - XUbuntu 20

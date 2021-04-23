@@ -4,18 +4,49 @@ Amalgam is collection of (mainly) [Python](https://python.org) scripts with a we
 More info for developers : [Dev page](./dev.md)
 
 # Project structure #
+* How to run it ( [Docker](#how-to-run-it-docker) )
 * How to run it ( [Windows 10](#how-to-run-it-windows-10) )
 * How to run it ( [XUbuntu 20](#how-to-run-it-ubuntu-20) )
 * Scripts ( [Scripts](#scripts) )
 	* Run crawler against a site ( [Crawler](#Crawler) ) 
 
+## How to run it (Docker)
+
+### Step 1: Install Docker
+
+Go on [Docker's download page](https://docs.docker.com/desktop/#download-and-install) and install Docker
+
+### Step 2: Run the app
+
+```sh
+docker run -it -p 5000:5000 scriptoid/amalgam:0.1
+```
+**Note 1** : Port 5000 of your PC should be available
+
+**Note 2** : If you want to run it on a different port use the following command:
+
+```sh
+docker run -it -p <Your Port>:5000 scriptoid/amalgam:0.1
+```
+
+replacing 'Your Port' with a free port at your desire.
+
+### Step 3: Use the application
+
+Just open a browser and access [http://localhost:5000](http://localhost:5000)
+
+### Step 4: Stop the application
+
+Simply go to console application launched by Docker and press Ctrl-C.
+
+
 ## How to run it (Windows 10)
 
-### Step 0: Download the app
+### Step 1: Download the app
 
 Download the [amalgam](https://github.com/alexgheorghiu/amalgam/archive/main.zip) zip file and unzip it into a folder.
 
-### Step 1:  Have Python3 installed
+### Step 2:  Have Python3 installed
 
 Check if you have Python installed. Open a Command Prompt (Start > Command Prompt) and type:
 
@@ -31,23 +62,23 @@ If not then download it and install it from:
 **Note**: 
 Remember to check "Add Python 3.x to PATH" during installation so you can access Python from Command Prompt
 
-### Step 2: Have Pip3 installed. Usually Python3 comes with PIP3 by default but you can check (in Command Prompt) with:
+### Step 3: Have Pip3 installed. Usually Python3 comes with PIP3 by default but you can check (in Command Prompt) with:
 
 	pip3 --version
 
 
-### Step 3: Install Python libraries		
+### Step 4: Install Python libraries		
 First go inside the folder of the project and open a Command Prompt and then type:
 
 	pip install -r requirements.txt
 
 
-### Step 4: Launch app
+### Step 5: Launch app
 From a Command Prompt inside the project folder type:
 	python app.py
 
 
-### Step 5: See in browser
+### Step 6: See in browser
 Access it at:  http://127.0.0.1:5000/ with any browser.
 
 
