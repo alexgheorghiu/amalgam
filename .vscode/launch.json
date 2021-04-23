@@ -8,7 +8,7 @@
 
 
         {
-            "name": "Amalgam Web",
+            "name": "Amalgam Web - MySQL",
             "type": "python",
             "request": "launch",
             "module": "amalgam.app",
@@ -17,6 +17,17 @@
                 "AMALGAM_SQLALCHEMY_DATABASE": "mysql"
             }
         }, 
+
+        {
+            "name": "Amalgam Web - SQLite",
+            "type": "python",
+            "request": "launch",
+            "module": "amalgam.app",
+            "console": "integratedTerminal",
+            "env": {
+                "AMALGAM_SQLALCHEMY_DATABASE": "sqlite"
+            }
+        },
 
         {
             "name": "Simple Server",

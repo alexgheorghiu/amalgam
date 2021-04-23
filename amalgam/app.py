@@ -9,10 +9,11 @@ import sqlalchemy
 
 from amalgam import database
 from amalgam.progress_tracker import ProgressTracker
-from amalgam.config import setup_logging
+from amalgam.config import setup_logging, SQLALCHEMY_DATABASE
 
 from amalgam.delegatex import XDelegate as Delegate
-from amalgam.models.modelsx import User,Crawl, User, Site, User
+from amalgam.models.modelsx import User,Crawl, User, Site, User, metadata
+from manage_db import mock
 
 
 log = logging.getLogger(__name__)
@@ -31,27 +32,14 @@ app.secret_key = 'my precious'
 PROGRESS_TRACKER = ProgressTracker()
 CRAWLS = {}
 
-def check_db(app):
-	if database.SQLALCHEMY_DATABASE == 'sqlite':
+def check_db():
+	if SQLALCHEMY_DATABASE == 'sqlite':
 		if not os.path.isfile('./amalgam.db'):
-			setup_database(app)
+			log.info("SQLite file NOT present. Creating it!")
+			mock()
+		else:
+			log.info("SQLite file present. Skip creation.")
 
-
-def setup_database(app):
-	delegate = Delegate()
-	with app.app_context():
-		# db.init_app(app)
-		# db.create_all()
-		# db.session.commit()
-		pass
-
-	# Create all tables if needed
-	Base.metadata.create_all(database.engine)
-
-	user = User(email='one@foo.com', password='one', name='one')
-	delegate.user_create(user)
-
-check_db(app)
 
 # login required decorator
 def login_required(f):
@@ -313,10 +301,10 @@ def status():
 	sites = delegate.site_get_all()	# TODO: In the future show only sites for current user
 	
 	db_status = {}
-	db_status['size'] = database.engine.pool.size()
-	db_status['checkedin'] = database.engine.pool.checkedin()
-	db_status['overflow'] = database.engine.pool.overflow()
-	db_status['checkedout'] = database.engine.pool.checkedout()
+	db_status['size'] = 'N/A' if isinstance(database.engine.pool, sqlalchemy.pool.impl.NullPool) else database.engine.pool.size()
+	db_status['checkedin'] = 'N/A' if isinstance(database.engine.pool, sqlalchemy.pool.impl.NullPool) else database.engine.pool.checkedin()
+	db_status['overflow'] = 'N/A' if isinstance(database.engine.pool, sqlalchemy.pool.impl.NullPool) else database.engine.pool.overflow()
+	db_status['checkedout'] = 'N/A' if isinstance(database.engine.pool, sqlalchemy.pool.impl.NullPool) else database.engine.pool.checkedout()
 
 	return render_template('status.html', status=status, user=user, sites=sites, db_status = db_status)
 
@@ -612,6 +600,7 @@ def user_update():
 # start the server with the 'run()' method
 if __name__ == '__main__':
 	setup_logging()
+	check_db()
 	# app = create_app()
 	# if not os.path.isfile('./amalgam.db'):
 	# 	setup_database(app)
