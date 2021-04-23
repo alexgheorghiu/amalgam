@@ -13,7 +13,7 @@ from amalgam.config import setup_logging, SQLALCHEMY_DATABASE
 
 from amalgam.delegatex import XDelegate as Delegate
 from amalgam.models.modelsx import User,Crawl, User, Site, User, metadata
-from manage_db import mock
+from amalgam.manage_db import mock
 
 
 log = logging.getLogger(__name__)

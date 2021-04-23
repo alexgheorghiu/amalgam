@@ -11,7 +11,7 @@ from flask_sqlalchemy import SQLAlchemy
 from amalgam.models import inside
 from amalgam.models.modelsx import User, Site, Crawl, Resource, Url
 from amalgam.delegatex import XDelegate
-from manage_db import empty
+from amalgam.manage_db import empty
 
 
 
