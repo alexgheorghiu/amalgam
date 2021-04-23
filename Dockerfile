@@ -20,8 +20,9 @@ EXPOSE 5000
 
 CMD [ "python3", "-m" , "amalgam.app"]
 
-# To build it: docker build -t amalgam .
-# To run it as daemon: docker run -d -it -p 5000:5000 --name=amalgam amalgam
-# To run it with open terminal: docker run -it -p 5000:5000 --name=amalgam amalgam
+# To build it: docker build -t scriptoid/amalgam:0.1 .
+# To run it as daemon: docker run -d -it -p 5000:5000 --name=amalgam scriptoid/amalgam:0.1
+# To run it with open terminal: docker run -it -p 5000:5000 --name=amalgam scriptoid/amalgam:0.1
+# To publish it: docker push scriptoid/amalgam:0.1
 # To access it: http://localhost:5000
 
